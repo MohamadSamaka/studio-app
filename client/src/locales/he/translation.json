@@ -1,0 +1,198 @@
+{
+  "reservationScreen": {
+    "title": "להזמין תור",
+    "dayOfWeekUndefined": "יום בשבוע אינו מוגדר:",
+    "errorFetchingBusinessHours": "שגיאה בשליפת שעות הפעילות:",
+    "alreadyBooked": "כבר הוזמן",
+    "alreadyBookedMessage": "כבר הזמנת משבצת בתאריך \u200F{{date}}\u200E בשעה \u200F{{time}}\u200E.",
+    "insufficientCredits": "יתרה לא מספיקה",
+    "insufficientCreditsMessage": "אין לך מספיק יתרה לביצוע הזמנה זו. אנא בקש עוד יתרה בדף המנויים.",
+    "fullyBooked": "מלא לחלוטין",
+    "fullyBookedMessage": "משבצת זמן זו בתאריך \u200F{{date}}\u200E בשעה \u200F{{time}}\u200E מלאה לחלוטין.",
+    "confirmReservation": "אישור הזמנה",
+    "confirmReservationMessage": "האם אתה בטוח שברצונך להזמין בתאריך \u200F{{date}}\u200E בשעה \u200F{{time}}\u200E?",
+    "success": "הצלחה",
+    "reservationSuccessMessage": "ההזמנה שלך בוצעה בהצלחה!",
+    "reservationFailed": "הזמנה נכשלה",
+    "unexpectedError": "אירעה שגיאה בלתי צפויה. אנא נסה שוב מאוחר יותר.",
+    "errorMakingReservation": "אירעה שגיאה בעת ביצוע ההזמנה. אנא נסה שוב מאוחר יותר.",
+    "bookingCanceled": "הזמנה בוטלה",
+    "bookingCanceledMessage": "ההזמנה שלך בוטלה בהצלחה.",
+    "noAvailableSlots": "אין משבצות זמינות לתאריך זה",
+    "pleaseSelectDate": "אנא בחר תאריך כדי להציג משבצות זמינות...",
+    "yourCurrentBooking": "ההזמנה הנוכחית שלך",
+    "noCurrentBooking": "אין הזמנה נוכחית",
+    "cancelBooking": "בטל הזמנה",
+    "close": "סגור",
+    
+    "reservationsFor": "הזמנות עבור \u200F{{time}}\u200E",
+    "reservationDetailsModal": "פרטי ההזמנה",
+    "currentBookingModal": "ההזמנה הנוכחית",
+    "customAlert": "התראה מותאמת אישית"
+  },
+  "subscriptionsScreen": {
+    "title": "מנויים",
+    "requestResponse": {
+      "success": "הבקשה למנוי נשלחה בהצלחה!",
+      "failed": "הבקשה למנוי נכשלה, נסה שוב מאוחר יותר!"
+    },
+    "failedToLoadSubscriptions": "שגיאה: כשל בטעינת המנויים.",
+    "requiestingConfirmationTitle": "אישור בקשה",
+    "meetings": "{{count}} פגישות ",
+    "requestingSubscription": "בקשה",
+    "requestingSubscriptionConfirmationMessage": "האם אתה בטוח שברצונך לבקש את המנוי \u200F{{subscriptionType}}\u200E?"
+  },
+  "myReservationsScreen": {
+    "title": "ההזמנות שלי",
+    "errorFetchingReservations": "שגיאה בשליפת הזמנות:",
+    "cancellationWarning": "אזהרת ביטול",
+    "cancellationWarningMessage": "אתה עומד לבטל הזמנה זו בתוך 6 שעות מהזמן המתוכנן. לא תקבל החזר של הקרדיט שלך אם תמשיך. האם אתה בטוח שברצונך להמשיך?",
+    "noKeepReservation": "לא, שמור הזמנה",
+    "yesCancelReservation": "כן, בטל הזמנה",
+    "errorCancellingReservation": "שגיאה בביטול ההזמנה:",
+    "error": "שגיאה",
+    "failedToCancelReservation": "נכשל בביטול ההזמנה. אנא נסה שוב.",
+    "success": "הצלחה",
+    "reservationCancelledSuccessfully": "ההזמנה שלך בוטלה בהצלחה.",
+    "participants": "משתתפים",
+    "areYouSure": "האם אתה בטוח?",
+    "deleteReservationConfirmation": "האם אתה באמת רוצה למחוק את ההזמנה בתאריך \u200F{{date}}\u200E בשעה \u200F{{time}}\u200E?",
+    "yesDelete": "כן, מחק",
+    "cancel": "ביטול",
+    "searchReservations": "חפש הזמנות...",
+    "showAll": "הצג הכל",
+    "moreParticipants": "+\u200F{{count}}\u200E נוספים",
+    "atTime": "בשעה \u200F{{time}}\u200E",
+    "noCurrentBooking": "אין הזמנה נוכחית"
+  },
+  "rechargeRequestsScreen": {
+    "title": "בקשות מנוי",
+    "errorFetchingRechargeRequests": "שגיאה בשליפת בקשות הטענה:",
+    "error": "שגיאה",
+    "failedToLoadRechargeRequests": "נכשל בטעינת בקשות ההטענה.",
+    "confirmCancellation": "אישור ביטול",
+    "confirmCancellationMessage": "האם אתה בטוח שברצונך לבטל בקשת הטענה זו?",
+    "no": "לא",
+    "yes": "כן",
+    "errorCancellingRechargeRequest": "שגיאה בביטול בקשת ההטענה:",
+    "rechargeRequestCancelledSuccessfully": "בקשת ההטענה בוטלה בהצלחה!",
+    "failedToCancelRechargeRequest": "נכשל בביטול בקשת ההטענה.",
+    "noRechargeRequestsFound": "לא נמצאו בקשות הטענה.",
+    "rechargeRequests": "בקשות הטענה",
+    "cancel": "ביטול",
+    "close": "סגור",
+    "statusLabels": {
+      "pending": "ממתין",
+      "awaitingPayment": "ממתין לתשלום",
+      "success": "הצלחה",
+      "cancelled": "בוטל",
+      "unknown": "לא ידוע"
+    },
+    "requestNumber": "בקשה מספר \u200F{{id}}\u200E",
+    "subscriptionType": "סוג מנוי: \u200F{{type}}\u200E",
+    "dateAtTime": "תאריך: \u200F{{date}}\u200E בשעה \u200F{{time}}\u200E"
+  },
+  "subscriptionTypes": {
+      "daily": "יומי",
+      "monthly": "חודשי",
+      "weekly": "שבועי",
+      "yearly": "שנתי"
+    },
+"notifications": {
+    "clearAll": "לנקות הכל"
+  },
+  "loginScreen":{
+    "welcome_back": "ברוך שובך!",
+    "username": "שם משתמש",
+    "password": "סיסמה",
+    "logging_in": "מתחבר...",
+    "login": "התחברות",
+    "username_required": "שם משתמש הינו חובה.",
+    "password_required": "סיסמה הינה חובה.",
+    "invalid_credentials": "שם המשתמש או הסיסמה אינם נכונים.",
+    "network_error": "שגיאת רשת. אנא בדוק את החיבור שלך ונסה שוב.",
+    "unexpected_error": "אירעה שגיאה לא צפויה. אנא נסה שוב."  
+  },
+  "userManagementScreen":{
+    "title": "ניהול משתמשים",
+    "notifications": {
+      "newMessage": "הודעה חדשה ממנהל",
+      "subscriptionExpire": "המנוי שלך עומד לפוג",
+      "timeTwoMinAgo": "לפני 2 דקות",
+      "timeOneHrAgo": "לפני שעה",
+      "clearAll": "נקה הכל",
+      "noNotifications": "אין מה לראות כאן."
+    },
+    "languages": {
+      "english": "אנגלית",
+      "hebrew": "עברית",
+      "arabic": "ערבית"
+    },
+    "profile": {
+      "changeLanguage": "שנה שפה",
+      "logout": "התנתק"
+    },
+    "modal": {
+      "selectLanguage": "בחר שפה"
+    },
+    "accessibility": {
+      "menuButton": "פתח תפריט",
+      "notifications": "התראות",
+      "profileButton": "פתח תפריט פרופיל"
+    },
+    "searchbar": {
+      "placeholder": "חפש לפי שם משתמש",
+      "noUsersFound": "לא נמצאו משתמשים."
+    },
+    "headers": {
+      "username": "שם משתמש",
+      "phoneNumber": "מספר טלפון",
+      "actions": "פעולות"
+    },
+    "userDetails": {
+      "credits": "קרדיטים: {{credits}}",
+      "active": "פעיל: {{status}}",
+      "role": "תפקיד: {{role}}",
+      "defaultLanguage": "שפה ברירת מחדל: {{language}}"
+    },
+    "addEditUser": {
+      "addUser": "הוסף משתמש חדש",
+      "editUser": "ערוך משתמש"
+    }
+  },
+  "businessHoursAndExceptionsScreen":{
+    "title": "ניהול זמינות"
+  },
+  "subscriptionManagementScreen":{
+    "title": "ניהול מנויים"
+  },
+  "rechargeRequestsManagementScreen":{
+    "title": "ניהול בקשות לטעינה"
+  },
+  "configManagementScreen":{
+    "title": "פאנל ניהול הגדרות"
+  },
+  "reservationsManagementScreen":{
+    "title": "ניהול הזמנות"
+  },
+  "you": "אתה/את",
+  "logout": "התנתק",
+  "changeLanguage": "שנה שפה",
+  "selectLanguage": "בחר שפה",
+  "cancel": "ביטול",
+  "close": "סגור",
+  "delete": "למחוק",
+  "save": "שמור",
+  "yes": "כן",
+  "confirm": "אישור",
+  "nothingToSee": "אין מה לראות כאן",
+  "success": "הצלחה",
+  "error": "נחשל",
+  "english": "אנגלית",
+  "hebrew": "עברית",
+  "arabic": "ערבית",
+  "timeSlot": {
+    "full": "מלא",
+    "availableLeft": "\u200F{{count}}\u200E מקומות פנויים"
+  }
+}

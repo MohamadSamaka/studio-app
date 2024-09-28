@@ -1,0 +1,198 @@
+{
+  "reservationScreen": {
+    "title": "أحجز",
+    "dayOfWeekUndefined": "يوم الأسبوع غير محدد:",
+    "errorFetchingBusinessHours": "خطأ في جلب ساعات العمل:",
+    "alreadyBooked": "تم الحجز مسبقًا",
+    "alreadyBookedMessage": "لقد قمت بالفعل بحجز موعد في \u200F{{date}}\u200E الساعة \u200F{{time}}\u200E.",
+    "insufficientCredits": "رصيد غير كافٍ",
+    "insufficientCreditsMessage": "ليس لديك رصيد كافٍ لإجراء هذا الحجز. يرجى طلب المزيد من الرصيد في صفحة الاشتراك.",
+    "fullyBooked": "ممتلئ بالكامل",
+    "fullyBookedMessage": "هذه الفترة الزمنية في \u200F{{date}}\u200E الساعة \u200F{{time}}\u200E ممتلئة بالكامل.",
+    "confirmReservation": "تأكيد الحجز",
+    "confirmReservationMessage": "هل أنت متأكد أنك تريد الحجز في \u200F{{date}}\u200E الساعة \u200F{{time}}\u200E؟",
+    "success": "نجاح",
+    "reservationSuccessMessage": "تم حجزك بنجاح!",
+    "reservationFailed": "فشل الحجز",
+    "unexpectedError": "حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى لاحقًا.",
+    "errorMakingReservation": "حدث خطأ أثناء إجراء الحجز. يرجى المحاولة مرة أخرى لاحقًا.",
+    "bookingCanceled": "تم إلغاء الحجز",
+    "bookingCanceledMessage": "تم إلغاء حجزك بنجاح.",
+    "noAvailableSlots": "لا توجد فترات متاحة لهذا التاريخ",
+    "pleaseSelectDate": "يرجى اختيار تاريخ لعرض الفترات المتاحة...",
+    "yourCurrentBooking": "حجزك الحالي",
+    "noCurrentBooking": "لا يوجد حجز حالي",
+    "cancelBooking": "إلغاء الحجز",
+    "close": "إغلاق",
+    
+    "reservationsFor": "الحجوزات في \u200F{{time}}\u200E",
+    "reservationDetailsModal": "تفاصيل الحجز",
+    "currentBookingModal": "الحجز الحالي",
+    "customAlert": "تنبيه مخصص"
+  },
+  "subscriptionsScreen": {
+    "title": "القسائم",
+    "requestResponse": {
+      "success": "تم طلب الاشتراك بنجاح!",
+      "failed": "فشل في طلب الاشتراك، حاول مرة أخرى لاحقًا!"
+    },
+    "failedToLoadSubscriptions": "خطأ: فشل في تحميل الاشتراكات.",
+    "requiestingConfirmationTitle": "تأكيد الطلب",
+    "meetings": "اجتماعات {{count}} ",
+    "requestingSubscription": "طلب",
+    "requestingSubscriptionConfirmationMessage": "هل أنت متأكد أنك تريد طلب اشتراك \u200F{{subscriptionType}}\u200E؟"
+  },
+  "myReservationsScreen": {
+    "title": "حجوزاتي",
+    "errorFetchingReservations": "خطأ في جلب الحجوزات:",
+    "cancellationWarning": "تحذير إلغاء",
+    "cancellationWarningMessage": "أنت على وشك إلغاء هذا الحجز خلال 6 ساعات من الوقت المحدد. لن تسترد رصيدك إذا تابعت. هل أنت متأكد أنك تريد المتابعة؟",
+    "noKeepReservation": "لا، احتفظ بالحجز",
+    "yesCancelReservation": "نعم، إلغاء الحجز",
+    "errorCancellingReservation": "خطأ في إلغاء الحجز:",
+    "error": "خطأ",
+    "failedToCancelReservation": "فشل في إلغاء الحجز. يرجى المحاولة مرة أخرى.",
+    "success": "نجاح",
+    "reservationCancelledSuccessfully": "تم إلغاء حجزك بنجاح.",
+    "participants": "المشاركون",
+    "areYouSure": "هل أنت متأكد؟",
+    "deleteReservationConfirmation": "هل تريد حقًا حذف الحجز بتاريخ \u200F{{date}}\u200E في الساعة \u200F{{time}}\u200E؟",
+    "yesDelete": "نعم، احذف",
+    "cancel": "إلغاء",
+    "searchReservations": "ابحث عن حجوزات...",
+    "showAll": "عرض الكل",
+    "moreParticipants": "+\u200F{{count}}\u200E آخرين",
+    "atTime": "في \u202A{{time}}\u202C",
+    "noCurrentBooking": "لا يوجد حجز حالي"
+  },
+  "rechargeRequestsScreen": {
+    "title": "طلبات القسائم",
+    "errorFetchingRechargeRequests": "خطأ في جلب طلبات إعادة الشحن:",
+    "error": "خطأ",
+    "failedToLoadRechargeRequests": "فشل في تحميل طلبات إعادة الشحن.",
+    "confirmCancellation": "تأكيد الإلغاء",
+    "confirmCancellationMessage": "هل أنت متأكد أنك تريد إلغاء طلب إعادة الشحن هذا؟",
+    "no": "لا",
+    "yes": "نعم",
+    "errorCancellingRechargeRequest": "خطأ في إلغاء طلب إعادة الشحن:",
+    "rechargeRequestCancelledSuccessfully": "تم إلغاء طلب إعادة الشحن بنجاح!",
+    "failedToCancelRechargeRequest": "فشل في إلغاء طلب إعادة الشحن.",
+    "noRechargeRequestsFound": "لم يتم العثور على طلبات إعادة شحن.",
+    "rechargeRequests": "طلبات إعادة الشحن",
+    "cancel": "إلغاء",
+    "close": "إغلاق",
+    "statusLabels": {
+      "pending": "قيد الانتظار",
+      "awaitingPayment": "بانتظار الدفع",
+      "success": "نجاح",
+      "cancelled": "ملغي",
+      "unknown": "غير معروف"
+    },
+    "requestNumber": "الطلب رقم \u200F{{id}}\u200E",
+    "subscriptionType": "نوع الاشتراك: \u200F{{type}}\u200E",
+    "dateAtTime": "التاريخ: \u200F{{date}}\u200E في الساعة \u200F{{time}}\u200E"
+  },
+  "subscriptionTypes": {
+      "daily": "يومي",
+      "monthly": "شهري",
+      "weekly": "أسبوعي",
+      "yearly": "سنوي"
+    },
+  "notifications": {
+    "clearAll": "امسح الكل"
+  },
+  "loginScreen": {
+    "welcome_back": "مرحبًا بعودتك!",
+    "username": "اسم المستخدم",
+    "password": "كلمة المرور",
+    "logging_in": "تسجيل الدخول...",
+    "login": "تسجيل الدخول",
+    "username_required": "اسم المستخدم مطلوب.",
+    "password_required": "كلمة المرور مطلوبة.",
+    "invalid_credentials": "اسم المستخدم أو كلمة المرور غير صحيحة.",
+    "network_error": "خطأ في الشبكة. يرجى التحقق من اتصالك والمحاولة مرة أخرى.",
+    "unexpected_error": "حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى."
+  },
+  "userManagementScreen":{
+    "title": "ادارة المستخدمين",
+    "notifications": {
+      "newMessage": "رسالة جديدة من المشرف",
+      "subscriptionExpire": "ستنتهي اشتراكك قريبًا",
+      "timeTwoMinAgo": "قبل دقيقتين",
+      "timeOneHrAgo": "قبل ساعة",
+      "clearAll": "مسح الكل",
+      "noNotifications": "لا يوجد ما يشاهده هنا."
+    },
+    "languages": {
+      "english": "الإنجليزية",
+      "hebrew": "العبرية",
+      "arabic": "العربية"
+    },
+    "profile": {
+      "changeLanguage": "تغيير اللغة",
+      "logout": "تسجيل الخروج"
+    },
+    "modal": {
+      "selectLanguage": "اختر اللغة"
+    },
+    "accessibility": {
+      "menuButton": "افتح القائمة",
+      "notifications": "الإشعارات",
+      "profileButton": "افتح قائمة الملف الشخصي"
+    },
+    "searchbar": {
+      "placeholder": "ابحث عن اسم المستخدم",
+      "noUsersFound": "لم يتم العثور على مستخدمين."
+    },
+    "headers": {
+      "username": "اسم المستخدم",
+      "phoneNumber": "رقم الهاتف",
+      "actions": "الإجراءات"
+    },
+    "userDetails": {
+      "credits": "رصيد: {{credits}}",
+      "active": "نشط: {{status}}",
+      "role": "الدور: {{role}}",
+      "defaultLanguage": "اللغة الافتراضية: {{language}}"
+    },
+    "addEditUser": {
+      "addUser": "إضافة مستخدم جديد",
+      "editUser": "تعديل المستخدم"
+    }
+  },
+  "businessHoursAndExceptionsScreen":{
+    "title": "إدارة التوفر"
+  },
+  "subscriptionManagementScreen":{
+    "title": "إدارة الاشتراكات"
+  },
+  "rechargeRequestsManagementScreen":{
+    "title": "إدارة طلبات إعادة الشحن"
+  },
+  "configManagementScreen":{
+    "title": "لوحة إدارة الإعدادات"
+  },
+  "reservationsManagementScreen":{
+    "title": "إدارة الحجوزات"
+  },
+  "you": "انتَ/انتِ",
+  "logout": "تسجيل الخروج",
+  "changeLanguage": "تغيير اللغة",
+  "selectLanguage": "اختر اللغة",
+  "cancel": "إلغاء",
+  "close": "إغلاق",
+  "delete": "حذف",
+  "save": "حفظ",
+  "yes": "نعم",
+  "confirm": "تأكيد",
+  "nothingToSee": "لا يوجد شيء لعرضه هنا",
+  "success": "نجاح",
+  "error": "فشل",
+  "english": "الإنجليزية",
+  "hebrew": "العبرية",
+  "arabic": "العربية",
+  "timeSlot": {
+      "full": "ممتلئ",
+      "availableLeft": "متبقي \u200F{{count}}\u200E"
+    }
+}

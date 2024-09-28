@@ -1,0 +1,7 @@
+{
+    "watch": ["src"],
+    "ignore": ["*.json"],
+    "ext": "js,ts",
+    "exec": "node index.js"
+  }
+  

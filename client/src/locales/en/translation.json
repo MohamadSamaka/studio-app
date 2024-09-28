@@ -1,0 +1,152 @@
+{
+  "reservationScreen": {
+    "title": "Book",
+    "dayOfWeekUndefined": "Day of the week is undefined:",
+    "errorFetchingBusinessHours": "Error fetching business hours:",
+    "alreadyBooked": "Already Booked",
+    "alreadyBookedMessage": "You have already booked a slot on {{date}} at {{time}}.",
+    "insufficientCredits": "Insufficient Credits",
+    "insufficientCreditsMessage": "You do not have enough credits to make this reservation. Please request for more credits on the subscription page.",
+    "fullyBooked": "Fully Booked",
+    "fullyBookedMessage": "This time slot on {{date}} at {{time}} is fully booked.",
+    "confirmReservation": "Confirm Reservation",
+    "confirmReservationMessage": "Are you sure you want to book on {{date}} at {{time}}?",
+    "success": "Success",
+    "reservationSuccessMessage": "Your reservation was successful!",
+    "reservationFailed": "Reservation Failed",
+    "unexpectedError": "An unexpected error occurred. Please try again later.",
+    "errorMakingReservation": "There was an error making your reservation. Please try again later.",
+    "bookingCanceled": "Booking Canceled",
+    "bookingCanceledMessage": "Your booking has been canceled successfully.",
+    "noAvailableSlots": "No available slots for this date",
+    "pleaseSelectDate": "Please select a date to show available slots...",
+    "yourCurrentBooking": "Your Current Booking",
+    "noCurrentBooking": "No current booking",
+    "cancelBooking": "Cancel Booking",
+    "close": "Close",
+    "reservationsFor": "Reservations for {{time}}",
+    "reservationDetailsModal": "Reservation Details Modal",
+    "currentBookingModal": "Current Booking Modal",
+    "customAlert": "Custom Alert"
+  },
+  "subscriptionsScreen": {
+    "title": "Subscriptions",
+    "requestResponse": {
+      "success": "Subscription has been requested successfully!",
+      "failed": "Failed to request the subscription, try again later!"
+    },
+    "failedToLoadSubscriptions": "Error: Failed to load subscriptions.",
+    "requiestingConfirmationTitle": "Confirm Request",
+    "meetings": "Meetings {{count}}",
+    "requestingSubscription": "Request",
+    "requestingSubscriptionConfirmationMessage": "Are you sure you want to request the {{subscriptionType}} subscription?"
+  },
+  "myReservationsScreen": {
+    "title": "My Bookings",
+    "errorFetchingReservations": "Error fetching reservations:",
+    "cancellationWarning": "Cancellation Warning",
+    "cancellationWarningMessage": "You are about to cancel this reservation within 6 hours of the scheduled time. You will not receive a refund of your credit if you proceed. Are you sure you want to continue?",
+    "noKeepReservation": "No, Keep Reservation",
+    "yesCancelReservation": "Yes, Cancel Reservation",
+    "errorCancellingReservation": "Error cancelling reservation:",
+    "error": "Error",
+    "failedToCancelReservation": "Failed to cancel the reservation. Please try again.",
+    "success": "Success",
+    "reservationCancelledSuccessfully": "Your reservation has been cancelled successfully.",
+    "participants": "Participants",
+    "areYouSure": "Are you sure?",
+    "deleteReservationConfirmation": "Do you really want to delete the reservation on {{date}} at {{time}}?",
+    "yesDelete": "Yes, Delete",
+    "cancel": "Cancel",
+    "searchReservations": "Search reservations...",
+    "showAll": "show all",
+    "moreParticipants": "+{{count}} more",
+    "atTime": "at {{time}}",
+    "noCurrentBooking": "No current booking"
+  },
+  "rechargeRequestsScreen": {
+    "title": "Subscription Requests",
+    "errorFetchingRechargeRequests": "Error fetching recharge requests:",
+    "error": "Error",
+    "failedToLoadRechargeRequests": "Failed to load recharge requests.",
+    "confirmCancellation": "Confirm Cancellation",
+    "confirmCancellationMessage": "Are you sure you want to cancel this recharge request?",
+    "no": "No",
+    "yes": "Yes",
+    "errorCancellingRechargeRequest": "Error cancelling recharge request:",
+    "rechargeRequestCancelledSuccessfully": "Recharge request cancelled successfully!",
+    "failedToCancelRechargeRequest": "Failed to cancel recharge request.",
+    "noRechargeRequestsFound": "No recharge requests found.",
+    "rechargeRequests": "Recharge Requests",
+    "cancel": "Cancel",
+    "close": "Close",
+    "statusLabels": {
+      "pending": "Pending",
+      "awaitingPayment": "Awaiting Payment",
+      "success": "Success",
+      "cancelled": "Cancelled",
+      "unknown": "Unknown"
+    },
+    "requestNumber": "Request #{{id}}",
+    "subscriptionType": "Subscription Type: {{type}}",
+    "dateAtTime": "Date: {{date}} at {{time}}"
+  },
+  "subscriptionTypes": {
+    "daily": "Daily",
+    "monthly": "Monthly",
+    "weekly": "Weekly",
+    "yearly": "Yearly"
+  },
+  "notifications": {
+    "clearAll": "clearAll"
+  },
+  "loginScreen":{
+    "welcome_back": "Welcome Back!",
+    "username": "Username",
+    "password": "Password",
+    "logging_in": "Logging in...",
+    "login": "Login",
+    "username_required": "Username is required.",
+    "password_required": "Password is required.",
+    "invalid_credentials": "Invalid username or password.",
+    "network_error": "Network error. Please check your connection and try again.",
+    "unexpected_error": "An unexpected error occurred. Please try again."
+  },
+  "userManagementScreen":{
+    "title": "Users Management"
+  },
+  "businessHoursAndExceptionsScreen":{
+    "title": "Availability Management"
+  },
+  "subscriptionManagementScreen":{
+    "title": "Subscriptions Management"
+  },
+  "rechargeRequestsManagementScreen":{
+    "title": "Recharge Requests Management"
+  },
+  "configManagementScreen":{
+    "title": "Config Management Screen"
+  },
+  "reservationsManagementScreen":{
+    "title": "Reservations Management"
+  },
+  "you": "You",
+  "logout": "Logout",
+  "changeLanguage": "Change Language",
+  "selectLanguage": "Select Language",
+  "cancel": "Cancel",
+  "close": "Close",
+  "save": "Save",
+  "yes": "Yes",
+  "confirm": "Confirm",
+  "nothingToSee": "There is nothing to see here",
+  "english": "English",
+  "hebrew": "Hebrew",
+  "arabic": "Arabic",
+  "success": "Success",
+  "error": "error",
+  "timeSlot": {
+    "full": "Full",
+    "availableLeft": "{{count}} left"
+    }
+}
