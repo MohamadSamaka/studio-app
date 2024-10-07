@@ -8,9 +8,11 @@
     "drop-tables": "node src/scripts/dropTables.js",
     "migrate": "node src/scripts/migrate.js",
     "seed": "node src/scripts/seedDatabase.js",
+    "initialAppSeed": "node src/scripts/baseSeeder.js",
     "migeed": "npm run migrate && npm run seed",
     "dromate": "npm run drop-tables && npm run migrate",
     "dromiseed": "npm run drop-tables && npm run migrate && npm run seed",
+    "initiate-db-setup": "npm run drop-tables && npm run migrate && npm run initialAppSeed",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
