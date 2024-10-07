@@ -1,25 +1,36 @@
 const sequelize = require('../config/database');
 const User = require('./user');
-const Reservation = require('./reservation');
+const AvailableReservations = require('./availableReservations');
 const ReservationsHasUsers = require('./reservationsHasUsers');
 const Role = require('./role');
 const Subscription = require('./subscription');
 const RechargeCreditRequest = require('./rechargeCreditRequest');
-const BusinessHour = require('./businessHour');
-const BusinessBreakHour = require('./businessBreakHour');
-const AvailabilityException = require('./availabilityException');
-const AvailabilityExceptionBreaks = require('./availabilityExceptionBreaks');
 const Notification = require('./notification');
 const Device = require('./device');
 
-
-// Many-to-Many relationship between Users and Reservations through ReservationsHasUsers
-User.belongsToMany(Reservation, { through: ReservationsHasUsers, foreignKey: 'users_id' });
-Reservation.belongsToMany(User, { through: ReservationsHasUsers, foreignKey: 'reservations_id' });
-Reservation.belongsToMany(User, { 
+// Many-to-Many relationship between Users and AvailableReservations through ReservationsHasUsers
+User.belongsToMany(AvailableReservations, { 
   through: ReservationsHasUsers, 
-  foreignKey: 'reservations_id',
-  as: 'CurrentUser'
+  foreignKey: 'users_id', 
+  as: 'Reservations' 
+});
+AvailableReservations.belongsToMany(User, { 
+  through: ReservationsHasUsers, 
+  foreignKey: 'reservations_id', 
+  as: 'Participants' 
+});
+
+// One-to-Many relationship: User (Trainer) has many AvailableReservations
+AvailableReservations.belongsTo(User, {
+  foreignKey: 'trainer_id',
+  as: 'Trainer',
+  onDelete: 'SET NULL', // Set to NULL if the trainer is deleted
+  onUpdate: 'CASCADE',
+});
+
+User.hasMany(AvailableReservations, { 
+  foreignKey: 'trainer_id', 
+  as: 'TrainedReservations' 
 });
 
 // Role has many Users (One-to-Many)
@@ -34,44 +45,25 @@ RechargeCreditRequest.belongsTo(Subscription, { foreignKey: 'subscription_type',
 User.hasMany(RechargeCreditRequest, { foreignKey: 'users_id' });
 RechargeCreditRequest.belongsTo(User, { foreignKey: 'users_id' });
 
-// BusinessHour has many BusinessBreakHour (One-to-Many)
-BusinessHour.hasMany(BusinessBreakHour, { 
-  foreignKey: 'business_hour_id',
-  as: 'breaks', // Alias for the relation
-});
-BusinessBreakHour.belongsTo(BusinessHour, { foreignKey: 'business_hour_id' });
-
-// AvailabilityException has many AvailabilityExceptionBreaks (One-to-Many)
-AvailabilityException.hasMany(AvailabilityExceptionBreaks, {
-  foreignKey: 'availability_exception_id',
-  as: 'AvailabilityExceptionBreaks',
-});
-AvailabilityExceptionBreaks.belongsTo(AvailabilityException, { foreignKey: 'availability_exception_id', allowNull: false });
-
 // User has many Notifications (One-to-Many)
 User.hasMany(Notification, { foreignKey: 'user_id' });
 Notification.belongsTo(User, { foreignKey: 'user_id' });
 
-
-
+// Device belongs to User
 Device.belongsTo(User, { foreignKey: 'user_id' });
 User.hasMany(Device, { foreignKey: 'user_id' });
 
-
-// Sync database
+// Sync database (optional, ensure migrations are used instead in production)
 // sequelize.sync();
 
 module.exports = {
   sequelize,
   User,
-  Reservation,
+  AvailableReservations,
   ReservationsHasUsers,
   Role,
   Subscription,
   RechargeCreditRequest,
-  BusinessHour,
-  BusinessBreakHour,
-  AvailabilityException,
-  AvailabilityExceptionBreaks,
   Notification,
+  Device,
 };

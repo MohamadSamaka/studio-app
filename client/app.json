@@ -4,7 +4,7 @@
     "slug": "studio-reservation-app",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/icon.jpg",
     "userInterfaceStyle": "light",
     "splash": {
       "image": "./assets/splash.png",
@@ -26,11 +26,12 @@
     "plugins": [
       "expo-updates",
       "expo-localization",
-      "expo-secure-store"
+      "expo-secure-store",
+      "expo-font"
     ],
     "extra": {
       "eas": {
-        "projectId": "<YOUR_ID>"
+        "projectId": "<Your ID HERE >"
       }
     },
     "owner": "thexjoker"

@@ -37,7 +37,6 @@ const useReservations = (searchQuery, dateFilter, timeFilter, limit, showSnackba
         params.timeEnd = timeFilter.end;
       }
     }
-    console.log("the result before sending: ",params)
     return params
   }
 
@@ -67,7 +66,6 @@ useEffect(() => {
 }, [searchQuery, dateFilter, timeFilter]);
 
   useEffect(() => {
-    console.log("fetching 2");
     fetchReservations(currentPage);
 
   }, [currentPage, fetchReservations]);

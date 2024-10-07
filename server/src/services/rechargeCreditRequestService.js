@@ -1,5 +1,5 @@
 const rechargeCreditRequestRepository = require("../repositories/rechargeCreditRequestRepository");
-const reservationRepository = require("../repositories/reservationRepository");
+const reservationRepository = require("../repositories/availableReservationsRepository");
 
 const { sequelize } = require("../models/index");
 

@@ -32,10 +32,5 @@ i18n
     },
   });
 
-// // Listen for changes in the device's language settings
-// Localization.addEventListener('change', () => {
-//   const newLanguage = getBestLanguageTag();
-//   i18n.changeLanguage(newLanguage);
-// });
 
 export default i18n;

@@ -1,13 +1,22 @@
 const userRepository = require("../repositories/userRepository");
-const reservationRepository = require("../repositories/reservationRepository");
+const reservationRepository = require("../repositories/availableReservationsRepository");
 const { sequelize } = require("../models/index");
 const { hashPassword } = require("../utils/hashUtils");
-const { trimString } = require("../utils/helpers")
-
+const { trimString } = require("../utils/helpers");
 
 class UserService {
   async getAllUsers() {
     return await userRepository.findAll();
+  }
+
+  async getAllTrainers() {
+    try {
+      const trainers = await userRepository.findAllTrainers()
+      return trainers;
+    } catch (error) {
+      console.error("Error fetching trainers:", error);
+      throw error;
+    }
   }
 
   async getUserById(id) {
@@ -24,27 +33,30 @@ class UserService {
 
   async createUser(data) {
     const { username, password } = data;
-  
+
     const trimmedUserName = trimString(username);
-    
+
     const existingUser = await this.getUserByUsername(trimmedUserName);
-  
+
     if (existingUser) {
       throw new Error("User already exists");
     }
-  
+
     const hashedPassword = await hashPassword(password);
-    
-    return await userRepository.create({ ...data, username: trimmedUserName, password: hashedPassword });
+
+    return await userRepository.create({
+      ...data,
+      username: trimmedUserName,
+      password: hashedPassword,
+    });
   }
-  
 
   async updateUser(id, updates) {
     if (updates.password) {
       updates.password = await hashPassword(updates.password);
     }
     if (updates.username) {
-      updates.username = trimString(updates.username)
+      updates.username = trimString(updates.username);
     }
     return await userRepository.update(id, updates);
   }

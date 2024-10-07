@@ -265,6 +265,7 @@ const RechargeRequestsScreen = () => {
 
   // Map status to friendly label
   const getFriendlyStatus = (status) => {
+    console.log("status; ", status)
     const statusKey = status.toLowerCase();
     return t(`rechargeRequestsScreen.statusLabels.${statusKey}`, {
       defaultValue: t("rechargeRequestsScreen.statusLabels.unknown"),

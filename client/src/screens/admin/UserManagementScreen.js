@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from "react";
 import {
   Alert,
   FlatList,
@@ -9,8 +9,8 @@ import {
   TouchableOpacity,
   View,
   ScrollView,
-} from 'react-native';
-import DropDownPicker from 'react-native-dropdown-picker';
+} from "react-native";
+import DropDownPicker from "react-native-dropdown-picker";
 import {
   Button,
   Card,
@@ -22,18 +22,18 @@ import {
   TextInput,
   Snackbar,
   Provider as PaperProvider, // Import PaperProvider
-} from 'react-native-paper';
-import AppBar from '../../components/common/AppBar';
-import styles from '../../styles/userManagementStyles';
+} from "react-native-paper";
+import AppBar from "../../components/common/AppBar";
+import styles from "../../styles/userManagementStyles";
 import {
   createUser,
   deleteUser,
   getRoles,
   getUsers,
   updateUser,
-} from '../../utils/axios';
-import { theme } from '../../utils/theme';
-import { isFormValid, validateForm } from '../../utils/validationUtils';
+} from "../../utils/axios";
+import { theme } from "../../utils/theme";
+import { isFormValid, validateForm } from "../../utils/validationUtils";
 
 const UserManagementScreen = () => {
   // **State Variables**
@@ -42,36 +42,39 @@ const UserManagementScreen = () => {
   const [selectedUser, setSelectedUser] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [newUser, setNewUser] = useState({
-    username: '',
-    phone_num: '',
-    password: '',
+    username: "",
+    phone_num: "",
+    password: "",
     credits: 0,
     active: true,
-    default_lang: 'EN',
+    default_lang: "EN",
     role_id: 1,
+    trainer_id: null, // Added
   });
   const [expandedUserId, setExpandedUserId] = useState(null);
   const [openLang, setOpenLang] = useState(false);
   const [openRole, setOpenRole] = useState(false);
+  const [openTrainer, setOpenTrainer] = useState(false); // Added
+
   const [passwordVisible, setPasswordVisible] = useState(false);
-  const [searchQuery, setSearchQuery] = useState(''); // State for search query
+  const [searchQuery, setSearchQuery] = useState(""); // State for search query
   const memoizedRoles = useMemo(() => roles, [roles]);
 
   // **Snackbar State for Inside Modal (Add & Update)**
   const [snackbarVisibleInside, setSnackbarVisibleInside] = useState(false);
-  const [snackbarMessageInside, setSnackbarMessageInside] = useState('');
-  const [snackbarTypeInside, setSnackbarTypeInside] = useState('success'); // 'success' or 'error'
+  const [snackbarMessageInside, setSnackbarMessageInside] = useState("");
+  const [snackbarTypeInside, setSnackbarTypeInside] = useState("success"); // 'success' or 'error'
 
   // **Snackbar State for Outside Modal (Delete)**
   const [snackbarVisibleOutside, setSnackbarVisibleOutside] = useState(false);
-  const [snackbarMessageOutside, setSnackbarMessageOutside] = useState('');
-  const [snackbarTypeOutside, setSnackbarTypeOutside] = useState('success'); // 'success' or 'error'
+  const [snackbarMessageOutside, setSnackbarMessageOutside] = useState("");
+  const [snackbarTypeOutside, setSnackbarTypeOutside] = useState("success"); // 'success' or 'error'
 
   // **Error State**
   const [errors, setErrors] = useState({});
 
   // **Snackbar Helper Functions for Inside Modal**
-  const showSnackbarInside = (message, type = 'success') => {
+  const showSnackbarInside = (message, type = "success") => {
     setSnackbarMessageInside(message);
     setSnackbarTypeInside(type);
     setSnackbarVisibleInside(true);
@@ -80,23 +83,24 @@ const UserManagementScreen = () => {
   const hideSnackbarInside = () => {
     setSnackbarVisibleInside(false);
     // Close the Modal after Snackbar is dismissed if it's a success message
-    if (snackbarTypeInside === 'success') {
+    if (snackbarTypeInside === "success") {
       setIsModalVisible(false);
       setSelectedUser(null);
       setNewUser({
-        username: '',
-        phone_num: '',
-        password: '',
+        username: "",
+        phone_num: "",
+        password: "",
         credits: 0,
         active: true,
-        default_lang: 'EN',
+        default_lang: "EN",
         role_id: 1,
+        trainer_id: null, // Reset trainer_id
       });
     }
   };
 
   // **Snackbar Helper Functions for Outside Modal**
-  const showSnackbarOutside = (message, type = 'success') => {
+  const showSnackbarOutside = (message, type = "success") => {
     setSnackbarMessageOutside(message);
     setSnackbarTypeOutside(type);
     setSnackbarVisibleOutside(true);
@@ -107,21 +111,26 @@ const UserManagementScreen = () => {
   };
 
   const languages = [
-    { label: 'English', value: 'EN' },
-    { label: 'Arabic', value: 'AR' },
-    { label: 'Hebrew', value: 'HE' },
+    { label: "English", value: "EN" },
+    { label: "Arabic", value: "AR" },
+    { label: "Hebrew", value: "HE" },
   ];
 
   const onDropdownOpen = (type) => {
-    if (type == "lang"){
-      setOpenLang(!openLang)
-      setOpenRole(false)
+    if (type === "lang") {
+      setOpenLang(!openLang);
+      setOpenRole(false);
+      setOpenTrainer(false); // Close other dropdowns
+    } else if (type === "role") {
+      setOpenRole(!openRole);
+      setOpenLang(false);
+      setOpenTrainer(false); // Close other dropdowns
+    } else if (type === "trainer") {
+      setOpenTrainer(!openTrainer);
+      setOpenLang(false);
+      setOpenRole(false); // Close other dropdowns
     }
-    else{
-      setOpenRole(!openRole)
-      setOpenLang(false)
-    }
-  }
+  };
 
   useEffect(() => {
     fetchUsers();
@@ -134,10 +143,11 @@ const UserManagementScreen = () => {
       const response = await getUsers();
       setUsers(response.data);
     } catch (error) {
-      console.error('Error fetching users:', error);
-      showSnackbarOutside('Failed to fetch users.', 'error');
+      console.error("Error fetching users:", error);
+      showSnackbarOutside("Failed to fetch users.", "error");
     }
   };
+
 
   // **Fetch Roles**
   const fetchRoles = async () => {
@@ -150,9 +160,9 @@ const UserManagementScreen = () => {
       }));
       setRoles(roleItems);
     } catch (error) {
-      console.log('Errors from roles:', error);
-      console.error('Error fetching roles:', error);
-      showSnackbarOutside('Failed to fetch roles.', 'error');
+      console.log("Errors from roles:", error);
+      console.error("Error fetching roles:", error);
+      showSnackbarOutside("Failed to fetch roles.", "error");
     }
   };
 
@@ -165,8 +175,14 @@ const UserManagementScreen = () => {
       credits: newUser.credits.toString(),
       // Add other fields as needed
     };
-    
+
     const validationErrors = validateForm(fields);
+
+    // Conditional Validation for Trainer
+    if (newUser.role_id !== 2 && !newUser.trainer_id) { // Replace '2' with actual 'trainer' role_id
+      validationErrors.trainer_id = "Please select a trainer.";
+    }
+
     if (!isFormValid(validationErrors)) {
       setErrors(validationErrors);
       return;
@@ -175,34 +191,36 @@ const UserManagementScreen = () => {
     try {
       await createUser({
         ...newUser,
-        phone_num: stripDashes(newUser.phone_num), // Remove dashes before sending
+        phone_num: stripDashes(newUser.phone_num),
+        trainer_id: newUser.trainer_id, // Added
       });
       fetchUsers();
       setErrors({}); // Clear errors on success
-      showSnackbarInside('User created successfully!', 'success');
+      showSnackbarInside("User created successfully!", "success");
       // The Modal will be closed after the Snackbar is dismissed via hideSnackbarInside
     } catch (error) {
-      console.error('Error adding user:', error);
-      showSnackbarInside('Failed to create user. Please try again.', 'error');
+      console.error("Error adding user:", error);
+      showSnackbarInside("Failed to create user. Please try again.", "error");
     }
   };
 
   // **Handle Updating a User**
   const handleUpdateUser = async () => {
+
     // Prepare the fields to validate (exclude password if not changed)
     const fields = {
       username: selectedUser.username,
       phone_num: selectedUser.phone_num,
       credits: selectedUser.credits.toString(),
-      // Add other fields as needed
     };
 
     // Check if password has been changed (i.e., it's not empty)
-    if (selectedUser.password && selectedUser.password.trim() !== '') {
+    if (selectedUser.password && selectedUser.password.trim() !== "") {
       fields.password = selectedUser.password;
     }
 
     const validationErrors = validateForm(fields);
+
     if (!isFormValid(validationErrors)) {
       setErrors(validationErrors);
       return;
@@ -217,35 +235,35 @@ const UserManagementScreen = () => {
         active: selectedUser.active,
         default_lang: selectedUser.default_lang,
         role_id: selectedUser.role_id,
+        trainer_id: selectedUser.trainer_id, // Added
       };
 
       // Conditionally include password if it's been changed
       if (fields.password) {
         updateData.password = fields.password;
       }
-
       await updateUser(selectedUser.id, updateData);
       fetchUsers();
       setErrors({}); // Clear errors on success
-      showSnackbarInside('User updated successfully!', 'success');
+      showSnackbarInside("User updated successfully!", "success");
       // The Modal will be closed after the Snackbar is dismissed via hideSnackbarInside
     } catch (error) {
-      console.error('Error updating user:', error);
-      showSnackbarInside('Failed to update user. Please try again.', 'error');
+      console.error("Error updating user:", error);
+      showSnackbarInside("Failed to update user. Please try again.", "error");
     }
   };
 
   // **Handle Deleting a User**
   const handleDeleteUser = (id) => {
     Alert.alert(
-      'Delete User',
-      'Are you sure you want to delete this user?',
+      "Delete User",
+      "Are you sure you want to delete this user?",
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: "Cancel", style: "cancel" },
         {
-          text: 'Delete',
+          text: "Delete",
           onPress: () => deleteUserById(id),
-          style: 'destructive',
+          style: "destructive",
         },
       ],
       { cancelable: true }
@@ -256,24 +274,29 @@ const UserManagementScreen = () => {
     try {
       await deleteUser(id);
       fetchUsers();
-      showSnackbarOutside('User deleted successfully!', 'success');
+      showSnackbarOutside("User deleted successfully!", "success");
     } catch (error) {
-      console.error('Failed to delete user:', error);
-      showSnackbarOutside('There was an error deleting the user. Please try again.', 'error');
+      console.error("Failed to delete user:", error);
+      showSnackbarOutside(
+        "There was an error deleting the user. Please try again.",
+        "error"
+      );
     }
   };
 
   // **Format Phone Number**
   const formatPhoneNumber = (phone) => {
     // Remove any non-digit characters
-    const cleaned = phone.replace(/\D/g, '');
+    const cleaned = phone.replace(/\D/g, "");
 
     // Ensure the length is no more than 10 digits
     const trimmed = cleaned.slice(0, 10);
 
     // Apply dashes (xxx-xxx-xxxx)
     if (trimmed.length > 6) {
-      return `${trimmed.slice(0, 3)}-${trimmed.slice(3, 6)}-${trimmed.slice(6)}`;
+      return `${trimmed.slice(0, 3)}-${trimmed.slice(3, 6)}-${trimmed.slice(
+        6
+      )}`;
     } else if (trimmed.length > 3) {
       return `${trimmed.slice(0, 3)}-${trimmed.slice(3)}`;
     } else {
@@ -294,7 +317,7 @@ const UserManagementScreen = () => {
 
   // **Strip Dashes from Phone Number**
   const stripDashes = (phone) => {
-    return phone.replace(/-/g, '');
+    return phone.replace(/-/g, "");
   };
 
   // **Toggle Expand for User Details**
@@ -307,7 +330,8 @@ const UserManagementScreen = () => {
     setSelectedUser({
       ...item,
       phone_num: formatPhoneNumber(item.phone_num),
-      password: '', // Clear password field when editing
+      password: "", // Clear password field when editing
+      trainer_id: item.trainer_id || null, // Added
     });
     setIsModalVisible(true);
   };
@@ -345,7 +369,7 @@ const UserManagementScreen = () => {
         <View style={styles.expandedInfo}>
           <Text style={styles.infoText}>Credits: {item.credits}</Text>
           <Text style={styles.infoText}>
-            Active: {item.active ? 'Yes' : 'No'}
+            Active: {item.active ? "Yes" : "No"}
           </Text>
           <Text style={styles.infoText}>
             Role: {roles.find((role) => role.value === item.role_id)?.label}
@@ -363,7 +387,7 @@ const UserManagementScreen = () => {
   const renderModalContent = () => (
     <View style={styles.modalContent}>
       <Text style={styles.modalTitle}>
-        {selectedUser ? 'Edit User' : 'Add New User'}
+        {selectedUser ? "Edit User" : "Add New User"}
       </Text>
       <TextInput
         label="Username"
@@ -413,7 +437,7 @@ const UserManagementScreen = () => {
           <Text style={styles.errorText}>{errors.password}</Text>
         )}
         <IconButton
-          icon={passwordVisible ? 'eye-off' : 'eye'}
+          icon={passwordVisible ? "eye-off" : "eye"}
           size={20}
           onPress={() => setPasswordVisible(!passwordVisible)}
           style={styles.passwordToggle}
@@ -422,7 +446,11 @@ const UserManagementScreen = () => {
 
       <TextInput
         label="Credits"
-        value={(selectedUser ? selectedUser.credits : newUser.credits).toString()}
+        value={
+          selectedUser
+            ? selectedUser.credits.toString()
+            : newUser.credits.toString()
+        }
         onChangeText={(text) => {
           let credits = parseInt(text);
           if (isNaN(credits) || credits < 0) {
@@ -442,54 +470,58 @@ const UserManagementScreen = () => {
         <Text style={styles.errorText}>{errors.credits}</Text>
       )}
 
-<View style={[styles.dropdownContainer, { zIndex: 3000 }]}>
-  <DropDownPicker
-    open={openLang}
-    value={selectedUser ? selectedUser.default_lang : newUser.default_lang}
-    items={languages}
-    setOpen={() => onDropdownOpen('lang')}
-    setValue={(value) =>
-      selectedUser
-        ? setSelectedUser({ ...selectedUser, default_lang: value() })
-        : setNewUser({ ...newUser, default_lang: value() })
-    }
-    style={styles.dropdown}
-    dropDownContainerStyle={styles.dropdownList}
-    placeholder="Select Language"
-    listMode="SCROLLVIEW"
-    scrollViewProps={{
-      nestedScrollEnabled: true,
-    }}
-  />
-  {errors.default_lang && (
-    <Text style={styles.errorText}>{errors.default_lang}</Text>
-  )}
-</View>
+      
+      {/* 2. Language Dropdown */}
+      <View style={[styles.dropdownContainer, { zIndex: 2000, elevation: 2000, position: 'relative' }]}>
+        <DropDownPicker
+          open={openLang}
+          value={selectedUser ? selectedUser.default_lang : newUser.default_lang}
+          items={languages}
+          setOpen={() => onDropdownOpen("lang")}
+          setValue={(value) =>
+            selectedUser
+              ? setSelectedUser({ ...selectedUser, default_lang: value() })
+              : setNewUser({ ...newUser, default_lang: value() })
+          }
+          style={styles.dropdown}
+          dropDownContainerStyle={styles.dropdownList}
+          placeholder="Select Language"
+          listMode="MODAL"
+          scrollViewProps={{
+            nestedScrollEnabled: true,
+          }}
+        />
+        {errors.default_lang && (
+          <Text style={styles.errorText}>{errors.default_lang}</Text>
+        )}
+      </View>
 
-<View style={[styles.dropdownContainer, { zIndex: 2000 }]}>
-  <DropDownPicker
-    open={openRole}
-    value={selectedUser ? selectedUser.role_id : newUser.role_id}
-    items={memoizedRoles}
-    setOpen={() => onDropdownOpen('role')}
-    setValue={(value) =>
-      selectedUser
-        ? setSelectedUser({ ...selectedUser, role_id: value() })
-        : setNewUser({ ...newUser, role_id: value() })
-    }
-    style={styles.dropdown}
-    dropDownContainerStyle={styles.dropdownList}
-    placeholder="Select Role"
-    listMode="SCROLLVIEW"
-    scrollViewProps={{
-      nestedScrollEnabled: true,
-    }}
-  />
-  {errors.role_id && (
-    <Text style={styles.errorText}>{errors.role_id}</Text>
-  )}
-</View>
+      {/* 3. Role Dropdown */}
+      <View style={[styles.dropdownContainer, { zIndex: 3000, elevation: 3000, position: 'relative' }]}>
+        <DropDownPicker
+          open={openRole}
+          value={selectedUser ? selectedUser.role_id : newUser.role_id}
+          items={memoizedRoles}
+          setOpen={() => onDropdownOpen("role")}
+          setValue={(value) =>
+            selectedUser
+              ? setSelectedUser({ ...selectedUser, role_id: value() })
+              : setNewUser({ ...newUser, role_id: value() })
+          }
+          style={styles.dropdown}
+          dropDownContainerStyle={styles.dropdownList}
+          placeholder="Select Role"
+          listMode="MODAL"
+          scrollViewProps={{
+            nestedScrollEnabled: true,
+          }}
+        />
+        {errors.role_id && (
+          <Text style={styles.errorText}>{errors.role_id}</Text>
+        )}
+      </View>
 
+      {/* 4. Active Switch */}
       <View style={styles.switchContainer}>
         <Text>Active</Text>
         <Switch
@@ -503,6 +535,7 @@ const UserManagementScreen = () => {
         />
       </View>
 
+      {/* 5. Save and Cancel Buttons */}
       <Button
         mode="contained"
         onPress={selectedUser ? handleUpdateUser : handleAddUser}
@@ -517,7 +550,7 @@ const UserManagementScreen = () => {
           setErrors({});
           // Reset password field
           if (selectedUser) {
-            setSelectedUser({ ...selectedUser, password: '' });
+            setSelectedUser({ ...selectedUser, password: "" });
           }
         }}
         style={styles.cancelButton}
@@ -540,14 +573,14 @@ const UserManagementScreen = () => {
             setErrors({});
             // Reset password field
             if (selectedUser) {
-              setSelectedUser({ ...selectedUser, password: '' });
+              setSelectedUser({ ...selectedUser, password: "" });
             }
           }}
         >
           <KeyboardAvoidingView
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
             style={styles.modalContainer}
-            keyboardVerticalOffset={Platform.OS === 'ios' ? 60 : 0}
+            keyboardVerticalOffset={Platform.OS === "ios" ? 60 : 0}
           >
             <ScrollView
               contentContainerStyle={styles.modalContent}
@@ -560,12 +593,12 @@ const UserManagementScreen = () => {
                 onDismiss={hideSnackbarInside}
                 duration={3000}
                 style={
-                  snackbarTypeInside === 'success'
+                  snackbarTypeInside === "success"
                     ? styles.snackbarSuccess
                     : styles.snackbarError
                 }
                 action={{
-                  label: 'Close',
+                  label: "Close",
                   onPress: hideSnackbarInside,
                 }}
               >
@@ -611,13 +644,14 @@ const UserManagementScreen = () => {
             icon="plus"
             onPress={() => {
               setNewUser({
-                username: '',
-                phone_num: '',
-                password: '',
+                username: "",
+                phone_num: "",
+                password: "",
                 credits: 0,
                 active: true,
-                default_lang: 'EN',
+                default_lang: "EN",
                 role_id: 1,
+                trainer_id: null, // Reset trainer_id
               });
               setSelectedUser(null);
               setIsModalVisible(true);
@@ -630,12 +664,12 @@ const UserManagementScreen = () => {
             onDismiss={hideSnackbarOutside}
             duration={3000}
             style={
-              snackbarTypeOutside === 'success'
+              snackbarTypeOutside === "success"
                 ? styles.snackbarSuccess
                 : styles.snackbarError
             }
             action={{
-              label: 'Close',
+              label: "Close",
               onPress: hideSnackbarOutside,
             }}
           >

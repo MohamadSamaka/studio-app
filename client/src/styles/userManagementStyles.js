@@ -153,6 +153,12 @@ const styles = StyleSheet.create({
   actionButton: {
     marginLeft: 8,
   },
+  errorText: {
+    color: 'red',
+    fontWeight: 'bold',
+    marginTop: 5,
+    marginBottom: 10,
+  },
 });
 
 export default styles;

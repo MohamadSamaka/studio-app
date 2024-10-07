@@ -1,33 +1,30 @@
 {
-  "reservationScreen": {
+  "BookingScreen": {
     "title": "Book",
-    "dayOfWeekUndefined": "Day of the week is undefined:",
-    "errorFetchingBusinessHours": "Error fetching business hours:",
-    "alreadyBooked": "Already Booked",
-    "alreadyBookedMessage": "You have already booked a slot on {{date}} at {{time}}.",
-    "insufficientCredits": "Insufficient Credits",
-    "insufficientCreditsMessage": "You do not have enough credits to make this reservation. Please request for more credits on the subscription page.",
-    "fullyBooked": "Fully Booked",
-    "fullyBookedMessage": "This time slot on {{date}} at {{time}} is fully booked.",
-    "confirmReservation": "Confirm Reservation",
-    "confirmReservationMessage": "Are you sure you want to book on {{date}} at {{time}}?",
-    "success": "Success",
-    "reservationSuccessMessage": "Your reservation was successful!",
-    "reservationFailed": "Reservation Failed",
-    "unexpectedError": "An unexpected error occurred. Please try again later.",
-    "errorMakingReservation": "There was an error making your reservation. Please try again later.",
-    "bookingCanceled": "Booking Canceled",
-    "bookingCanceledMessage": "Your booking has been canceled successfully.",
-    "noAvailableSlots": "No available slots for this date",
-    "pleaseSelectDate": "Please select a date to show available slots...",
-    "yourCurrentBooking": "Your Current Booking",
-    "noCurrentBooking": "No current booking",
-    "cancelBooking": "Cancel Booking",
+    "areYouSure": "Are you sure?",
+    "insufficientCreditsTitle": "Insufficient Credits",
+    "insufficientCredits": "You do not have enough credits to book this reservation.",
+    "fullyBookedTitle": "Fully Booked",
+    "fullyBooked": "Reservation reached max number of Attendees",
+    "confirmBooking": "Do you really want to book the reservation for {{title}} on {{date}} at {{time}}?",
+    "yesBook": "Yes, book",
+    "yesCancel": "Yes, cancel",
+    "cancel": "Cancel",
+    "attendees": "Attendees",
     "close": "Close",
-    "reservationsFor": "Reservations for {{time}}",
-    "reservationDetailsModal": "Reservation Details Modal",
-    "currentBookingModal": "Current Booking Modal",
-    "customAlert": "Custom Alert"
+    "moreParticipants": "+{{count}} more",
+    "you": "You",
+    "noReservationsForThisDate": "No reservations for this date.",
+    "cancellationWarningNoRefund": "Canceling now will not refund your credits.",
+    "cancelSuccessWithRefund": "Reservation canceled and credits refunded.",
+    "cancelSuccessNoRefund": "Reservation canceled. No credits were refunded.",
+    "error": "Error",
+    "bookingFailed": "Booking failed. Please try again later.",
+    "cancellationFailed": "Cancellation failed. Please try again later.",
+    "confirmCancelBooking": "Do you really want to cancel your reservation for {{title}} on {{date}} at {{time}}?",
+    "confirmBookingSuccess": "Booking successful!",
+    "confirmCancelBookingWithRefund": "Reservation canceled and credits refunded.",
+    "confirmCancelBookingNoRefund": "Reservation canceled. No credits refunded."
   },
   "subscriptionsScreen": {
     "title": "Subscriptions",
@@ -42,6 +39,8 @@
     "requestingSubscriptionConfirmationMessage": "Are you sure you want to request the {{subscriptionType}} subscription?"
   },
   "myReservationsScreen": {
+
+    "trainer": "Trainer",
     "title": "My Bookings",
     "errorFetchingReservations": "Error fetching reservations:",
     "cancellationWarning": "Cancellation Warning",
@@ -62,7 +61,9 @@
     "showAll": "show all",
     "moreParticipants": "+{{count}} more",
     "atTime": "at {{time}}",
-    "noCurrentBooking": "No current booking"
+    "noCurrentBooking": "No current booking",
+    "startTime": "Start Time:",
+    "endTime": "End Time:"
   },
   "rechargeRequestsScreen": {
     "title": "Subscription Requests",
@@ -82,7 +83,7 @@
     "close": "Close",
     "statusLabels": {
       "pending": "Pending",
-      "awaitingPayment": "Awaiting Payment",
+      "awaiting_payment": "Awaiting Payment",
       "success": "Success",
       "cancelled": "Cancelled",
       "unknown": "Unknown"
@@ -110,7 +111,8 @@
     "password_required": "Password is required.",
     "invalid_credentials": "Invalid username or password.",
     "network_error": "Network error. Please check your connection and try again.",
-    "unexpected_error": "An unexpected error occurred. Please try again."
+    "unexpected_error": "An unexpected error occurred. Please try again.",
+    "accountDisabledError": "Your account has been disabled. Please contact an administrator."
   },
   "userManagementScreen":{
     "title": "Users Management"
@@ -130,6 +132,7 @@
   "reservationsManagementScreen":{
     "title": "Reservations Management"
   },
+  "cancellationWarningMessageSimple": "Are you sure you want to cancel? You won't get a refund.",
   "you": "You",
   "logout": "Logout",
   "changeLanguage": "Change Language",

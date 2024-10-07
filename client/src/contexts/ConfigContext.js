@@ -27,12 +27,12 @@ export const ConfigProvider = ({ children }) => {
 
   useEffect(() => {
     if (user) {
-      fetchConfig(); // Fetch initial config on component mount
+      fetchConfig(true); // Fetch initial config on component mount
     }
   }, [user]); // Only depends on 'user'
 
   return (
-    <ConfigContext.Provider value={{ config, setConfig, loading }}>
+    <ConfigContext.Provider value={{ config, setConfig, loading, fetchConfig }}>
       {children}
     </ConfigContext.Provider>
   );

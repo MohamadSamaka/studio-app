@@ -1,13 +1,14 @@
 const express = require('express');
-const reservationController = require('../../../controllers/reservationController');
+const availableReservationController = require('../../../controllers/availableReservationsController');
 
 const router = express.Router();
 
-router.get('/', reservationController.getOrganizedReservationsByDateAndTime);
-router.get('/paginated', reservationController.getPaginatedReservationsByDateAndTime);
+// router.get('/', reservationController.getOrganizedReservationsByDateAndTime);
+router.get('/paginated', availableReservationController.getPaginatedReservationsByDateAndTime);
+router.post('/', availableReservationController.createReservationSlot)
 
-router.delete('/:id', reservationController.deleteReservation);
-router.delete('/:id/users/:userId', reservationController.removeUserFromReservation);
+router.delete('/:id', availableReservationController.deleteReservation);
+router.delete('/:id/users/:userId', availableReservationController.removeUserFromReservation);
 
 
 module.exports = router;

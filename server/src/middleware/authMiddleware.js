@@ -7,7 +7,6 @@ const authenticateToken = async (req, res, next) => {
   // Extract the token from the Authorization header
   const authHeader = req.headers.authorization;
   const token = authHeader && authHeader.split(' ')[1];
-
   if (!token) {
     console.log("Invalid token: No token provided");
     return res.status(401).json({ message: 'Access denied: No token provided' });

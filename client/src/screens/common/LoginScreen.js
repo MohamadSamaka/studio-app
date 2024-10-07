@@ -29,8 +29,6 @@ const LoginScreen = ({ navigation }) => {
 
   useEffect(() => {
     if (user) {
-      // logger.info('User state updated', user); // Static English log
-      // Redirect to appropriate screen after successful login
       const userRole = user.Role.name.toLowerCase()
       if (userRole === 'admin') {
         navigation.navigate('AdminHome');
@@ -71,8 +69,9 @@ const LoginScreen = ({ navigation }) => {
       logger.info('Login successful', userData); // Static English log
     } catch (error) {
       logger.error('Login error', error); // Static English log
-
-      if (error.response) {
+      if(error.response.status === 409)
+        setError(t('loginScreen.accountDisabledError'));
+      else if (error.response) {
         setError(error.response.data.message || t('loginScreen.invalid_credentials'));
       } else if (error.request) {
         setError(t('loginScreen.network_error'));

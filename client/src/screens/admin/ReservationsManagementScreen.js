@@ -6,14 +6,15 @@ import {
   Provider as PaperProvider,
   IconButton,
   Snackbar,
+  ActivityIndicator,
 } from "react-native-paper";
 import { Feather, MaterialIcons } from "@expo/vector-icons";
 import moment from "moment";
-import debounce from 'lodash.debounce'; // <-- Import debounce here
-
+import debounce from "lodash.debounce";
 
 // Import components and hooks
 import AppBar from "../../components/common/AppBar";
+import NewReservationModal from "../../components/admin/cms/reservations/NewReservationModal";
 import ReservationDetailsModal from "../../components/admin/cms/reservations/ReservationDetailsModal";
 import FilterModal from "../../components/admin/cms/reservations/FilterModal";
 import FilterChips from "../../components/admin/cms/reservations/FilterChips";
@@ -23,7 +24,9 @@ import useReservations from "../../hooks/useReservations";
 import useFilters from "../../hooks/useFilters";
 import useSelection from "../../hooks/useSelection";
 import useSnackbar from "../../hooks/useSnackbar";
+import { useConfigContext } from "../../contexts/ConfigContext";
 import {
+  createReservationSlot,
   deleteReservation,
   removeUserFromReservation,
 } from "../../utils/axios";
@@ -31,6 +34,9 @@ import {
 const ReservationsManagementScreen = () => {
   // Search State
   const [searchQuery, setSearchQuery] = useState("");
+  const { config, loading: configLoading } = useConfigContext();
+  const [maxUsersPerSlot, setMaxUsersPerSlot] = useState(null);
+  const [slotDuration, setSlotDuration] = useState(null);
 
   const debouncedSearch = useCallback(
     debounce((query) => {
@@ -44,6 +50,8 @@ const ReservationsManagementScreen = () => {
 
   // Snackbar Hook
   const { snackbar, showSnackbar, onDismissSnackbar } = useSnackbar();
+  const [newReservationModalVisible, setNewReservationModalVisible] =
+    useState(false);
 
   // Filters Hook
   const {
@@ -109,15 +117,17 @@ const ReservationsManagementScreen = () => {
   const [removingUser, setRemovingUser] = useState(false);
 
   // Handler for search input changes
-  // const onChangeSearch = (query) => {
-  //   setSearchQuery(query);
-  //   setCurrentPage(1);
-  // };
-
   const onChangeSearch = (query) => {
     debouncedSearch(query);
     setCurrentPage(1);
   };
+
+  useEffect(() => {
+    if (config && config.reservations) {
+      setMaxUsersPerSlot(config.reservations["max-users-per-reservation"]);
+      setSlotDuration(config.reservations["timeslots-duration"]);
+    }
+  }, [config]);
 
   useEffect(() => {
     return () => {
@@ -125,8 +135,12 @@ const ReservationsManagementScreen = () => {
     };
   }, [debouncedSearch]);
 
-  // Open reservation details modal
   const openReservationDetails = (reservation) => {
+    if (!reservation) {
+      console.warn("openReservationDetails called with undefined reservation.");
+      return;
+    }
+    console.log("Opening ReservationDetailsModal with reservation:", reservation);
     setSelectedReservation(reservation);
     setModalVisible(true);
   };
@@ -137,13 +151,23 @@ const ReservationsManagementScreen = () => {
     setModalVisible(false);
   };
 
-  // Handle cancellation of selected reservations
+  const handleAddReservation = async (newReservationData) => {
+    try {
+      // Call your API or function to add the new reservation
+      await createReservationSlot(newReservationData); // Uncomment and implement this
+
+      showSnackbar("New reservation added successfully.", "success");
+      setNewReservationModalVisible(false);
+      fetchReservations(currentPage); // Refresh reservations list
+    } catch (error) {
+      console.error("Error adding reservation:", error);
+      showSnackbar("Failed to add new reservation.", "error");
+    }
+  };
+
   const handleCancelReservations = () => {
     if (selectedReservations.length === 0) {
-      Alert.alert(
-        "No Selection",
-        "Please select at least one reservation to cancel."
-      );
+      Alert.alert("No Selection", "Please select at least one reservation to cancel.");
       return;
     }
 
@@ -152,7 +176,7 @@ const ReservationsManagementScreen = () => {
       `Are you sure you want to cancel ${selectedReservations.length} reservation(s)?`,
       [
         { text: "No", style: "cancel" },
-        { text: "Yes", onPress: cancelReservations },
+        { text: "Yes", onPress: () => cancelReservations() },
       ]
     );
   };
@@ -161,13 +185,9 @@ const ReservationsManagementScreen = () => {
   const cancelReservations = async () => {
     setCancelling(true);
     try {
-      const deletePromises = selectedReservations.map((id) =>
-        deleteReservation(id)
-      );
+      const deletePromises = selectedReservations.map((id) => deleteReservation(id));
       await Promise.all(deletePromises);
-      setReservations((prev) =>
-        prev.filter((res) => !selectedReservations.includes(res.id))
-      );
+      setReservations((prev) => prev.filter((res) => !selectedReservations.includes(res.id)));
       setSelectedReservations([]);
       showSnackbar("Selected reservations have been canceled.", "success");
       fetchReservations(currentPage);
@@ -181,15 +201,12 @@ const ReservationsManagementScreen = () => {
 
   // Handle deletion of a single reservation
   const handleDeleteReservation = (reservation) => {
-    // const test = reservation.id.split('-')[0]
     Alert.alert(
       "Confirm Deletion",
       `Are you sure you want to delete the reservation on ${moment(
         reservation.date,
         "YYYY-MM-DD"
-      ).format("MM/DD/YYYY")} at ${moment(reservation.time, "HH:mm").format(
-        "hh:mm A"
-      )}?`,
+      ).format("MM/DD/YYYY")} at ${moment(reservation.time, "HH:mm").format("hh:mm A")}?`,
       [
         { text: "No", style: "cancel" },
         { text: "Yes", onPress: () => deleteReservationById(reservation.id) },
@@ -199,7 +216,6 @@ const ReservationsManagementScreen = () => {
 
   // Delete a reservation by ID
   const deleteReservationById = async (id) => {
-    // const reservationId = id.split('-')[0]
     setCancelling(true);
     try {
       await deleteReservation(id);
@@ -236,12 +252,12 @@ const ReservationsManagementScreen = () => {
         prev
           .map((res) => {
             if (res.id === selectedReservation.id) {
-              const updatedUsers = res.users.filter((user) => user.id !== id);
-              if (updatedUsers.length === 0) {
+              const updatedParticipants = res.participants.filter((user) => user.id !== id);
+              if (updatedParticipants.length === 0) {
                 // Return `null` or `undefined` to mark this reservation for removal
                 return null;
               }
-              return { ...res, users: updatedUsers };
+              return { ...res, participants: updatedParticipants };
             }
             return res;
           })
@@ -250,7 +266,7 @@ const ReservationsManagementScreen = () => {
       showSnackbar(`${username} removed from reservation.`, "success");
       setSelectedReservation((prev) => ({
         ...prev,
-        users: prev.users.filter((user) => user.username !== username),
+        participants: prev.participants.filter((user) => user.username !== username),
       }));
     } catch (error) {
       console.error("Error removing user:", error);
@@ -264,107 +280,133 @@ const ReservationsManagementScreen = () => {
     <PaperProvider>
       <AppBar title="Reservations Management" />
       <View style={styles.container}>
-        {/* Top Bar with Search and Filter */}
-        <View style={styles.topBar}>
-          <Searchbar
-            placeholder="Search by username"
-            onChangeText={onChangeSearch}
-            value={searchQuery}
-            style={styles.searchBar}
-            icon={({ size, color }) => (
-              <Feather name="search" size={size} color={color} />
-            )}
-            accessibilityLabel="Search by username"
-          />
-          <IconButton
-            icon={({ size, color }) => (
-              <MaterialIcons name="filter-list" size={size} color={color} />
-            )}
-            onPress={openFilterModal}
-            accessibilityLabel="Open Filters"
-          />
-        </View>
-
-        {/* Display Active Filters as Chips */}
-        <FilterChips
-          dateFilter={dateFilter}
-          timeFilter={timeFilter}
-          openFilterModal={openFilterModal}
-          resetDateFilter={resetDateFilter}
-          resetTimeFilter={resetTimeFilter}
-        />
-
-        {/* Action Buttons */}
-        <ActionButtons
-          handleCancelReservations={handleCancelReservations}
-          selectedReservations={selectedReservations}
-          cancelling={cancelling}
-          loading={loading}
-          fetchReservations={fetchReservations}
-          currentPage={currentPage}
-        />
-
-        {/* Reservations Table */}
-        <ReservationsTable
-          reservations={reservations}
-          loading={loading}
-          selectedReservations={selectedReservations}
-          toggleSelection={toggleSelection}
-          selectAll={selectAll}
-          deselectAll={deselectAll}
-          openReservationDetails={openReservationDetails}
-          handleDeleteReservation={handleDeleteReservation}
-          currentPage={currentPage}
-          setCurrentPage={setCurrentPage}
-          totalPages={totalPages}
-          itemsPerPage={limit}
-        />
-
-        {!loading && reservations.length === 0 && (
-          <View style={styles.noDataContainer}>
-            <Text>No reservations found matching your criteria.</Text>
+        {/* Show Loading Indicator if configLoading or loading is true */}
+        {configLoading || loading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" />
+            <Text>Loading...</Text>
           </View>
+        ) : (
+          <>
+            {/* Top Bar with Search and Filter */}
+            <View style={styles.topBar}>
+              <Searchbar
+                placeholder="Search by username"
+                onChangeText={onChangeSearch}
+                value={searchQuery}
+                style={styles.searchBar}
+                icon={({ size, color }) => (
+                  <Feather name="search" size={size} color={color} />
+                )}
+                accessibilityLabel="Search by username"
+              />
+              <IconButton
+                icon={({ size, color }) => (
+                  <MaterialIcons name="filter-list" size={size} color={color} />
+                )}
+                onPress={openFilterModal}
+                accessibilityLabel="Open Filters"
+              />
+              {/* Plus Button for Adding a New Reservation */}
+              <IconButton
+                icon="plus"
+                onPress={() => setNewReservationModalVisible(true)}
+                accessibilityLabel="Add New Reservation"
+              />
+            </View>
+
+            <NewReservationModal
+              visible={newReservationModalVisible}
+              onDismiss={() => setNewReservationModalVisible(false)}
+              onAddReservation={handleAddReservation}
+              maxUsersPerSlot={maxUsersPerSlot}
+              slotDuration={slotDuration}
+            />
+
+            {/* Display Active Filters as Chips */}
+            <FilterChips
+              dateFilter={dateFilter}
+              timeFilter={timeFilter}
+              openFilterModal={openFilterModal}
+              resetDateFilter={resetDateFilter}
+              resetTimeFilter={resetTimeFilter}
+            />
+
+            {/* Action Buttons */}
+            <ActionButtons
+              handleCancelReservations={handleCancelReservations}
+              selectedReservations={selectedReservations}
+              cancelling={cancelling}
+              loading={loading}
+              fetchReservations={fetchReservations}
+              currentPage={currentPage}
+            />
+
+            {/* Reservations Table */}
+            <ReservationsTable
+              reservations={reservations}
+              loading={loading}
+              selectedReservations={selectedReservations}
+              toggleSelection={toggleSelection}
+              selectAll={selectAll}
+              deselectAll={deselectAll}
+              openReservationDetails={openReservationDetails}
+              handleDeleteReservation={handleDeleteReservation}
+              currentPage={currentPage}
+              setCurrentPage={setCurrentPage}
+              totalPages={totalPages}
+              itemsPerPage={limit}
+            />
+
+            {!loading && reservations.length === 0 && (
+              <View style={styles.noDataContainer}>
+                <Text>No reservations found matching your criteria.</Text>
+              </View>
+            )}
+
+            {/* Reservation Details Modal */}
+            {selectedReservation && (
+              <ReservationDetailsModal
+                visible={modalVisible}
+                onDismiss={closeReservationDetails}
+                reservation={selectedReservation}
+                handleRemoveUser={handleRemoveUser}
+              />
+            )}
+
+            {/* Filter Modal */}
+            <FilterModal
+              visible={filterModalVisible}
+              onDismiss={closeFilterModal}
+              filterType={filterType}
+              setFilterType={setFilterType}
+              isDateRange={isDateRange}
+              setIsDateRange={setIsDateRange}
+              isTimeRange={isTimeRange}
+              setIsTimeRange={setIsTimeRange}
+              tempDateFilter={tempDateFilter}
+              setTempDateFilter={setTempDateFilter}
+              tempTimeFilter={tempTimeFilter}
+              setTempTimeFilter={setTempTimeFilter}
+              showSingleDatePicker={showSingleDatePicker}
+              setShowSingleDatePicker={setShowSingleDatePicker}
+              showDatePickerStart={showDatePickerStart}
+              setShowDatePickerStart={setShowDatePickerStart}
+              showDatePickerEnd={showDatePickerEnd}
+              setShowDatePickerEnd={setShowDatePickerEnd}
+              showSingleTimePicker={showSingleTimePicker}
+              setShowSingleTimePicker={setShowSingleTimePicker}
+              showTimePickerStart={showTimePickerStart}
+              setShowTimePickerStart={setShowTimePickerStart}
+              showTimePickerEnd={showTimePickerEnd}
+              setShowTimePickerEnd={setShowTimePickerEnd}
+              handleDateChange={handleDateChange}
+              handleTimeChange={handleTimeChange}
+              applyFiltersFromModal={applyFiltersFromModal}
+              resetFilters={resetFilters}
+            />
+          </>
         )}
-
-        {/* Reservation Details Modal */}
-        <ReservationDetailsModal
-          visible={modalVisible}
-          onDismiss={closeReservationDetails}
-          reservation={selectedReservation}
-          handleRemoveUser={handleRemoveUser}
-        />
-
-        {/* Filter Modal */}
-        <FilterModal
-          visible={filterModalVisible}
-          onDismiss={closeFilterModal}
-          filterType={filterType}
-          setFilterType={setFilterType}
-          isDateRange={isDateRange}
-          setIsDateRange={setIsDateRange}
-          isTimeRange={isTimeRange}
-          setIsTimeRange={setIsTimeRange}
-          tempDateFilter={tempDateFilter}
-          setTempDateFilter={setTempDateFilter}
-          tempTimeFilter={tempTimeFilter}
-          setTempTimeFilter={setTempTimeFilter}
-          showSingleDatePicker={showSingleDatePicker}
-          setShowSingleDatePicker={setShowSingleDatePicker}
-          showDatePickerStart={showDatePickerStart}
-          setShowDatePickerStart={setShowDatePickerStart}
-          showDatePickerEnd={showDatePickerEnd}
-          setShowDatePickerEnd={setShowDatePickerEnd}
-          showSingleTimePicker={showSingleTimePicker}
-          setShowSingleTimePicker={setShowSingleTimePicker}
-          showTimePickerStart={showTimePickerStart}
-          setShowTimePickerStart={setShowTimePickerStart}
-          showTimePickerEnd={showTimePickerEnd}
-          setShowTimePickerEnd={setShowTimePickerEnd}
-          handleDateChange={handleDateChange}
-          handleTimeChange={handleTimeChange}
-          applyFiltersFromModal={applyFiltersFromModal}
-          resetFilters={resetFilters}
-        />
 
         {/* Snackbar for Notifications */}
         <Snackbar
@@ -399,11 +441,22 @@ const styles = StyleSheet.create({
     flex: 1,
     marginRight: 10,
   },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
   snackbarSuccess: {
     backgroundColor: "#4CAF50",
   },
   snackbarError: {
     backgroundColor: "#F44336",
+  },
+  noDataContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 20,
   },
 });
 

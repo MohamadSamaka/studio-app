@@ -84,7 +84,7 @@ const updateConfig = (config) => {
 const broadcastMessage = (senderId, data) => {
   const message = JSON.stringify(data);
   wss.clients.forEach((client) => {
-    if (client.readyState === WebSocket.OPEN && client.user.id !== senderId) {
+    if (client.readyState === WebSocket.OPEN) {
       client.send(message);
     }
   });

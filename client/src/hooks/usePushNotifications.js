@@ -65,7 +65,7 @@ async function registerForPushNotificationsAsync() {
 
     // Get the Expo push token and pass the projectId
     const expoPushToken = await Notifications.getExpoPushTokenAsync({
-      projectId: "<YOUR_ID>", // Replace with your actual project ID
+      projectId: "<Your ID HERE >", // Replace with your actual project ID
     });
     token = expoPushToken.data;
   } else {

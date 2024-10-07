@@ -28,9 +28,9 @@ const DrawerNavigator = () => {
       unmountOnBlur: true
     },
     {
-      name: t("reservationScreen.title"),
+      name: t("BookingScreen.title"),
       component: withProtection(ReservationScreen),
-      label: t("reservationScreen.title"),
+      label: t("BookingScreen.title"),
       unmountOnBlur: true
 
     },

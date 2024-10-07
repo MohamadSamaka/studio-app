@@ -1,41 +1,7 @@
 // components/ReservationModal/ReservationModal.js
 import React from 'react';
 import { Modal, View, Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useTranslation } from 'react-i18next'; // Import useTranslation
-
-// const ReservationModal = ({ visible, slot, onClose }) => {
-//   if (!slot) return null;
-
-//   return (
-//     <Modal
-//       animationType="slide"
-//       transparent={true}
-//       visible={visible}
-//       onRequestClose={onClose}
-//     >
-//       <View style={styles.modalOverlay}>
-//         <View style={styles.modalContent}>
-//           <Text style={styles.modalTitle}>Reservations for {slot.time}</Text>
-//           <ScrollView>
-//             {slot.nameList.map((name, index) => (
-//               <View key={index} style={styles.modalItem}>
-//                 <View style={styles.modalAvatar}>
-//                   <Text style={styles.modalAvatarText}>{name[0].toUpperCase()}</Text>
-//                 </View>
-//                 <Text style={styles.modalName}>{name}</Text>
-//               </View>
-//             ))}
-//           </ScrollView>
-//           <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-//             <Text style={styles.closeButtonText}>Close</Text>
-//           </TouchableOpacity>
-//         </View>
-//       </View>
-//     </Modal>
-//   );
-// };
-
 
 const ReservationModal = ({ visible, slot, onClose }) => {
   const { t } = useTranslation(); // Initialize translation function

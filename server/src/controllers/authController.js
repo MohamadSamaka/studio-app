@@ -12,10 +12,17 @@ class AuthController {
       const { username, password } = req.body;
       const trimmedUserName = trimString(username)
       const { user, accessToken, refreshToken } = await authService.loginUser(trimmedUserName, password);
+      if (!user.active) {        
+        const error = new Error(`${user.username} is trying to log into a disabled account`);
+        error.statusCode = 409;
+        throw error;
+      }
+      console.log(`accessToken ${accessToken}`)
       res.json({ user, accessToken, refreshToken });
     } catch (error) {
-      console.log("Failed To Login")
-      res.status(401).json({ error: error.message || 'Invalid credentials' });
+      const statusCode = error.statusCode || 401;
+      const message = error.message || 'Invalid credentials';
+      res.status(statusCode).json({ error: message });
     }
   }
 
@@ -26,7 +33,6 @@ class AuthController {
       const newTokens = await authService.refreshTokens(refreshToken);
       res.json(newTokens);
     } catch (error) {
-      console.log("Error from refresh:", error);
       // Determine the error type
       if (error.name === 'TokenExpiredError') {
         return res.status(401).json({ message: 'Refresh token expired' });

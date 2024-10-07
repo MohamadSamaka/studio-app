@@ -11,6 +11,16 @@ class UserController {
     }
   }
 
+  async getTrainers(req, res) {
+    try {
+      const users = await userService.getAllTrainers();
+      res.json(users);
+    } catch (error) {
+      console.log(error)
+      res.status(500).json({ error: error.message || 'An error occurred while fetching trainers.' });
+    }
+  }
+
   async createUser(req, res) {
     try {
       const user = await userService.createUser(req.body);

@@ -13,6 +13,7 @@ const RechargeRequestsManagementScreen = () => {
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [snackbarVisible, setSnackbarVisible] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState('');
+    const [snackbarType, setSnackbarType] = useState(null); // 'success' or 'error'
     const [confirmationDialogVisible, setConfirmationDialogVisible] = useState(false);
     const [currentStatusUpdate, setCurrentStatusUpdate] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
@@ -31,33 +32,14 @@ const RechargeRequestsManagementScreen = () => {
         try {
             const response = await getRechargeCreditRequests();
             setRechargeRequests(response.data);
-            console.log(response.data)
         } catch (error) {
             console.error('Error fetching recharge requests:', error);
+            // Optionally, show an error Snackbar here
+            setSnackbarMessage('Failed to fetch recharge requests');
+            setSnackbarType('error');
+            setSnackbarVisible(true);
         }
     };
-
-    // const filterRequests = () => {
-    //     let filtered = rechargeRequests;
-
-    //     // Filter by status
-    //     if (statusFilter !== 'all') {
-    //         filtered = filtered.filter(request => request.status === statusFilter);
-    //     }
-
-    //     // Filter by search query (username)
-    //     if (searchQuery) {
-    //         filtered = filtered.filter(request =>
-    //             request.User.username.toLowerCase().includes(searchQuery.toLowerCase())
-    //         );
-    //     }
-
-    //     // Filter for today and future dates
-    //     const today = new Date().setHours(0, 0, 0, 0);
-    //     filtered = filtered.filter(request => new Date(request.date) >= today);
-
-    //     setFilteredRequests(filtered);
-    // };
 
     const filterRequests = () => {
         let filtered = rechargeRequests;
@@ -77,17 +59,20 @@ const RechargeRequestsManagementScreen = () => {
         // No date filtering - allow all dates
         setFilteredRequests(filtered);
     };
-    
 
     const handleStatusChange = async (id, status) => {
         try {
             await updateRechargeRequestStatus(id, { status });
             setSnackbarMessage(`Status updated to ${getHumanReadableStatus(status)}`);
+            setSnackbarType('success'); // Set to 'success' on successful update
             setSnackbarVisible(true);
             fetchRechargeRequests();
             setIsModalVisible(false);
         } catch (error) {
             console.error('Error updating recharge request status:', error);
+            setSnackbarMessage(`Failed to update the status`);
+            setSnackbarType('error'); // Set to 'error' on failure
+            setSnackbarVisible(true);
         }
     };
 
@@ -98,7 +83,7 @@ const RechargeRequestsManagementScreen = () => {
             case 'failed':
                 return 'Failed';
             case 'awaiting_payment':
-                return 'Awaiting';
+                return 'Awaiting Payment';
             case 'pending':
             default:
                 return 'Pending';
@@ -191,7 +176,7 @@ const RechargeRequestsManagementScreen = () => {
                                 <MaterialCommunityIcons name="clock-outline" size={24} color={theme.colors.primary} />
                                 <View style={styles.infoTextContainer}>
                                     <Text style={styles.infoLabel}>Time</Text>
-                                    <Text style={styles.infoValue}>{new Date(`1970-01-01T${selectedRequest.time}Z`).toLocaleTimeString()}</Text>
+                                    <Text style={styles.infoValue}>{new Date(`1970-01-01T${selectedRequest.time}Z`).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })}</Text>
                                 </View>
                             </View>
                         </Card.Content>
@@ -257,8 +242,10 @@ const RechargeRequestsManagementScreen = () => {
                 <View style={styles.leftContent}>
                     <Text style={styles.username}>{item.User.username}</Text>
                     <Text style={styles.subscription}>{item.Subscription.subscription_name}</Text>
-                    <Text style={styles.dateTime}>
+                     <Text style={styles.dateTime}>
                         {new Date(item.date).toLocaleDateString()}
+                    </Text>
+                    <Text style={styles.dateTime}>
                         {new Date(`1970-01-01T${item.time}Z`).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })}
                     </Text>
                 </View>
@@ -333,8 +320,16 @@ const RechargeRequestsManagementScreen = () => {
 
                         <Snackbar
                             visible={snackbarVisible}
-                            onDismiss={() => setSnackbarVisible(false)}
+                            onDismiss={() => {
+                                setSnackbarVisible(false);
+                                setSnackbarType(null); // Reset snackbarType when dismissed
+                            }}
                             duration={3000}
+                            style={[
+                                styles.snackbar,
+                                snackbarType === 'success' && styles.snackbarSuccess,
+                                snackbarType === 'error' && styles.snackbarError,
+                            ]}
                         >
                             {snackbarMessage}
                         </Snackbar>
@@ -461,13 +456,13 @@ const styles = StyleSheet.create({
         elevation: 2,
     },
     awaitingPaymentButton: {
-        backgroundColor: '#FFA500',
+        backgroundColor: '#FFA500', // Orange color for awaiting payment
     },
     successButton: {
-        backgroundColor: theme.colors.success,
+        backgroundColor: theme.colors.success, // Green
     },
     failedButton: {
-        backgroundColor: theme.colors.error,
+        backgroundColor: theme.colors.error, // Red
     },
     buttonLabel: {
         fontSize: 16,
@@ -475,5 +470,14 @@ const styles = StyleSheet.create({
     },
     closeButton: {
         marginTop: 20,
+    },
+    snackbar: {
+        backgroundColor: theme.colors.accent, // Default color
+    },
+    snackbarSuccess: {
+        backgroundColor: theme.colors.success, // Green for success
+    },
+    snackbarError: {
+        backgroundColor: theme.colors.error, // Red for error
     },
 });

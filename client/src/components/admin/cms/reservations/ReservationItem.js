@@ -32,7 +32,7 @@ const ReservationItem = ({
       {moment(reservation.time, 'HH:mm').format('hh:mm A')}
     </DataTable.Cell>
     <DataTable.Cell style={styles.centeredCell}>
-      {reservation.users.length}
+      {reservation.participants.length}
     </DataTable.Cell>
     <DataTable.Cell>
       <IconButton

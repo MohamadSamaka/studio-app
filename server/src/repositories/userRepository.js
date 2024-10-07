@@ -1,29 +1,55 @@
 const User = require("../models/user");
 const Role = require("../models/role");
-const Reservation = require("../models/reservation");
+const AvailableReservations = require("../models/availableReservations");
 const Notification = require("../models/notification");
 const Sequelize = require("../config/database");
+const { Op } = require('sequelize');
 
 class UserRepository {
   async findAll() {
     return await User.findAll();
   }
 
+  async findAllTrainers() {
+    try {
+      const trainers = await User.findAll({
+        include: [{
+          model: Role,
+          where: {
+            name: {
+              [Op.like]: 'trainer'
+            }
+          },
+          attributes: []
+        }],
+        attributes: ['id', 'username'], // Exclude sensitive fields
+      });
+  
+      return trainers;
+    } catch (error) {
+      console.error("Error fetching trainers:", error);
+      throw error;
+    }
+  }
+
   // async findById(id) {
   //   return await User.findByPk(id);
   // }
-  async findById(id, { includeReservations = false, transaction = null } = {}) {
+  async findById(
+    id,
+    { includeAvailableReservations = false, transaction = null } = {}
+  ) {
     const options = {
       where: { id },
       transaction, // Attach the transaction if provided
     };
 
     // Conditionally include reservations if requested
-    if (includeReservations) {
+    if (includeAvailableReservations) {
       options.include = [
         { model: Role },
         {
-          model: Reservation,
+          model: AvailableReservations,
           through: { attributes: [] }, // Ensure the many-to-many relationship is properly loaded
         },
       ];
@@ -80,26 +106,26 @@ class UserRepository {
     return await User.update({ token, refreshToken }, { where: { id } });
   }
 
-  async IncreaseDecreaseUsersCredits(userIds, val) {
+  async IncreaseDecreaseUsersCredits(userIds, val, transaction = null) {
     try {
       // Find all users by their IDs
       const users = await User.findAll({
         where: {
           id: userIds,
         },
+        transaction, // Include transaction if provided
       });
 
       if (users.length === 0) {
         throw new Error("No users found");
       }
 
-      // Increment each user's credits by one
       for (const user of users) {
         user.credits += val;
-        await user.save();
+        await user.save({ transaction });
       }
     } catch (error) {
-      console.error("Error increasing user credits:", error);
+      console.error("Error increasing/decreasing user credits:", error);
     }
   }
 
@@ -136,11 +162,7 @@ class UserRepository {
         }
       );
 
-      if (updatedRowsCount === 0) {
-        console.log("updated rows is 0");
-        return null;
-      }
-      console.log("updated rows: ", updatedRows);
+      if (updatedRowsCount === 0) return null;
       return updatedRows; // Return the updated user
     } catch (error) {
       console.log("error: ", error);

@@ -19,13 +19,6 @@ class NotificationRepository {
     }
   }
 
-  // async markAsRead(notificationId) {
-  //   return await Notification.update(
-  //     { read: true },
-  //     { where: { id: notificationId } }
-  //   );
-  // }
-
   async markAsRead(notificationIds) {
     const transaction = await sequelize.transaction();
     try {

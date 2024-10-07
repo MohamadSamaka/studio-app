@@ -43,6 +43,18 @@ class NotificationService {
 
       // Loop through each user ID
       for (const userId of userIds) {
+        // Format the reservation date and time
+        const formattedDate = moment(reservationDetails.date).format(
+          "YYYY-MM-DD"
+        );
+        const formattedTime = moment(
+          reservationDetails.start_time,
+          "HH:mm:ss"
+        ).format("hh:mm A");
+
+        const notificationTitle = "❌ Reservation Update";
+        const notificationContent = `Your reservation scheduled on ${formattedDate} at ${formattedTime} has been cancelled.`;
+
         // Fetch Expo push tokens for the user
         const devices = await Device.findAll({
           where: {
@@ -57,26 +69,6 @@ class NotificationService {
             return;
           }
 
-          // Format the reservation date and time
-          const formattedDate = moment(reservationDetails.date).format(
-            "YYYY-MM-DD"
-          );
-          const formattedTime = moment(
-            reservationDetails.time,
-            "HH:mm:ss"
-          ).format("hh:mm A");
-
-          const notificationTitle = "❌ Reservation Update";
-          const notificationContent = `Your reservation scheduled on ${formattedDate} at ${formattedTime} has been cancelled.`;
-
-          // Create notification record in your database for each user
-          this.createNotification({
-            user_id: userId,
-            title: notificationTitle,
-            content: notificationContent,
-            icon: "alert-circle-outline",
-          });
-
           // Build the push notification message
           const message = {
             to: device.expoPushToken,
@@ -90,6 +82,13 @@ class NotificationService {
           };
 
           messages.push(message);
+        });
+        // Create notification record in your database for each user
+        this.createNotification({
+          user_id: userId,
+          title: notificationTitle,
+          content: notificationContent,
+          icon: "alert-circle-outline",
         });
       }
 

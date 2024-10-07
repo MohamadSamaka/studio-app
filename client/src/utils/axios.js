@@ -154,6 +154,8 @@ export const updateConfig = (configData) =>
 
 // User functions
 export const getUsers = () => api.get("/admin/users");
+export const getTrainers = () => api.get("/admin/users/trainers");
+
 export const createUser = (userData) => api.post("/admin/users", userData);
 export const updateUser = (id, userData) =>
   api.put(`/admin/users/${id}`, userData);
@@ -215,6 +217,8 @@ export const deleteSubscription = (id) =>
 
 // Reservation functions
 export const getReservations = () => api.get("/admin/reservations");
+export const createReservationSlot = (reservationData) =>
+  api.post("/admin/reservations", { reservationData });
 // export const getPaginatedReservations = ({page, limit}) =>
 //   api.get('/admin/reservations/paginated', {
 //     params: { page, limit },
@@ -224,10 +228,10 @@ export const getReservations = () => api.get("/admin/reservations");
 export const getPaginatedReservations = (params) =>
   api.get("/admin/reservations/paginated", { params });
 
-export const createReservation = (reservationData) =>
-  api.post("/user/reservations/", reservationData);
-export const createUserReservation = (reservationData) =>
-  api.post("/user/reservations", reservationData);
+export const bookTimeSlot = (reservationId) =>
+  api.post("/user/reservations", {
+    reservationId
+  });
 export const updateReservation = (id, reservationData) =>
   api.put(`/admin/reservations/${id}`, reservationData);
 export const deleteReservation = (id) =>

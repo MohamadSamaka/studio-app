@@ -1,7 +1,7 @@
 {
   "reservations": {
-    "cancelation-refund-threshold-time": "7:00",
-    "max-users-per-reservation": 6,
-    "timeslots-duration": "00:05"
+    "cancelation-refund-threshold-time": "07:00",
+    "max-users-per-reservation": 8,
+    "timeslots-duration": "01:30"
   }
 }

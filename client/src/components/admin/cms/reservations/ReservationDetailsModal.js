@@ -11,6 +11,7 @@ import {
 } from 'react-native-paper';
 import { MaterialIcons } from '@expo/vector-icons';
 import moment from 'moment';
+import PropTypes from 'prop-types';
 
 const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -20,21 +21,31 @@ const ReservationDetailsModal = ({
   reservation,
   handleRemoveUser,
 }) => {
-  const renderUserItem = (user, index) => (
-    <View key={index} style={styles.userRow}>
-      <View style={styles.userInfo}>
-        <Avatar.Text size={40} label={user.username.charAt(0).toUpperCase()} />
-        <Text style={styles.userName}>{user.username}</Text>
+  if (!reservation) {
+    console.warn('ReservationDetailsModal received undefined reservation.');
+    return null; // Safeguard: Do not render if reservation is undefined
+  }
+
+  console.log(`Rendering ReservationDetailsModal for reservation ID: ${reservation.id}`);
+
+  const renderParticipantItem = (participant, index) => {
+    console.log(`Rendering participant: ${participant.username}`);
+    return (
+      <View key={participant.id} style={styles.userRow}>
+        <View style={styles.userInfo}>
+          <Avatar.Text size={40} label={participant.username.charAt(0).toUpperCase()} />
+          <Text style={styles.userName}>{participant.username}</Text>
+        </View>
+        <IconButton
+          icon="delete"
+          color="#f44336"
+          size={20}
+          onPress={() => handleRemoveUser(participant)}
+          accessibilityLabel={`Remove ${participant.username}`}
+        />
       </View>
-      <IconButton
-        icon="delete"
-        color="#f44336"
-        size={20}
-        onPress={() => handleRemoveUser(user)}
-        accessibilityLabel={`Remove ${user.username}`}
-      />
-    </View>
-  );
+    );
+  };
 
   return (
     <Portal>
@@ -43,63 +54,82 @@ const ReservationDetailsModal = ({
         onDismiss={onDismiss}
         contentContainerStyle={styles.modalContainer}
       >
-        {reservation && (
-          <View style={styles.modalContent}>
-            <ScrollView style={styles.modalScroll}>
-              <Text style={styles.modalTitle}>Reservation Details</Text>
-              <Card style={styles.detailCard}>
-                <Card.Content>
-                  <View style={styles.detailRow}>
-                    <MaterialIcons
-                      name="calendar-today"
-                      size={24}
-                      color="#6200ee"
-                    />
-                    <Text style={styles.detailText}>
-                      {moment(reservation.date, 'YYYY-MM-DD').format('MM/DD/YYYY')}
-                    </Text>
-                  </View>
-                  <View style={styles.detailRow}>
-                    <MaterialIcons name="access-time" size={24} color="#6200ee" />
-                    <Text style={styles.detailText}>
-                      {moment(reservation.time, 'HH:mm').format('hh:mm A')}
-                    </Text>
-                  </View>
-                  <View style={styles.detailRow}>
-                    <MaterialIcons name="people" size={24} color="#6200ee" />
-                    <Text style={styles.detailText}>
-                      {reservation.users.length} People
-                    </Text>
-                  </View>
-                </Card.Content>
-              </Card>
-              <Text style={styles.modalSubtitle}>Users</Text>
-              <Card style={styles.userListCard}>
-                <Card.Content>
-                  {reservation.users.length > 0 ? (
-                    reservation.users.map((user, index) => renderUserItem(user, index)
-                    )
-                  ) : (
-                    <Text style={styles.modalText}>
-                      No users in this reservation.
-                    </Text>
-                  )}
-                </Card.Content>
-              </Card>
-            </ScrollView>
-            <Button
-              mode="contained"
-              onPress={onDismiss}
-              style={styles.closeButton}
-              icon="close"
-            >
-              Close
-            </Button>
-          </View>
-        )}
+        <View style={styles.modalContent}>
+          <ScrollView style={styles.modalScroll}>
+            <Text style={styles.modalTitle}>Reservation Details</Text>
+            <Card style={styles.detailCard}>
+              <Card.Content>
+                <View style={styles.detailRow}>
+                  <MaterialIcons name="calendar-today" size={24} color="#6200ee" />
+                  <Text style={styles.detailText}>
+                    {moment(reservation.date, 'YYYY-MM-DD').format('MM/DD/YYYY')}
+                  </Text>
+                </View>
+                <View style={styles.detailRow}>
+                  <MaterialIcons name="access-time" size={24} color="#6200ee" />
+                  <Text style={styles.detailText}>
+                    {moment(reservation.time, 'HH:mm').format('hh:mm A')}
+                  </Text>
+                </View>
+                <View style={styles.detailRow}>
+                  <MaterialIcons name="people" size={24} color="#6200ee" />
+                  <Text style={styles.detailText}>
+                    {reservation.participants.length} People
+                  </Text>
+                </View>
+                <View style={styles.detailRow}>
+                  <MaterialIcons name="timer" size={24} color="#6200ee" />
+                  <Text style={styles.detailText}>
+                    {reservation.duration}
+                  </Text>
+                </View>
+              </Card.Content>
+            </Card>
+            <Text style={styles.modalSubtitle}>Participants</Text>
+            <Card style={styles.userListCard}>
+              <Card.Content>
+                {reservation.participants.length > 0 ? (
+                  reservation.participants.map((participant, index) => renderParticipantItem(participant, index))
+                ) : (
+                  <Text style={styles.modalText}>
+                    No participants in this reservation.
+                  </Text>
+                )}
+              </Card.Content>
+            </Card>
+          </ScrollView>
+          <Button
+            mode="contained"
+            onPress={onDismiss}
+            style={styles.closeButton}
+            icon="close"
+          >
+            Close
+          </Button>
+        </View>
       </Modal>
     </Portal>
   );
+};
+
+ReservationDetailsModal.propTypes = {
+  visible: PropTypes.bool.isRequired,
+  onDismiss: PropTypes.func.isRequired,
+  reservation: PropTypes.shape({
+    date: PropTypes.string.isRequired,
+    duration: PropTypes.string.isRequired,
+    id: PropTypes.number.isRequired,
+    time: PropTypes.string.isRequired,
+    title: PropTypes.string.isRequired,
+    trainer: PropTypes.string.isRequired,
+    participants: PropTypes.arrayOf(
+      PropTypes.shape({
+        id: PropTypes.number.isRequired,
+        username: PropTypes.string.isRequired,
+      })
+    ).isRequired,
+  }),
+  handleRemoveUser: PropTypes.func.isRequired,
 };
 
 const styles = StyleSheet.create({

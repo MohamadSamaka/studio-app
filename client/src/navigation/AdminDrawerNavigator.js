@@ -3,7 +3,6 @@ import { createDrawerNavigator } from '@react-navigation/drawer';
 import { useTranslation } from 'react-i18next';
 
 import UserManagementScreen from '../screens/admin/UserManagementScreen';
-import BusinessHoursAndExceptionsScreen from '../screens/admin/BusinessHoursAndExceptionsScreen';
 import SubscriptionManagementScreen from '../screens/admin/SubscriptionsManagementScreen';
 import RechargeRequestsManagementScreen from '../screens/admin/RechargeRequestsManagementScreen';
 import ConfigManagementScreen from '../screens/admin/ConfigManagementScreen';
@@ -29,11 +28,6 @@ const AdminDrawerNavigator = () => {
       name: t('userManagementScreen.title'),
       component: withProtection(UserManagementScreen),
       label: t('userManagementScreen.title'),
-    },
-    {
-      name: t('businessHoursAndExceptionsScreen.title'),
-      component: BusinessHoursAndExceptionsScreen,
-      label: t('businessHoursAndExceptionsScreen.title'),
     },
     {
       name: t('subscriptionManagementScreen.title'),

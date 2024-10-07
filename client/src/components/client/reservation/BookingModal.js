@@ -5,43 +5,6 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next'; // Import useTranslation
 
-// const BookingModal = ({ visible, booking, onCancel, onClose }) => (
-//   <Modal
-//     animationType="slide"
-//     transparent={true}
-//     visible={visible}
-//     onRequestClose={onClose}
-//   >
-//     <View style={styles.modalOverlay}>
-//       <View style={styles.modalContent}>
-//         <LinearGradient
-//           colors={['#E0FFFF', '#B0E0E6']}
-//           style={styles.bookingModalGradient}
-//         >
-//           <Text style={styles.modalTitle}>Your Current Booking</Text>
-//           <View style={styles.bookingInfo}>
-//             <MaterialIcons name="event" size={24} color="#4682B4" />
-//             <Text style={styles.bookingText}>
-//               {booking
-//                 ? `${booking.date} at ${booking.time}`
-//                 : 'No current booking'}
-//             </Text>
-//           </View>
-//           {booking && (
-//             <TouchableOpacity style={styles.cancelButton} onPress={onCancel}>
-//               <Text style={styles.cancelButtonText}>Cancel Booking</Text>
-//             </TouchableOpacity>
-//           )}
-//           <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-//             <Text style={styles.closeButtonText}>Close</Text>
-//           </TouchableOpacity>
-//         </LinearGradient>
-//       </View>
-//     </View>
-//   </Modal>
-// );
-
-
 const BookingModal = ({ visible, booking, onCancel, onClose }) => {
   const { t } = useTranslation(); // Initialize translation function
 

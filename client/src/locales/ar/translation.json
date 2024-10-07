@@ -1,34 +1,30 @@
 {
-  "reservationScreen": {
+  "BookingScreen": {
     "title": "أحجز",
-    "dayOfWeekUndefined": "يوم الأسبوع غير محدد:",
-    "errorFetchingBusinessHours": "خطأ في جلب ساعات العمل:",
-    "alreadyBooked": "تم الحجز مسبقًا",
-    "alreadyBookedMessage": "لقد قمت بالفعل بحجز موعد في \u200F{{date}}\u200E الساعة \u200F{{time}}\u200E.",
-    "insufficientCredits": "رصيد غير كافٍ",
-    "insufficientCreditsMessage": "ليس لديك رصيد كافٍ لإجراء هذا الحجز. يرجى طلب المزيد من الرصيد في صفحة الاشتراك.",
-    "fullyBooked": "ممتلئ بالكامل",
-    "fullyBookedMessage": "هذه الفترة الزمنية في \u200F{{date}}\u200E الساعة \u200F{{time}}\u200E ممتلئة بالكامل.",
-    "confirmReservation": "تأكيد الحجز",
-    "confirmReservationMessage": "هل أنت متأكد أنك تريد الحجز في \u200F{{date}}\u200E الساعة \u200F{{time}}\u200E؟",
-    "success": "نجاح",
-    "reservationSuccessMessage": "تم حجزك بنجاح!",
-    "reservationFailed": "فشل الحجز",
-    "unexpectedError": "حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى لاحقًا.",
-    "errorMakingReservation": "حدث خطأ أثناء إجراء الحجز. يرجى المحاولة مرة أخرى لاحقًا.",
-    "bookingCanceled": "تم إلغاء الحجز",
-    "bookingCanceledMessage": "تم إلغاء حجزك بنجاح.",
-    "noAvailableSlots": "لا توجد فترات متاحة لهذا التاريخ",
-    "pleaseSelectDate": "يرجى اختيار تاريخ لعرض الفترات المتاحة...",
-    "yourCurrentBooking": "حجزك الحالي",
-    "noCurrentBooking": "لا يوجد حجز حالي",
-    "cancelBooking": "إلغاء الحجز",
+    "areYouSure": "هل أنت متأكد؟",
+    "insufficientCreditsTitle": "رصيد غير كافٍ",
+    "insufficientCredits": "ليس لديك ما يكفي من الرصيد لحجز هذا الحجز.",
+    "fullyBookedTitle": "محجوز بالكامل",
+    "fullyBooked": "وصل الحجز إلى الحد الأقصى لعدد الحضور",
+    "confirmBooking": "هل تريد بالفعل حجز الحجز لـ {{title}} في {{date}} عند {{time}}؟",
+    "yesBook": "نعم، حجز",
+    "yesCancel": "نعم، إلغاء",
+    "cancel": "إلغاء",
+    "attendees": "الحضور",
     "close": "إغلاق",
-    
-    "reservationsFor": "الحجوزات في \u200F{{time}}\u200E",
-    "reservationDetailsModal": "تفاصيل الحجز",
-    "currentBookingModal": "الحجز الحالي",
-    "customAlert": "تنبيه مخصص"
+    "moreParticipants": "+{{count}} أكثر",
+    "you": "أنت",
+    "noReservationsForThisDate": "لا توجد حجوزات لهذا التاريخ.",
+    "cancellationWarningNoRefund": "إلغاء الحجز الآن لن يؤدي إلى استرداد رصيدك.",
+    "cancelSuccessWithRefund": "تم إلغاء الحجز وتم استرداد الرصيد.",
+    "cancelSuccessNoRefund": "تم إلغاء الحجز. لم يتم استرداد الرصيد.",
+    "error": "خطأ",
+    "bookingFailed": "فشل الحجز. يرجى المحاولة مرة أخرى لاحقًا.",
+    "cancellationFailed": "فشل الإلغاء. يرجى المحاولة مرة أخرى لاحقًا.",
+    "confirmCancelBooking": "هل تريد بالفعل إلغاء الحجز الخاص بك لـ {{title}} في {{date}} عند {{time}}؟",
+    "confirmBookingSuccess": "تم الحجز بنجاح!",
+    "confirmCancelBookingWithRefund": "تم إلغاء الحجز الخاص بك. ستتلقى استردادًا للائتمان.",
+    "confirmCancelBookingNoRefund": "تم إلغاء الحجز الخاص بك. لن تتلقى استردادًا للائتمان."
   },
   "subscriptionsScreen": {
     "title": "القسائم",
@@ -44,6 +40,7 @@
   },
   "myReservationsScreen": {
     "title": "حجوزاتي",
+    "trainer": "مدرب",
     "errorFetchingReservations": "خطأ في جلب الحجوزات:",
     "cancellationWarning": "تحذير إلغاء",
     "cancellationWarningMessage": "أنت على وشك إلغاء هذا الحجز خلال 6 ساعات من الوقت المحدد. لن تسترد رصيدك إذا تابعت. هل أنت متأكد أنك تريد المتابعة؟",
@@ -63,7 +60,9 @@
     "showAll": "عرض الكل",
     "moreParticipants": "+\u200F{{count}}\u200E آخرين",
     "atTime": "في \u202A{{time}}\u202C",
-    "noCurrentBooking": "لا يوجد حجز حالي"
+    "noCurrentBooking": "لا يوجد حجز حالي",
+    "startTime": "وقت البدء:",
+    "endTime": "وقت الانتهاء:"
   },
   "rechargeRequestsScreen": {
     "title": "طلبات القسائم",
@@ -111,7 +110,8 @@
     "password_required": "كلمة المرور مطلوبة.",
     "invalid_credentials": "اسم المستخدم أو كلمة المرور غير صحيحة.",
     "network_error": "خطأ في الشبكة. يرجى التحقق من اتصالك والمحاولة مرة أخرى.",
-    "unexpected_error": "حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى."
+    "unexpected_error": "حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى.",
+    "accountDisabledError": "تم تعطيل حسابك. يرجى الاتصال بالمسؤول."
   },
   "userManagementScreen":{
     "title": "ادارة المستخدمين",
@@ -175,7 +175,7 @@
   "reservationsManagementScreen":{
     "title": "إدارة الحجوزات"
   },
-  "you": "انتَ/انتِ",
+"cancellationWarningMessageSimple": "\u200E.\u200Eهل انت متأكد من أنك تريد الإلغاء؟ لن تسترد نقاطك اذا ألغيت",  "you": "انتَ/انتِ",
   "logout": "تسجيل الخروج",
   "changeLanguage": "تغيير اللغة",
   "selectLanguage": "اختر اللغة",

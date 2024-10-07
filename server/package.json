@@ -9,6 +9,7 @@
     "migrate": "node src/scripts/migrate.js",
     "seed": "node src/scripts/seedDatabase.js",
     "migeed": "npm run migrate && npm run seed",
+    "dromate": "npm run drop-tables && npm run migrate",
     "dromiseed": "npm run drop-tables && npm run migrate && npm run seed",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

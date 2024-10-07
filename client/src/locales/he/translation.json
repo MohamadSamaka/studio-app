@@ -1,34 +1,30 @@
 {
-  "reservationScreen": {
-    "title": "להזמין תור",
-    "dayOfWeekUndefined": "יום בשבוע אינו מוגדר:",
-    "errorFetchingBusinessHours": "שגיאה בשליפת שעות הפעילות:",
-    "alreadyBooked": "כבר הוזמן",
-    "alreadyBookedMessage": "כבר הזמנת משבצת בתאריך \u200F{{date}}\u200E בשעה \u200F{{time}}\u200E.",
-    "insufficientCredits": "יתרה לא מספיקה",
-    "insufficientCreditsMessage": "אין לך מספיק יתרה לביצוע הזמנה זו. אנא בקש עוד יתרה בדף המנויים.",
-    "fullyBooked": "מלא לחלוטין",
-    "fullyBookedMessage": "משבצת זמן זו בתאריך \u200F{{date}}\u200E בשעה \u200F{{time}}\u200E מלאה לחלוטין.",
-    "confirmReservation": "אישור הזמנה",
-    "confirmReservationMessage": "האם אתה בטוח שברצונך להזמין בתאריך \u200F{{date}}\u200E בשעה \u200F{{time}}\u200E?",
-    "success": "הצלחה",
-    "reservationSuccessMessage": "ההזמנה שלך בוצעה בהצלחה!",
-    "reservationFailed": "הזמנה נכשלה",
-    "unexpectedError": "אירעה שגיאה בלתי צפויה. אנא נסה שוב מאוחר יותר.",
-    "errorMakingReservation": "אירעה שגיאה בעת ביצוע ההזמנה. אנא נסה שוב מאוחר יותר.",
-    "bookingCanceled": "הזמנה בוטלה",
-    "bookingCanceledMessage": "ההזמנה שלך בוטלה בהצלחה.",
-    "noAvailableSlots": "אין משבצות זמינות לתאריך זה",
-    "pleaseSelectDate": "אנא בחר תאריך כדי להציג משבצות זמינות...",
-    "yourCurrentBooking": "ההזמנה הנוכחית שלך",
-    "noCurrentBooking": "אין הזמנה נוכחית",
-    "cancelBooking": "בטל הזמנה",
+  "BookingScreen": {
+    "title": "הזמן",
+    "areYouSure": "האם אתה בטוח?",
+    "insufficientCreditsTitle": "לא מספיק נקודות זכות",
+    "insufficientCredits": "אין לך מספיק נקודות זכות כדי להזמין הזמנה זו.",
+    "fullyBookedTitle": "מלא",
+    "fullyBooked": "ההזמנה הגיעה למספר המקסימלי של משתתפים",
+    "confirmBooking": "האם אתה באמת רוצה להזמין את ההזמנה עבור {{title}} ב{{date}} בשעה {{time}}?",
+    "yesBook": "כן, הזמן",
+    "yesCancel": "כן, בטל",
+    "cancel": "בטל",
+    "attendees": "משתתפים",
     "close": "סגור",
-    
-    "reservationsFor": "הזמנות עבור \u200F{{time}}\u200E",
-    "reservationDetailsModal": "פרטי ההזמנה",
-    "currentBookingModal": "ההזמנה הנוכחית",
-    "customAlert": "התראה מותאמת אישית"
+    "moreParticipants": "+{{count}} נוספים",
+    "you": "אתה",
+    "noReservationsForThisDate": "אין הזמנות עבור תאריך זה.",
+    "cancellationWarningNoRefund": "ביטול ההזמנה כעת לא יאפשר לך לקבל החזר קרדיט.",
+    "cancelSuccessWithRefund": "ההזמנה בוטלה והקרדיטים הוחזרו.",
+    "cancelSuccessNoRefund": "ההזמנה בוטלה. לא הוחזרו קרדיטים.",
+    "error": "שגיאה",
+    "bookingFailed": "ההזמנה נכשלה. אנא נסה שוב מאוחר יותר.",
+    "cancellationFailed": "הביטול נכשל. אנא נסה שוב מאוחר יותר.",
+    "confirmCancelBooking": "האם אתה באמת רוצה לבטל את ההזמנה שלך עבור {{title}} ב{{date}} בשעה {{time}}?",
+    "confirmBookingSuccess": "ההזמנה בוצעה בהצלחה!",
+    "confirmCancelBookingWithRefund": "ההזמנה שלך בוטלה. תקבל החזר קרדיט.",
+    "confirmCancelBookingNoRefund": "ההזמנה שלך בוטלה. לא תקבל החזר קרדיט."
   },
   "subscriptionsScreen": {
     "title": "מנויים",
@@ -43,6 +39,7 @@
     "requestingSubscriptionConfirmationMessage": "האם אתה בטוח שברצונך לבקש את המנוי \u200F{{subscriptionType}}\u200E?"
   },
   "myReservationsScreen": {
+    "trainer": "מאמן",
     "title": "ההזמנות שלי",
     "errorFetchingReservations": "שגיאה בשליפת הזמנות:",
     "cancellationWarning": "אזהרת ביטול",
@@ -63,7 +60,9 @@
     "showAll": "הצג הכל",
     "moreParticipants": "+\u200F{{count}}\u200E נוספים",
     "atTime": "בשעה \u200F{{time}}\u200E",
-    "noCurrentBooking": "אין הזמנה נוכחית"
+    "noCurrentBooking": "אין הזמנה נוכחית",
+     "startTime": "שעת התחלה:",
+    "endTime": "שעת סיום:"
   },
   "rechargeRequestsScreen": {
     "title": "בקשות מנוי",
@@ -111,7 +110,9 @@
     "password_required": "סיסמה הינה חובה.",
     "invalid_credentials": "שם המשתמש או הסיסמה אינם נכונים.",
     "network_error": "שגיאת רשת. אנא בדוק את החיבור שלך ונסה שוב.",
-    "unexpected_error": "אירעה שגיאה לא צפויה. אנא נסה שוב."  
+    "unexpected_error": "אירעה שגיאה לא צפויה. אנא נסה שוב.",
+    "accountDisabledError": "החשבון שלך הושבת. אנא פנה למנהל."
+  
   },
   "userManagementScreen":{
     "title": "ניהול משתמשים",
@@ -175,6 +176,7 @@
   "reservationsManagementScreen":{
     "title": "ניהול הזמנות"
   },
+  "cancellationWarningMessageSimple": "האם אתה בטוח שברצונך לבטל? לא תקבל החזר.",
   "you": "אתה/את",
   "logout": "התנתק",
   "changeLanguage": "שנה שפה",

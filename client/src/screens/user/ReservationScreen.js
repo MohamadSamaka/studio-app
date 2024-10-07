@@ -1,663 +1,875 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import {
   View,
   Text,
+  TouchableOpacity,
   StyleSheet,
-  Animated,
-  ScrollView,
+  ImageBackground,
+  FlatList,
+  Dimensions,
+  Alert,
   ActivityIndicator,
-} from 'react-native';
-import { Calendar } from 'react-native-calendars';
-import moment from 'moment';
-import AppBar from '../../components/common/AppBar';
-import CustomAlert from '../../components/common/CustomAlert';
-import CalendarHeader from '../../components/client/reservration/CalendarHeader'
-import TimeSlot from '../../components/client/reservration/TimeSlot';
-import ReservationModal from '../../components/client/reservration/ReservationModal';
-import BookingModal from '../../components/client/reservration/BookingModal';
-import { generateTimeSlots } from '../../utils/timeSlots';
-import { useAuthContext } from '../../contexts/AuthContext';
-import { useUserContext } from '../../contexts/UserContext';
-import { useConfigContext } from '../../contexts/ConfigContext';
-import { 
-  getBusinessCalender,
-  createReservation,
-  getOrganizedReservationsByDateAndTime
- } from '../../utils/axios'
-import { useTranslation } from 'react-i18next'; // Import useTranslation
-import { theme } from '../../utils/theme'
+  Animated,
+  I18nManager,
+} from "react-native";
+import { WeekCalendar, CalendarProvider } from "react-native-calendars";
+import { Card, Title, Paragraph, Avatar } from "react-native-paper";
+import Icon from "react-native-vector-icons/MaterialCommunityIcons";
+import { LinearGradient } from "expo-linear-gradient";
+import AppBar from "../../components/common/AppBar";
+import moment from "moment";
+import Modal from "react-native-modal";
+import AvatarStack from "../../components/client/reservation/AvatarStack";
 
-const CustomReservationCalendar = () => {
-  const { config, loading: configLoading } = useConfigContext();
-  const { t } = useTranslation(); // Initialize translation function
-  const { credits, updateCredits } = useUserContext();
-  const { user, loading: authLoading } = useAuthContext();
-  const [reservations, setReservations] = useState([]);
-  // const { reservations, setReservations, fetchReservations, loading: reservationsLoading } = useReservations();
+import ConfirmationModal from "../../components/common/ConfirmationModal";
+import { useTranslation } from "react-i18next";
+import { useUserContext } from "../../contexts/UserContext";
+import { useConfigContext } from "../../contexts/ConfigContext";
+import {
+  getOrganizedReservationsByDateAndTime,
+  bookTimeSlot,
+  cancelUserReservation,
+} from "../../utils/axios";
 
-  const [maxUsersPerSlot, setMaxUsersPerSlot] = useState(null);
-  const [slotDuration, setSlotDuration] = useState(null);
-  const [markedDates, setMarkedDates] = useState({});
-  const [businessHours, setBusinessHours] = useState({});
-  const [selectedDate, setSelectedDate] = useState(null);
-  const [displayedDates, setDisplayedDates] = useState([moment().format('YYYY-MM-DD')]);
-  const [modalVisible, setModalVisible] = useState(false);
-  const [selectedSlot, setSelectedSlot] = useState(null);
-  const [bookingModalVisible, setBookingModalVisible] = useState(false);
-  const [calendarLoading, setCalendarLoading] = useState(true);
-  const [currentMonth, setCurrentMonth] = useState(moment().format('YYYY-MM'));
-  const scrollViewRef = useRef(null);
-  const scrollY = useRef(new Animated.Value(0)).current;
-  const [dateLayouts, setDateLayouts] = useState({});
-  const [userBookings, setUserBookings] = useState({});
-  const [alertState, setAlertState] = useState({
-    visible: false,
-    title: '',
-    message: '',
-    type: 'confirm',
-    confirmAction: null,
-  });
+// Import the default avatar image
+const defaultAvatar = require("../../../assets/images/user.png"); // Adjust the path as necessary
 
-  const minDate = moment().startOf('month').format('YYYY-MM-DD');
-  const maxDate = moment().add(3, 'months').endOf('month').format('YYYY-MM-DD');
 
-  // Update config-based settings
+const ReservationItem = ({
+  item,
+  handleToggleReservation,
+  handleShowAttendees,
+  t,
+  userId,
+}) => {
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+
+  const {
+    date,
+    time,
+    title = "Untitled",
+    isReserved = false,
+    location = "N/A",
+    trainer = null, // Initialize as null
+    attendees = [],
+    max_participants = 0,
+  } = item;
+
+  const userIsReserved = attendees.some((attendee) => attendee.id === userId);
+  const isFullyBooked = attendees.length >= max_participants;
+
+  // Start fade-in animation for Fully Booked Overlay
   useEffect(() => {
-    if (config && config.reservations) {
-      setMaxUsersPerSlot(config.reservations['max-users-per-reservation']);
-      setSlotDuration(config.reservations['timeslots-duration']);
+    if (isFullyBooked && !userIsReserved) {
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 500,
+        useNativeDriver: true,
+      }).start();
+    } else {
+      fadeAnim.setValue(0);
     }
-  }, [config]);
+  }, [isFullyBooked, userIsReserved, fadeAnim]);
 
-  // Fetch business days and reservations when user or month changes
-  // useEffect(() => {
-  //   if (!authLoading && user) {
-  //     fetchBusinessDays();
-  //     fetchReservations();
-  //   }
-  // }, [currentMonth, user, authLoading]);
-
-  useEffect(() => {
-    if (!authLoading && user) {
-      fetchBusinessDays();
-      fetchReservations();
-    }
-    setSelectedDate(null)
-  }, [currentMonth, user, authLoading]);
-
-  const fetchReservations = async () => {
-    try {
-      const response = await getOrganizedReservationsByDateAndTime();
-      const reservationsData = response.data;
-      setReservations(reservationsData);
-    } catch (error) {
-      console.error("Error fetching reservations:", error);
-    }
-  };
-
-  const fetchBusinessDays = async () => {
-    setCalendarLoading(true);
-    try {
-      const response = await getBusinessCalender();
-      const businessHoursData = response.data;
-      const hoursByDay = {};
-
-      businessHoursData.forEach((item) => {
-        const dayOfWeek = item.day;
-
-        if (dayOfWeek) {
-          hoursByDay[dayOfWeek] = {
-            fullyClosed: item.fully_closed || false,
-            openTime: item.open_time || null,
-            closeTime: item.close_time || null,
-            breaks: Array.isArray(item.breaks)
-              ? item.breaks.map((breakItem) => ({
-                start: breakItem.start_time,
-                end: breakItem.end_time,
-              }))
-              : [],
-            exceptions: Array.isArray(item.exceptions)
-              ? item.exceptions.map((exception) => ({
-                exceptionDate: exception.exceptionDate,
-                fully_closed: exception.fully_closed,
-                open_time: exception.open_time || null,
-                close_time: exception.close_time || null,
-                exceptionsBreaks: Array.isArray(exception['exceptions-breaks'])
-                  ? exception['exceptions-breaks'].map((breakItem) => ({
-                    start: breakItem.start_time,
-                    end: breakItem.end_time,
-                  }))
-                  : [],
-              }))
-              : [],
-          };
-        } else {
-          console.error('Day of the week is undefined:', item);
-        }
-      });
-
-      setBusinessHours(hoursByDay);
-      const disabledDates = getDisabledDates(hoursByDay);
-      setMarkedDates(disabledDates);
-    } catch (error) {
-      console.error('Error fetching business hours:', error);
-    } finally {
-      setCalendarLoading(false);
-    }
-  };
-
-  const getDisabledDates = (hoursByDay) => {
-    const marked = {};
-    const today = moment().startOf('day');
-
-    for (let monthOffset = 0; monthOffset <= 3; monthOffset++) {
-      const targetMonth = moment().add(monthOffset, 'months');
-      const daysInMonth = targetMonth.daysInMonth();
-
-      for (let day = 1; day <= daysInMonth; day++) {
-        const date = moment(`${targetMonth.year()}-${targetMonth.month() + 1}-${day}`, 'YYYY-MM-DD');
-        const dayOfWeek = date.format('dddd');
-
-        // Disable past dates
-        if (date.isBefore(today)) {
-          marked[date.format('YYYY-MM-DD')] = {
-            disabled: true,
-            disableTouchEvent: true,
-          };
-          continue;
-        }
-
-        const businessDay = hoursByDay[dayOfWeek];
-        if (!businessDay) {
-          marked[date.format('YYYY-MM-DD')] = {
-            disabled: true,
-            disableTouchEvent: true,
-          };
-        } else {
-          const exception = businessDay.exceptions.find(
-            (ex) => ex.exceptionDate === date.format('YYYY-MM-DD')
-          );
-          if (exception && exception.fully_closed) {
-            marked[exception.exceptionDate] = {
-              disabled: true,
-              disableTouchEvent: true,
-            };
-          }
-        }
-      }
-    }
-    return marked;
-  };
-
-  const handleDateLayout = (date) => (event) => {
-    const { y, height } = event.nativeEvent.layout;
-    setDateLayouts((prevLayouts) => ({
-      ...prevLayouts,
-      [date]: { y, height },
-    }));
-  };
-
-  const handleDateSelect = (date) => {
-    setSelectedDate(date.dateString);
-    setDisplayedDates([date.dateString]);
-
-    if (scrollViewRef.current)
-      scrollViewRef.current.scrollTo({ y: 0, animated: true });
-
-    scrollY.setValue(0);
-  };
-
-  const handleReservation = async (time, date) => {
-    const userName = user?.username || 'Unknown User';
-    const currentReservations = reservations[date]?.[time] || [];
-
-
-    // Check if the user has already booked this slot locally
-    if (userBookings[date] === time || currentReservations.includes(userName)) {
-      setAlertState({
-        visible: true,
-        title: t('reservationScreen.alreadyBooked'),
-        message: t('reservationScreen.alreadyBookedMessage', { date, time }),
-        type: 'info',
-        confirmAction: null,
-      });
-      return;
-    }
-
-    if (credits - 1 < 0) {
-      setAlertState({
-        visible: true,
-        title: t('reservationScreen.insufficientCredits'),
-        message: t('reservationScreen.insufficientCreditsMessage'),
-        type: 'error',
-        confirmAction: null,
-      });
-      return;
-    }
-
-    // Check if the number of reservations is 6 or more
-    if (currentReservations.length >= maxUsersPerSlot) {
-      setAlertState({
-        visible: true,
-        title: t('reservationScreen.fullyBooked'),
-        message: t('reservationScreen.fullyBookedMessage', { date, time }),
-        type: 'alert',
-        confirmAction: null,
-      });
-      return;
-    }
-
-    // Proceed with the reservation
-    setAlertState({
-      visible: true,
-      title: t('reservationScreen.confirmReservation'),
-      message: t('reservationScreen.confirmReservationMessage', { date, time }),
-      type: 'confirm',
-      confirmAction: async () => {
-        try {
-          const reservationData = { date, time };
-          const response = await createReservation(reservationData);
-          const responseData = response.data;
-
-          switch (responseData.status) {
-            case 'success':
-              setReservations((prev) => {
-                const updated = { ...prev };
-                if (!updated[date]) updated[date] = {};
-                if (!updated[date][time]) updated[date][time] = [];
-                updated[date][time].push(userName);
-                return updated;
-              });
-
-              updateCredits(-1);
-
-              setUserBookings((prev) => ({
-                ...prev,
-                [date]: time,
-              }));
-
-              setAlertState({
-                visible: true,
-                title: t('reservationScreen.success'),
-                message: t('reservationScreen.reservationSuccessMessage'),
-                type: 'success',
-                confirmAction: null,
-              });
-              break;
-
-            case 'already_booked':
-              setAlertState({
-                visible: true,
-                title: t('reservationScreen.alreadyBooked'),
-                message: t('reservationScreen.alreadyBookedMessage', { date, time }),
-                type: 'info',
-                confirmAction: null,
-              });
-              break;
-
-            case 'fully_booked':
-              setAlertState({
-                visible: true,
-                title: t('reservationScreen.fullyBooked'),
-                message: t('reservationScreen.fullyBookedMessage', { date, time }),
-                type: 'alert',
-                confirmAction: null,
-              });
-
-            case 'error':
-            default:
-              setAlertState({
-                visible: true,
-                title: t('reservationScreen.reservationFailed'),
-                message: t('reservationScreen.errorMakingReservation'),
-                type: 'error',
-                confirmAction: null,
-              });
-              break;
-          }
-        } catch (error) {
-          setAlertState({
-            visible: true,
-            title: t('reservationScreen.reservationFailed'),
-            message: t('reservationScreen.errorMakingReservation'),
-            type: 'error',
-            confirmAction: null,
-          });
-          console.error('Error creating reservation:', error);
-        }
-      },
-    });
-  };
-
-  const handleConfirm = () => {
-    if (alertState.confirmAction) {
-      alertState.confirmAction();
-    }
-    setAlertState({ ...alertState, visible: false, confirmAction: null });
-  };
-
-  const cancelBooking = () => {
-    const { date, time } = user?.booking || {};
-    if (date && time) {
-      setReservations((prev) => {
-        const updated = { ...prev };
-        if (updated[date] && updated[date][time]) {
-          updated[date][time] = updated[date][time].filter(
-            (name) => name !== user?.username
-          );
-          if (updated[date][time].length === 0) {
-            delete updated[date][time];
-          }
-          if (Object.keys(updated[date]).length === 0) {
-            delete updated[date];
-          }
-        }
-        return updated;
-      });
-      updateCredits(1); // Assuming cancellation refunds a credit
-      setUserBookings((prev) => {
-        const updated = { ...prev };
-        delete updated[date];
-        return updated;
-      });
-      setAlertState({
-        visible: true,
-        title: t('reservationScreen.bookingCanceled'),
-        message: t('reservationScreen.bookingCanceledMessage'),
-        type: 'success',
-        confirmAction: null,
-      });
-    }
-  };
-
-  const showReservationDetails = (slot, date) => {
-    setSelectedSlot({ ...slot, date });
-    setModalVisible(true);
-  };
-
-  const renderTimeSlotsForDate = (date) => {
-    const slots = generateTimeSlots(date, businessHours, reservations, slotDuration, maxUsersPerSlot);
-
-    const dateObj = new Date(date);
-    const day = dateObj.getDate();
-    const dayOfWeek = dateObj.toLocaleDateString('en-US', { weekday: 'short' });
-
-    const reservationsForDate = reservations[date] || {};
-
-    return (
-      <View key={date} style={styles.dateSection} onLayout={handleDateLayout(date)}>
-        <View style={styles.dateColumn}>
-          <Text style={styles.dayOfMonth}>{day}</Text>
-          <Text style={styles.dayOfWeek}>{dayOfWeek}</Text>
-        </View>
-        <View style={styles.slotsColumn}>
-          {slots.length === 0 ? (
-            <Text style={styles.noSlotsText}>
-              {t('reservationScreen.noAvailableSlots')}
-            </Text>) : (
-            slots.map((slot, index) => (
-              <TimeSlot
-                key={slot.time}
-                index={index}
-                slot={slot}
-                theme={theme}
-                scrollY={scrollY}
-                handleReservation={(time) => handleReservation(time, date)}
-                showReservationDetails={() => showReservationDetails(slot, date)}
-                maxUsersPerSlot={3}
-              />
-            ))
-          )}
-        </View>
-      </View>
-    );
-  };
-
-  const loadNextDate = () => {
-    const lastDisplayedDate = displayedDates[displayedDates.length - 1];
-    const nextDate = moment(lastDisplayedDate).add(1, 'day');
-    const nextDateString = nextDate.format('YYYY-MM-DD');
-
-    if (nextDate.isBefore(maxDate)) {
-      setDisplayedDates((prev) => [...prev, nextDateString]);
-    }
-  };
-
-  const renderCustomHeader = () => {
-    const currentMoment = moment(currentMonth, 'YYYY-MM');
-    const minMoment = moment(minDate, 'YYYY-MM-DD').startOf('month');
-    const maxMoment = moment(maxDate, 'YYYY-MM-DD').endOf('month');
-
-    const canGoBack = currentMoment.isAfter(minMoment, 'month');
-    const canGoForward = currentMoment.isBefore(maxMoment, 'month');
-
-    const changeMonth = (direction) => {
-      const newMonth =
-        direction === 'next'
-          ? currentMoment.clone().add(1, 'month')
-          : currentMoment.clone().subtract(1, 'month');
-
-      if (newMonth.isBetween(minMoment, maxMoment, 'month', '[]')) {
-        setCurrentMonth(newMonth.format('YYYY-MM'));
-      }
-    };
-
-    return (
-      <CalendarHeader
-        currentMonth={currentMoment.format('MMMM YYYY')}
-        canGoBack={canGoBack}
-        canGoForward={canGoForward}
-        onChangeMonth={changeMonth}
-      />
-    );
+  // Helper function to get the first letter of the day based on locale
+  const getDayInitial = (date) => {
+    const day = moment(date)
+      .locale(I18nManager.isRTL ? "ar" : "en")
+      .format("dddd");
+    const initial = day.charAt(0);
+    return initial.toUpperCase();
   };
 
   return (
-    <>
-      <AppBar />
-      <View style={styles.container}>
-        <View style={styles.calendarContainer}>
-        {calendarLoading || configLoading ? (
-            <ActivityIndicator size="large" color="#4682B4" style={styles.spinner} />
-          ) : (
-            <Calendar
-              current={currentMonth}
-              minDate={minDate}
-              maxDate={maxDate}
-              onDayPress={handleDateSelect}
-              markedDates={{
-                ...markedDates,
-                ...(selectedDate && {
-                  [selectedDate]: { selected: true, selectedColor: '#4682B4' },
-                }),
-              }}
-              hideArrows={true}
-              hideExtraDays={true}
-              disableMonthChange={true}
-              renderHeader={renderCustomHeader}
-              theme={{
-                arrowColor: '#4682B4',
-                arrowStyle: {
-                  padding: 5,
-                },
-                backgroundColor: '#ffffff',
-                calendarBackground: '#ffffff',
-                textSectionTitleColor: '#4682B4',
-                selectedDayBackgroundColor: '#4682B4',
-                selectedDayTextColor: '#ffffff',
-                todayTextColor: '#4682B4',
-                dayTextColor: '#2f4f4f',
-                textDisabledColor: '#d9e1e8',
-                dotColor: '#4682B4',
-                selectedDotColor: '#ffffff',
-                monthTextColor: '#4682B4',
-                indicatorColor: '#4682B4',
-                textDayFontWeight: '300',
-                textMonthFontWeight: 'bold',
-                textDayHeaderFontWeight: '300',
-                textDayFontSize: 16,
-                textMonthFontSize: 18,
-                textDayHeaderFontSize: 14,
-              }}
-              style={{ width: '100%' }} // Ensures the calendar takes the full width of its container
-            />
-          )}
+    <View style={styles.reservationContainer}>
+      <View style={styles.dateContainer}>
+        <View style={styles.dateInnerContainer}>
+          <Text style={styles.dateNumber}>{moment(date).format("D")}</Text>
+          <Text style={styles.dateDay}>{getDayInitial(date)}</Text>
         </View>
-
-        {!selectedDate && (
-          <Text style={styles.selectDateText}>
-            {t('reservationScreen.pleaseSelectDate')}
-          </Text>
-        )}
-        {selectedDate && (
-          <Animated.ScrollView
-            style={styles.timeSlotsContainer}
-            ref={scrollViewRef}
-            onScroll={Animated.event(
-              [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-              { useNativeDriver: true }
-            )}
-            scrollEventThrottle={16}
-            onMomentumScrollEnd={({ nativeEvent }) => {
-              if (
-                nativeEvent.contentOffset.y + nativeEvent.layoutMeasurement.height >=
-                nativeEvent.contentSize.height - 20
-              ) {
-                loadNextDate();
-              }
-
-              const scrollPosition = nativeEvent.contentOffset.y;
-              let closestDate = null;
-              let closestDistance = Infinity;
-
-              for (const date in dateLayouts) {
-                const distance = Math.abs(dateLayouts[date].y - scrollPosition);
-                if (distance < closestDistance) {
-                  closestDistance = distance;
-                  closestDate = date;
-                }
-              }
-
-              if (closestDate && closestDate !== selectedDate) {
-                setSelectedDate(closestDate);
-              }
-            }}
-          >
-            {displayedDates.map((date, index) => (
-              <React.Fragment key={date}>
-                {renderTimeSlotsForDate(date)}
-                {index < displayedDates.length - 1 && (
-                  <View style={styles.dateSeparator} />
-                )}
-              </React.Fragment>
-            ))}
-          </Animated.ScrollView>
-        )}
-
-        {/* Reservation Details Modal */}
-        <ReservationModal
-          visible={modalVisible}
-          slot={selectedSlot}
-          onClose={() => setModalVisible(false)}
-        />
-
-        {/* Current Booking Modal */}
-        <BookingModal
-          visible={bookingModalVisible}
-          booking={user?.booking}
-          onCancel={cancelBooking}
-          onClose={() => setBookingModalVisible(false)}
-        />
-
-        {/* Custom Alert */}
-        <CustomAlert
-          visible={alertState.visible}
-          title={alertState.title}
-          message={alertState.message}
-          onConfirm={handleConfirm}
-          onCancel={() => setAlertState({ ...alertState, visible: false })}
-          type={alertState.type}
-        />
       </View>
-    </>
+      <Card style={styles.cardContainer}>
+        <TouchableOpacity
+          onPress={() => handleToggleReservation(date, time)}
+          accessibilityLabel={`Toggle reservation for ${title} on ${date} at ${time}`}
+          disabled={isFullyBooked && !userIsReserved}
+        >
+          <ImageBackground
+            source={require("../../../assets/images/studio.jpg")} // Ensure the image exists
+            style={styles.cardBackground}
+            imageStyle={styles.cardBackgroundImage}
+          >
+            {/* Apply gradient overlay */}
+            <LinearGradient
+              colors={
+                isReserved
+                  ? ["rgba(0,0,0,0.6)", "rgba(0,0,0,0.6)"]
+                  : ["rgba(0,0,0,0.1)", "rgba(0,0,0,0.3)"]
+              }
+              style={styles.overlay}
+            />
+            <Card.Content style={styles.cardContent}>
+              <Title style={styles.title}>{title}</Title>
+              <View style={styles.detailsContainer}>
+                <View style={styles.iconTextContainer}>
+                  <Icon name="clock-outline" size={18} color="#fff" />
+                  <Paragraph style={styles.details}>{time}</Paragraph>
+                </View>
+                <View style={styles.iconTextContainer}>
+                  <Icon name="map-marker-outline" size={18} color="#fff" />
+                  <Paragraph style={styles.details}>{location}</Paragraph>
+                </View>
+              </View>
+              {/* Render Trainer Icon Safely */}
+              <View style={styles.iconTextContainer}>
+                <Icon name="account-outline" size={18} color="#fff" />
+                <Paragraph style={styles.details}>
+                  {trainer && trainer.name ? trainer.name : "N/A"}
+                </Paragraph>
+              </View>
+              <AvatarStack
+                participants={attendees}
+                onPress={() => handleShowAttendees(attendees)}
+              />
+            </Card.Content>
+            {/* Animated Overlay for Fully Booked */}
+            {isFullyBooked && !userIsReserved && (
+              <Animated.View
+                style={[styles.fullyBookedOverlay, { opacity: fadeAnim }]}
+              >
+                <Icon name="alert-circle-outline" size={30} color="#fff" />
+                <Text style={styles.fullyBookedText}>
+                  {t("BookingScreen.fullyBooked")}
+                </Text>
+              </Animated.View>
+            )}
+          </ImageBackground>
+        </TouchableOpacity>
+      </Card>
+    </View>
+  );
+};
+
+
+const ReservationSystem = () => {
+  const { t, i18n } = useTranslation();
+  const { config } = useConfigContext();
+  const { user, credits, updateCredits } = useUserContext();
+
+  const [reservations, setReservations] = useState({});
+  const [selectedDate, setSelectedDate] = useState(
+    moment().format("YYYY-MM-DD")
+  );
+  const [markedDates, setMarkedDates] = useState({});
+  const [isModalVisible, setModalVisible] = useState(false);
+  const [modalAttendees, setModalAttendees] = useState([]);
+  const [confirmationModalVisible, setConfirmationModalVisible] =
+    useState(false);
+  const [confirmationModalProps, setConfirmationModalProps] = useState({});
+  const [slotDuration, setSlotDuration] = useState(null);
+  const [cancelRefundThreshold, setCancelRefundThreshold] = useState(null);
+  const [loading, setLoading] = useState(true); // Loading state to manage data fetching
+
+  // Function to fetch reservations from API
+  const fetchUserReservations = async () => {
+    try {
+      const response = await getOrganizedReservationsByDateAndTime(); // Ensure this function is correctly imported
+      const fetchedReservations = response.data;
+
+      // Validate fetchedReservations
+      if (!fetchedReservations || typeof fetchedReservations !== "object") {
+        console.warn(
+          "Fetched reservations data is invalid:",
+          fetchedReservations
+        );
+        setReservations({});
+        setMarkedDates({});
+        return;
+      }
+
+      // Sanitize attendees to include only id and name
+      const sanitizedReservations = Object.keys(fetchedReservations).reduce(
+        (acc, date) => {
+          acc[date] = Object.keys(fetchedReservations[date]).reduce(
+            (timeAcc, time) => {
+              const reservation = fetchedReservations[date][time];
+              const sanitizedAttendees = reservation.attendees.map(
+                (attendee) => ({
+                  id: attendee.id,
+                  name: attendee.name,
+                })
+              );
+              timeAcc[time] = {
+                ...reservation,
+                attendees: sanitizedAttendees,
+              };
+              return timeAcc;
+            },
+            {}
+          );
+          return acc;
+        },
+        {}
+      );
+
+      setReservations(sanitizedReservations);
+      console.log("Fetched Reservations: ", sanitizedReservations);
+
+      const marked = Object.keys(sanitizedReservations).reduce((acc, date) => {
+        acc[date] = { marked: true, dots: [{ color: "#00adf5" }] };
+        return acc;
+      }, {});
+      setMarkedDates(marked);
+    } catch (error) {
+      console.error("Error fetching reservations:", error);
+      Alert.alert(
+        t("myReservationsScreen.error"),
+        t("myReservationsScreen.errorFetchingReservations")
+      );
+    }
+  };
+
+  // Load slotDuration and cancelRefundThreshold from config
+  useEffect(() => {
+    if (config && config.reservations) {
+      setSlotDuration(config.reservations["timeslots-duration"]);
+      setCancelRefundThreshold(
+        config.reservations["cancelation-refund-threshold-time"]
+      );
+    }
+  }, [config]);
+
+  // Fetch reservations when component mounts
+  useEffect(() => {
+    if (!user) return; // Prevent fetching if user is null
+    fetchUserReservations();
+  }, []);
+
+  // Set loading to false once cancelRefundThreshold and reservations are loaded
+  useEffect(() => {
+    if (
+      cancelRefundThreshold !== null &&
+      Object.keys(reservations).length > 0
+    ) {
+      setLoading(false);
+    }
+  }, [cancelRefundThreshold, reservations]);
+
+  // Helper function to check if the user is already booked in the reservation
+  const isUserReserved = (attendees) => {
+    return attendees.some((attendee) => attendee.id === user.id);
+  };
+
+  // Function to handle booking a reservation
+  const bookReservation = async (date, time, reservation) => {
+    try {
+      await bookTimeSlot(reservation.id);
+
+      setReservations((prevReservations) => {
+        const currentAttendees = prevReservations[date][time].attendees;
+        const userAlreadyAttending = currentAttendees.some(
+          (attendee) => attendee.id === user.id
+        );
+
+        // Define a sanitized user object with only id and name
+        const sanitizedUser = { id: user.id, name: user.username };
+
+        return {
+          ...prevReservations,
+          [date]: {
+            ...prevReservations[date],
+            [time]: {
+              ...prevReservations[date][time],
+              isReserved: true,
+              attendees: userAlreadyAttending
+                ? currentAttendees
+                : [...currentAttendees, sanitizedUser],
+            },
+          },
+        };
+      });
+
+      updateCredits(-1); // Deduct one credit
+      Alert.alert(
+        t("BookingScreen.title"),
+        t("BookingScreen.confirmBookingSuccess")
+      );
+    } catch (error) {
+      console.error("Failed to book reservation:", error);
+      Alert.alert(t("BookingScreen.error"), t("BookingScreen.bookingFailed"));
+    }
+  };
+
+  // Function to handle canceling a reservation
+  const cancelReservation = async (date, time, reservation) => {
+    try {
+      await cancelUserReservation(reservation.id);
+
+      // Update the reservation's isReserved status and remove the user from attendees
+      setReservations((prevReservations) => ({
+        ...prevReservations,
+        [date]: {
+          ...prevReservations[date],
+          [time]: {
+            ...prevReservations[date][time],
+            isReserved: false,
+            attendees: prevReservations[date][time].attendees.filter(
+              (attendee) => attendee.id !== user.id
+            ),
+          },
+        },
+      }));
+
+      const now = moment();
+      const reservationDateTime = moment(`${date} ${time}`, "YYYY-MM-DD HH:mm");
+      const durationHours = moment
+        .duration(cancelRefundThreshold, "HH:mm:ss")
+        .asHours();
+      const timeDifference = reservationDateTime.diff(now, "hours", true);
+
+      if (timeDifference > durationHours) {
+        // Eligible for credit refund
+        updateCredits(1); // Add one credit
+        Alert.alert(
+          t("BookingScreen.title"),
+          t("BookingScreen.cancelSuccessWithRefund")
+        );
+      } else {
+        // Not eligible for credit refund
+        Alert.alert(
+          t("BookingScreen.title"),
+          t("BookingScreen.cancelSuccessNoRefund")
+        );
+      }
+    } catch (error) {
+      console.error("Failed to cancel reservation:", error);
+      Alert.alert(
+        t("BookingScreen.error"),
+        t("BookingScreen.cancellationFailed")
+      );
+    }
+  };
+
+  // Function to handle toggling a reservation with confirmation and pre-checks
+  const handleToggleReservation = useCallback(
+    (date, time) => {
+      const reservation = reservations[date]?.[time];
+      if (!reservation) {
+        console.error(`Reservation not found for date: ${date}, time: ${time}`);
+        Alert.alert(
+          t("myReservationsScreen.error"),
+          t("myReservationsScreen.reservationNotFound")
+        );
+        return;
+      }
+
+      const userIsReserved = isUserReserved(reservation.attendees);
+      // If user is already reserved, handle cancellation
+      if (userIsReserved) {
+        const now = moment();
+        const reservationDateTime = moment(
+          `${date} ${time}`,
+          "YYYY-MM-DD HH:mm"
+        );
+
+        // Ensure cancelRefundThreshold is valid
+        if (
+          !cancelRefundThreshold ||
+          typeof cancelRefundThreshold !== "string"
+        ) {
+          console.error(
+            "Invalid cancelRefundThreshold:",
+            cancelRefundThreshold
+          );
+          Alert.alert(
+            t("myReservationsScreen.error"),
+            t("myReservationsScreen.invalidRefundThreshold")
+          );
+          return;
+        }
+
+        // Parse cancelRefundThreshold as a duration in hours
+        const durationHours = moment
+          .duration(cancelRefundThreshold, "HH:mm:ss")
+          .asHours();
+
+        if (isNaN(durationHours)) {
+          console.error("Parsed durationHours is NaN:", cancelRefundThreshold);
+          Alert.alert(
+            t("myReservationsScreen.error"),
+            t("myReservationsScreen.invalidRefundThresholdFormat")
+          );
+          return;
+        }
+
+        const timeDifference = reservationDateTime.diff(now, "hours", true);
+
+        let warningMessage = null;
+
+        if (timeDifference <= durationHours) {
+          warningMessage = t("BookingScreen.cancellationWarningNoRefund");
+        }
+
+        setConfirmationModalProps({
+          title: t("BookingScreen.areYouSure"),
+          message:
+            warningMessage ||
+            t("BookingScreen.confirmCancelBooking", {
+              title: reservation.title,
+              date: date,
+              time: time,
+            }),
+          confirmText: t("BookingScreen.yesCancel"),
+          cancelText: t("BookingScreen.cancel"),
+          onConfirm: () => {
+            cancelReservation(date, time, reservation);
+            setConfirmationModalVisible(false);
+          },
+          onCancel: () => {
+            setConfirmationModalVisible(false);
+          },
+        });
+        setConfirmationModalVisible(true);
+      } else {
+        // User is not reserved, handle booking
+        // Check if user has enough credits
+        if (credits <= 0) {
+          Alert.alert(
+            t("BookingScreen.insufficientCreditsTitle"),
+            t("BookingScreen.insufficientCredits")
+          );
+          return;
+        }
+
+        // Check if reservation is fully booked
+        if (reservation.attendees.length >= reservation.max_participants) {
+          Alert.alert(
+            t("BookingScreen.fullyBookedTitle"),
+            t("BookingScreen.fullyBooked")
+          );
+          return;
+        }
+
+        // All checks passed, proceed to booking confirmation
+        setConfirmationModalProps({
+          title: t("BookingScreen.areYouSure"),
+          message: t("BookingScreen.confirmBooking", {
+            title: reservation.title,
+            date: date,
+            time: time,
+          }),
+          confirmText: t("BookingScreen.yesBook"),
+          cancelText: t("BookingScreen.cancel"),
+          onConfirm: () => {
+            bookReservation(date, time, reservation);
+            setConfirmationModalVisible(false);
+          },
+          onCancel: () => {
+            setConfirmationModalVisible(false);
+          },
+        });
+        setConfirmationModalVisible(true);
+      }
+    },
+    [reservations, t, cancelRefundThreshold, credits]
+  );
+
+  // Function to handle showing attendees modal
+  const handleShowAttendees = (attendees) => {
+    setModalAttendees(attendees);
+    setModalVisible(true);
+  };
+
+  // Transform the reservations[selectedDate] object into an array for FlatList
+  const reservationsForSelectedDate = selectedDate
+    ? Object.entries(reservations[selectedDate] || {}).map(
+        ([time, reservation]) => ({
+          date: selectedDate,
+          time,
+          ...reservation,
+        })
+      )
+    : [];
+
+  // Render item for FlatList using ReservationItem component
+  const renderItem = ({ item }) => (
+    <ReservationItem
+      item={item}
+      handleToggleReservation={handleToggleReservation}
+      handleShowAttendees={handleShowAttendees}
+      t={t}
+      userId={user.id}
+    />
+  );
+
+  // If loading, show ActivityIndicator
+  if (loading) {
+    return (
+      <View style={styles.container}>
+        <AppBar />
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#00adf5" />
+        </View>
+      </View>
+    );
+  }
+
+
+  if (!user) {
+    return (
+      <View style={styles.container}>
+        <AppBar />
+        <View style={styles.notLoggedInContainer}>
+          <Text style={styles.notLoggedInText}>
+            {t("BookingScreen.notLoggedIn")}
+          </Text>
+          <TouchableOpacity
+            style={styles.loginButton}
+            onPress={() => navigation.navigate('Login')} // Replace 'Login' with your actual login route name
+          >
+            <Text style={styles.loginButtonText}>{t("BookingScreen.login")}</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  }
+
+  return (
+    <View style={styles.container}>
+      <AppBar />
+      <View style={styles.calendarContainer}>
+        <CalendarProvider
+          date={selectedDate}
+          onDateChanged={(date) => {
+            setSelectedDate(date);
+          }}
+          showTodayButton={false}
+          minDate={moment().format("YYYY-MM-DD")} // Added minDate
+          disabledDates={(date) =>
+            moment(date).isBefore(moment().format("YYYY-MM-DD"))
+          }
+        >
+          <WeekCalendar
+            firstDay={1}
+            minDate={moment().format("YYYY-MM-DD")} // Added minDate
+            maxDate={moment().add(2, 'month').format("YYYY-MM-DD")}
+            markedDates={{
+              ...markedDates,
+              [selectedDate]: {
+                ...(markedDates[selectedDate] || {}),
+                selected: true,
+                selectedColor: "#00adf5",
+              },
+            }}
+            renderArrow={(direction) => (
+              <Icon
+                name={direction === "left" ? "chevron-left" : "chevron-right"}
+                size={24}
+                color="#00adf5"
+              />
+            )}
+            theme={{
+              selectedDayBackgroundColor: "#00adf5",
+              selectedDayTextColor: "#ffffff",
+              todayTextColor: "#00adf5",
+              arrowColor: "#00adf5",
+              monthTextColor: "#00adf5",
+              textMonthFontWeight: "bold",
+              textDayFontFamily: "System",
+              textMonthFontFamily: "System",
+            }}
+            onDayPress={(day) => {
+              setSelectedDate(day.dateString);
+            }}
+            style={styles.calendar}
+          />
+        </CalendarProvider>
+      </View>
+      <View style={styles.reservationsContainer}>
+        {reservationsForSelectedDate.length > 0 ? (
+          <FlatList
+            data={reservationsForSelectedDate}
+            keyExtractor={(item) => `${item.date}-${item.time}`}
+            renderItem={renderItem}
+            contentContainerStyle={{ paddingBottom: 16 }}
+          />
+        ) : (
+          <View style={styles.emptyDate}>
+            <Text>{t("BookingScreen.noReservationsForThisDate")}</Text>
+          </View>
+        )}
+      </View>
+
+      {/* Modal for Attendees */}
+      <Modal
+        isVisible={isModalVisible}
+        onBackdropPress={() => setModalVisible(false)}
+        onBackButtonPress={() => setModalVisible(false)}
+        style={styles.modal}
+      >
+        <View style={styles.modalContent}>
+          <Text style={styles.modalTitle}>{t("BookingScreen.attendees")}</Text>
+          <FlatList
+            data={modalAttendees}
+            keyExtractor={(item, index) => index.toString()}
+            renderItem={({ item }) => {
+              // Ensure attendee properties are defined
+              const { name = "Unnamed", avatarUrl } = item;
+              return (
+                <View style={styles.modalAttendeeContainer}>
+                  <Avatar.Image
+                    size={50}
+                    source={avatarUrl ? { uri: avatarUrl } : defaultAvatar}
+                    style={styles.modalAvatar}
+                  />
+                  <Text style={styles.modalAttendeeName}>{name}</Text>
+                </View>
+              );
+            }}
+            contentContainerStyle={{ paddingBottom: 20 }}
+          />
+          <TouchableOpacity
+            style={styles.closeButton}
+            onPress={() => setModalVisible(false)}
+            accessibilityLabel="Close Attendees Modal"
+          >
+            <Text style={styles.closeButtonText}>
+              {t("BookingScreen.close")}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </Modal>
+
+      {/* Confirmation Modal */}
+      <ConfirmationModal
+        visible={confirmationModalVisible}
+        onRequestClose={() => setConfirmationModalVisible(false)}
+        {...confirmationModalProps}
+      />
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
   },
   calendarContainer: {
-    height: 350, // Fixed height to keep space consistent
-    width: '100%', // Ensure the calendar takes the full width of the container
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#ffffff', // White background for the calendar
-    borderRadius: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    elevation: 4,
-    marginBottom: 20,
+    height: 80,
+    overflow: "hidden",
   },
-  spinner: {
-    height: 350, // Ensure spinner takes the same height as the calendar container
-    justifyContent: 'center',
-    alignItems: 'center',
+  calendar: {
+    height: 80,
   },
-  selectDateText: {
-    textAlign: 'center',
-    marginTop: 20,
-    fontSize: 16,
-    color: '#4682B4',
-  },
-  timeSlotsContainer: {
-    flex: 1, // Takes up the remaining space below the calendar
-    marginTop: 20,
-    paddingHorizontal: 15,
-  },
-  dateSection: {
-    flexDirection: 'row',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E0E0E0',
-    backgroundColor: '#FFFFFF',
-  },
-  dateColumn: {
-    width: 60,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
-  },
-  dayOfMonth: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: '#333333',
-  },
-  dayOfWeek: {
-    fontSize: 14,
-    color: '#666666',
-    marginTop: 4,
-    textTransform: 'capitalize',
-  },
-  slotsColumn: {
+  reservationsContainer: {
     flex: 1,
+    paddingHorizontal: 16,
+    paddingTop: 8,
   },
-  noSlotsText: {
+  reservationContainer: {
+    flexDirection: "row",
+    marginBottom: 16,
+  },
+  dateContainer: {
+    width: 60,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 10,
+  },
+  dateInnerContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  dateNumber: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "#333333",
+    textAlign: "center",
+    writingDirection: I18nManager.isRTL ? "rtl" : "ltr",
+  },
+  dateDay: {
     fontSize: 16,
-    color: '#999999',
-    textAlign: 'center',
-    paddingVertical: 20,
+    fontWeight: "600",
+    color: "#555555",
+    textAlign: "center",
+    writingDirection: I18nManager.isRTL ? "rtl" : "ltr",
   },
-  dateSeparator: {
-    height: 1,
-    backgroundColor: '#CED4DA',
-    marginVertical: 15,
-    width: '100%',
+  cardContainer: {
+    flex: 1,
+    marginLeft: 10,
+    borderRadius: 10,
+    overflow: "hidden",
+    backgroundColor: "#fff",
+    elevation: 5,
+  },
+  cardBackground: {
+    width: "100%",
+    height: 180,
+    borderRadius: 10,
+    overflow: "hidden",
+    justifyContent: "flex-end",
+  },
+  cardBackgroundImage: {
+    resizeMode: "cover",
+  },
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    borderRadius: 10,
+  },
+  cardContent: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    padding: 16,
+  },
+  title: {
+    fontSize: 22,
+    fontWeight: "bold",
+    marginBottom: 8,
+    color: "#fff",
+    textShadowColor: "rgba(0, 0, 0, 0.9)",
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 3,
+  },
+  detailsContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 8,
+  },
+  iconTextContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  details: {
+    fontSize: 16,
+    marginLeft: 4,
+    color: "#fff",
+    textShadowColor: "rgba(0, 0, 0, 0.9)",
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 3,
+  },
+  trainer: {
+    fontSize: 16,
+    fontStyle: "italic",
+    marginBottom: 8,
+    color: "#fff",
+    textShadowColor: "rgba(0, 0, 0, 0.9)",
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 3,
+  },
+  emptyDate: {
+    flex: 1,
+    paddingTop: 30,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  modal: {
+    justifyContent: "center",
+    alignItems: "center",
+    margin: 0,
+  },
+  modalContent: {
+    width: "90%",
+    backgroundColor: "#fff",
+    borderRadius: 10,
+    paddingVertical: 20,
+    paddingHorizontal: 20,
+    alignItems: "center",
+  },
+  modalTitle: {
+    fontSize: 24,
+    marginBottom: 20,
+    fontWeight: "bold",
+    textAlign: "center",
+  },
+  modalAttendeeContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 15,
+  },
+  modalAvatar: {
+    marginRight: 15,
+    backgroundColor: "#007bff",
+  },
+  modalAttendeeName: {
+    fontSize: 18,
+  },
+  closeButton: {
+    backgroundColor: "#00adf5",
+    paddingVertical: 12,
+    paddingHorizontal: 30,
+    borderRadius: 30,
+    marginTop: 20,
+  },
+  closeButtonText: {
+    color: "#fff",
+    textAlign: "center",
+    fontWeight: "bold",
+    fontSize: 16,
+  },
+  participantsList: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginHorizontal: 12,
+  },
+  participantAvatar: {
+    marginHorizontal: 4,
+  },
+  avatarText: {
+    color: "#ffffff",
+    fontWeight: "600",
+  },
+  moreParticipantsChip: {
+    backgroundColor: "#bdc3c7",
+    height: 30,
+    justifyContent: "center",
+    paddingHorizontal: 8,
+    borderRadius: 15,
+    alignItems: "center",
+  },
+  moreParticipantsText: {
+    color: "#2c3e50",
+    fontWeight: "600",
+  },
+  participantListItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: "#ecf0f1",
+  },
+  participantAvatarLarge: {
+    marginHorizontal: 12,
+  },
+  avatarTextLarge: {
+    color: "#ffffff",
+    fontWeight: "600",
+  },
+  participantName: {
+    fontSize: 16,
+    fontWeight: "500",
+    color: "#2c3e50",
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  fullyBookedOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(0, 0, 0, 0.6)",
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 10,
+    flexDirection: "column",
+  },
+  fullyBookedText: {
+    color: "#fff",
+    fontSize: 20,
+    fontWeight: "bold",
+    marginTop: 10,
   },
 });
 
-export default CustomReservationCalendar;
+export default ReservationSystem;
