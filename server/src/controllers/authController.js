@@ -1,6 +1,5 @@
 const authService = require('../services/authService');
 const userRepository = require('../services/userService')
-// const tokenUtils = require('../utils/tokens')
 const { verifyToken } = require('../utils/tokens');
 const { ACCESS_TOKEN_SECRET } = require('../config/env');
 const { trimString } = require("../utils/helpers")
@@ -17,7 +16,7 @@ class AuthController {
         error.statusCode = 409;
         throw error;
       }
-      console.log(`accessToken ${accessToken}`)
+      // console.log(`accessToken ${accessToken}`)
       res.json({ user, accessToken, refreshToken });
     } catch (error) {
       const statusCode = error.statusCode || 401;

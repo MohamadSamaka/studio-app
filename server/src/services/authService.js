@@ -10,9 +10,7 @@ class AuthService {
 
   async loginUser(username, password) {
     const user = await userRepository.findByUsername(username);
-
-    const roleName = user.Role.name;
-
+    const roleName = user?.Role.name;
     if (user && (await comparePassword(password, user.password))) {
       // Generate tokens once
       const accessToken = tokenUtils.generateAccessToken({
