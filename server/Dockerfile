@@ -33,3 +33,6 @@ ENTRYPOINT ["/bin/sh","./entrypoint.sh"]
 
 # Start the app
 CMD ["npm", "run", "start"]
+
+#ready command to keep container running for testing instead of running npm
+#CMD ["tail", "-f", "/dev/null"]
