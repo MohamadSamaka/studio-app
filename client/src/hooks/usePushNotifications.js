@@ -25,7 +25,7 @@ const usePushNotifications = (shouldRegister) => {
     // Set up listeners for notifications
     notificationListener.current =
       Notifications.addNotificationReceivedListener((notification) => {
-        console.log("Notification Received:", notification);
+        console.log("Notification Received: !");
       });
 
     responseListener.current =

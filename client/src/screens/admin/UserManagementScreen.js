@@ -178,10 +178,6 @@ const UserManagementScreen = () => {
 
     const validationErrors = validateForm(fields);
 
-    // Conditional Validation for Trainer
-    if (newUser.role_id !== 2 && !newUser.trainer_id) { // Replace '2' with actual 'trainer' role_id
-      validationErrors.trainer_id = "Please select a trainer.";
-    }
 
     if (!isFormValid(validationErrors)) {
       setErrors(validationErrors);
@@ -433,9 +429,7 @@ const UserManagementScreen = () => {
           mode="outlined"
           error={!!errors.password}
         />
-        {errors.password && (
-          <Text style={styles.errorText}>{errors.password}</Text>
-        )}
+        
         <IconButton
           icon={passwordVisible ? "eye-off" : "eye"}
           size={20}
@@ -443,6 +437,7 @@ const UserManagementScreen = () => {
           style={styles.passwordToggle}
         />
       </View>
+      
 
       <TextInput
         label="Credits"

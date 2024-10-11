@@ -1,5 +1,10 @@
 {
   "BookingScreen": {
+    "BookingTitle": {
+      "Begginer": "מתחיל",
+      "advance": "מתקדם"
+    },
+    "location": "כפר כנא",
     "title": "הזמן",
     "areYouSure": "האם אתה בטוח?",
     "insufficientCreditsTitle": "לא מספיק נקודות זכות",
@@ -82,7 +87,7 @@
     "close": "סגור",
     "statusLabels": {
       "pending": "ממתין",
-      "awaitingPayment": "ממתין לתשלום",
+      "awaiting_payment": "ממתין לתשלום",
       "success": "הצלחה",
       "cancelled": "בוטל",
       "unknown": "לא ידוע"

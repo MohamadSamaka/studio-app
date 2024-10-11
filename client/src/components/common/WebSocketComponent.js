@@ -1,21 +1,24 @@
 import React, { useEffect } from 'react';
 import { useConfigContext } from '../../contexts/ConfigContext';
 import { useAuthContext } from '../../contexts/AuthContext';
+import {
+  getToken,
+} from "../../utils/tokenManager";
 import { WEBSORCKET_URL } from '@env';
 
 const WebSocketComponent = () => {
   const { config, setConfig } = useConfigContext();
   const { user } = useAuthContext();
 
-  useEffect(() => {
+  const initialSocket = async () => {
     if (!user) {
       console.error('No auth token available.');
       return;
     }
-
+    const token = await getToken()
     const socket = new WebSocket(WEBSORCKET_URL, [], {
       headers: {
-        Authorization: `token ${user.token}`,
+        authorization: `token ${token}`,
       },
     });
 
@@ -33,9 +36,17 @@ const WebSocketComponent = () => {
       }
     };
 
+    socket.onerror = (error) => {
+      console.error('WebSocket error:', error.message);
+    };
+
     return () => {
       socket.close();
     };
+  }
+
+  useEffect(() => {
+    initialSocket()
   }, [user, setConfig]);
 
   useEffect(() => {

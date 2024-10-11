@@ -142,16 +142,13 @@ const RechargeRequestsScreen = () => {
             <Title style={styles.title}>
               {t("rechargeRequestsScreen.requestNumber", { id: item.id })}
             </Title>
-            <Paragraph style={styles.detailText}>
+            {/* <Paragraph style={styles.detailText}>
               {t(
                 `subscriptionTypes.${item.Subscription[
                   "subscription_name"
                 ].toLowerCase()}`
               )}
-              {/* {t('rechargeRequestsScreen.subscriptionType', {
-                                type: capitalizeFirstLetter(item.Subscription["subscription_name"]),
-                            })} */}
-            </Paragraph>
+            </Paragraph> */}
             <Paragraph style={styles.detailText}>
               {t("rechargeRequestsScreen.dateAtTime", {
                 date: formatDate(item.date),
@@ -192,7 +189,7 @@ const RechargeRequestsScreen = () => {
                 uppercase={false}
                 icon="cancel"
               >
-                Cancel
+                {t('cancel')}
               </Button>
             )}
           </Card.Actions>
@@ -265,7 +262,6 @@ const RechargeRequestsScreen = () => {
 
   // Map status to friendly label
   const getFriendlyStatus = (status) => {
-    console.log("status; ", status)
     const statusKey = status.toLowerCase();
     return t(`rechargeRequestsScreen.statusLabels.${statusKey}`, {
       defaultValue: t("rechargeRequestsScreen.statusLabels.unknown"),

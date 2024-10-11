@@ -1,5 +1,10 @@
 {
   "BookingScreen": {
+    "BookingTitles":{
+      "Begginer": "Begginer",
+      "advance": "Advance"
+    },
+    "location": "Kafr Kanna",
     "title": "Book",
     "areYouSure": "Are you sure?",
     "insufficientCreditsTitle": "Insufficient Credits",
@@ -39,7 +44,6 @@
     "requestingSubscriptionConfirmationMessage": "Are you sure you want to request the {{subscriptionType}} subscription?"
   },
   "myReservationsScreen": {
-
     "trainer": "Trainer",
     "title": "My Bookings",
     "errorFetchingReservations": "Error fetching reservations:",

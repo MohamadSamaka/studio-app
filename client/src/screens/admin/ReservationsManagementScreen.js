@@ -140,7 +140,6 @@ const ReservationsManagementScreen = () => {
       console.warn("openReservationDetails called with undefined reservation.");
       return;
     }
-    console.log("Opening ReservationDetailsModal with reservation:", reservation);
     setSelectedReservation(reservation);
     setModalVisible(true);
   };
@@ -167,7 +166,10 @@ const ReservationsManagementScreen = () => {
 
   const handleCancelReservations = () => {
     if (selectedReservations.length === 0) {
-      Alert.alert("No Selection", "Please select at least one reservation to cancel.");
+      Alert.alert(
+        "No Selection",
+        "Please select at least one reservation to cancel."
+      );
       return;
     }
 
@@ -185,9 +187,13 @@ const ReservationsManagementScreen = () => {
   const cancelReservations = async () => {
     setCancelling(true);
     try {
-      const deletePromises = selectedReservations.map((id) => deleteReservation(id));
+      const deletePromises = selectedReservations.map((id) =>
+        deleteReservation(id)
+      );
       await Promise.all(deletePromises);
-      setReservations((prev) => prev.filter((res) => !selectedReservations.includes(res.id)));
+      setReservations((prev) =>
+        prev.filter((res) => !selectedReservations.includes(res.id))
+      );
       setSelectedReservations([]);
       showSnackbar("Selected reservations have been canceled.", "success");
       fetchReservations(currentPage);
@@ -206,7 +212,9 @@ const ReservationsManagementScreen = () => {
       `Are you sure you want to delete the reservation on ${moment(
         reservation.date,
         "YYYY-MM-DD"
-      ).format("MM/DD/YYYY")} at ${moment(reservation.time, "HH:mm").format("hh:mm A")}?`,
+      ).format("MM/DD/YYYY")} at ${moment(reservation.time, "HH:mm").format(
+        "hh:mm A"
+      )}?`,
       [
         { text: "No", style: "cancel" },
         { text: "Yes", onPress: () => deleteReservationById(reservation.id) },
@@ -252,11 +260,14 @@ const ReservationsManagementScreen = () => {
         prev
           .map((res) => {
             if (res.id === selectedReservation.id) {
-              const updatedParticipants = res.participants.filter((user) => user.id !== id);
-              if (updatedParticipants.length === 0) {
-                // Return `null` or `undefined` to mark this reservation for removal
-                return null;
-              }
+              const updatedParticipants = res.participants.filter(
+                (user) => user.id !== id
+              );
+              //removing reservation locally
+              // if (updatedParticipants.length === 0) { 
+              //   // Return `null` or `undefined` to mark this reservation for removal
+              //   return null;
+              // }
               return { ...res, participants: updatedParticipants };
             }
             return res;
@@ -264,9 +275,12 @@ const ReservationsManagementScreen = () => {
           .filter((res) => res !== null)
       );
       showSnackbar(`${username} removed from reservation.`, "success");
+      fetchReservations(currentPage)
       setSelectedReservation((prev) => ({
         ...prev,
-        participants: prev.participants.filter((user) => user.username !== username),
+        participants: prev.participants.filter(
+          (user) => user.username !== username
+        ),
       }));
     } catch (error) {
       console.error("Error removing user:", error);
@@ -342,26 +356,25 @@ const ReservationsManagementScreen = () => {
               currentPage={currentPage}
             />
 
-            {/* Reservations Table */}
-            <ReservationsTable
-              reservations={reservations}
-              loading={loading}
-              selectedReservations={selectedReservations}
-              toggleSelection={toggleSelection}
-              selectAll={selectAll}
-              deselectAll={deselectAll}
-              openReservationDetails={openReservationDetails}
-              handleDeleteReservation={handleDeleteReservation}
-              currentPage={currentPage}
-              setCurrentPage={setCurrentPage}
-              totalPages={totalPages}
-              itemsPerPage={limit}
-            />
-
-            {!loading && reservations.length === 0 && (
+            {!loading && reservations.length === 0 ? (
               <View style={styles.noDataContainer}>
                 <Text>No reservations found matching your criteria.</Text>
               </View>
+            ) : (
+              <ReservationsTable
+                reservations={reservations}
+                loading={loading}
+                selectedReservations={selectedReservations}
+                toggleSelection={toggleSelection}
+                selectAll={selectAll}
+                deselectAll={deselectAll}
+                openReservationDetails={openReservationDetails}
+                handleDeleteReservation={handleDeleteReservation}
+                currentPage={currentPage}
+                setCurrentPage={setCurrentPage}
+                totalPages={totalPages}
+                itemsPerPage={limit}
+              />
             )}
 
             {/* Reservation Details Modal */}

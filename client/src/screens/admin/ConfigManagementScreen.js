@@ -20,7 +20,7 @@ import {
   IconButton 
 } from 'react-native-paper';
 import AppBar from '../../components/common/AppBar';
-import { getConfigs, updateConfig } from '../../utils/axios';
+import { updateConfig } from '../../utils/axios';
 import { TimePickerModal } from 'react-native-paper-dates';
 import { useConfigContext } from '../../contexts/ConfigContext';
 
@@ -33,7 +33,7 @@ const ConfigCard = memo(({ title, description, children }) => (
         <IconButton 
           icon="information-outline" 
           size={20} 
-          onPress={() => {}} // You can define a function to show more info
+          onPress={() => {}} 
           style={styles.iconButton}
         />
       </View>
@@ -45,70 +45,52 @@ const ConfigCard = memo(({ title, description, children }) => (
 
 const ConfigManagementScreen = () => {
   const theme = useTheme();
+  const { loading: configLoading, config, setConfig } = useConfigContext();  // ConfigContext
   
-  // State to hold configuration data
-  const [config, setConfig] = useState({
+  // Use local state for form inputs
+  const [localConfig, setLocalConfig] = useState({
     cancelationRefundThresholdTime: '',
     maxUsersPerReservation: '',
     timeslotsDuration: '',
   });
 
-  // State to manage loading status
   const [loading, setLoading] = useState(false);
-
-  // State to manage visibility of time pickers
   const [timePickerVisible, setTimePickerVisible] = useState({
     cancelationRefundThresholdTime: false,
     timeslotsDuration: false,
   });
 
-  // State for Snackbar notifications
   const [snackbar, setSnackbar] = useState({
     visible: false,
     message: '',
-    type: 'success', // 'success', 'error', 'info'
+    type: 'success',
   });
 
-  // Fetch configuration on component mount
+  // Synchronize config values with the form inputs once config is loaded
   useEffect(() => {
-    fetchConfig();
-  }, []);
-
-  // Function to fetch configuration from the server
-  const fetchConfig = async () => {
-    setLoading(true);
-    try {
-      const response = await getConfigs();
-      const data = response.data.reservations;
-      setConfig({
-        cancelationRefundThresholdTime: formatTime(data["cancelation-refund-threshold-time"]),
-        maxUsersPerReservation: data["max-users-per-reservation"] !== undefined 
-          ? data["max-users-per-reservation"].toString() 
-          : '',
-        timeslotsDuration: formatTime(data["timeslots-duration"]),
+    if (config) {
+      setLocalConfig({
+        cancelationRefundThresholdTime: config.reservations["cancelation-refund-threshold-time"] || '00:00',
+        maxUsersPerReservation: config.reservations["max-users-per-reservation"]?.toString() || '',
+        timeslotsDuration: config.reservations["timeslots-duration"] || '00:00',
       });
-    } catch (error) {
-      console.error('Error fetching config:', error);
-      showSnackbar('Error fetching configuration', 'error');
-    } finally {
-      setLoading(false);
     }
-  };
+  }, [config]);  // Only run when config changes
 
-  // Function to handle saving the configuration
   const handleSave = async () => {
-    // Input validation
     if (!validateInputs()) return;
 
     setLoading(true);
     try {
-      await updateConfig({
+      const newConfig = {
         "reservations": {
-          "cancelation-refund-threshold-time": config.cancelationRefundThresholdTime,
-          "max-users-per-reservation": parseInt(config.maxUsersPerReservation, 10),
-          "timeslots-duration": config.timeslotsDuration,
+          "cancelation-refund-threshold-time": localConfig.cancelationRefundThresholdTime || '00:00',
+          "max-users-per-reservation": parseInt(localConfig.maxUsersPerReservation, 10) || 0,
+          "timeslots-duration": localConfig.timeslotsDuration || '00:00',
         }
-      });
+      }
+      await updateConfig(newConfig);
+      setConfig(newConfig)
       showSnackbar('Configuration updated successfully', 'success');
     } catch (error) {
       console.error('Error updating config:', error);
@@ -118,48 +100,41 @@ const ConfigManagementScreen = () => {
     }
   };
 
-  // Function to open the time picker
   const openTimePicker = (field) => {
     setTimePickerVisible({ ...timePickerVisible, [field]: true });
   };
 
-  // Function to handle time selection from the picker
   const onConfirmTime = (field, time) => {
     const formattedTime = `${padZero(time.hours)}:${padZero(time.minutes)}`;
-    setConfig({ ...config, [field]: formattedTime });
+    setLocalConfig({ ...localConfig, [field]: formattedTime });
     setTimePickerVisible({ ...timePickerVisible, [field]: false });
   };
 
-  // Utility to pad single digit numbers with a leading zero
   const padZero = (num) => num.toString().padStart(2, '0');
 
-  // Function to format time strings to HH:MM
   const formatTime = (time) => {
     if (!time || typeof time !== 'string') {
-      return '00:00'; // Default time
+      return '00:00';
     }
-    const [hours, minutes] = time.split(':').map(Number);
+    const [hours, minutes] = (time || '00:00').split(':').map(Number);  // Add fallback here
     const validHours = !isNaN(hours) && hours >= 0 && hours <= 24 ? padZero(hours) : '00';
     const validMinutes = !isNaN(minutes) && minutes >= 0 && minutes < 60 ? padZero(minutes) : '00';
     return `${validHours}:${validMinutes}`;
   };
 
-  // Function to show Snackbar notifications
   const showSnackbar = (message, type = 'success') => {
     setSnackbar({ visible: true, message, type });
   };
 
-  // Function to hide Snackbar
   const hideSnackbar = () => {
     setSnackbar({ ...snackbar, visible: false });
   };
 
-  // Function to validate input fields
   const validateInputs = () => {
-    const { cancelationRefundThresholdTime, maxUsersPerReservation, timeslotsDuration } = config;
+    const { cancelationRefundThresholdTime, maxUsersPerReservation, timeslotsDuration } = localConfig;
     const maxUsers = parseInt(maxUsersPerReservation, 10);
 
-    if (!cancelationRefundThresholdTime.match(/^\d{2}:\d{2}$/)) {
+    if (!cancelationRefundThresholdTime?.match(/^\d{2}:\d{2}$/)) {
       showSnackbar('Invalid format for Cancelation Refund Threshold Time. Use HH:MM.', 'error');
       return false;
     }
@@ -169,12 +144,11 @@ const ConfigManagementScreen = () => {
       return false;
     }
 
-    if (!timeslotsDuration.match(/^\d{2}:\d{2}$/)) {
+    if (!timeslotsDuration?.match(/^\d{2}:\d{2}$/)) {
       showSnackbar('Invalid format for Timeslots Duration. Use HH:MM.', 'error');
       return false;
     }
 
-    // Additional check for hours <=24
     const [refundHours, refundMinutes] = cancelationRefundThresholdTime.split(':').map(Number);
     if (refundHours > 24 || (refundHours === 24 && refundMinutes !== 0)) {
       showSnackbar('Cancelation Refund Threshold Time cannot exceed 24:00.', 'error');
@@ -190,107 +164,117 @@ const ConfigManagementScreen = () => {
     return true;
   };
 
+  if (configLoading) {
+    return (
+      <View style={styles.loadingOverlay}>
+        <ActivityIndicator animating={true} size="large" color={theme.colors.primary} />
+      </View>
+    );
+  }
+
   return (
     <>
       <AppBar title="CRM Configurations" />
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <KeyboardAvoidingView
-          style={styles.container}
-          behavior={Platform.OS === "ios" ? "padding" : "height"}
-        >
-          <ScrollView contentContainerStyle={styles.scrollContainer}>
-            {/* Cancelation Refund Threshold Time */}
-            <ConfigCard
-              title="Cancelation Refund Threshold"
-              description="Set the time limit for refund eligibility (24-hour format, HH:MM). Max 24:00."
-            >
-              <Button
-                mode="outlined"
-                icon="clock-outline"
-                onPress={() => openTimePicker('cancelationRefundThresholdTime')}
-                style={styles.button}
-                contentStyle={styles.buttonContent}
+      <KeyboardAvoidingView
+        style={styles.container}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      >
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <ScrollView 
+            contentContainerStyle={styles.scrollContainer}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+            scrollEventThrottle={16}
+          >
+            <View style={{ minHeight: 600 }}>
+              {/* Cancelation Refund Threshold Time */}
+              <ConfigCard
+                title="Cancelation Refund Threshold"
+                description="Set the time limit for refund eligibility (24-hour format, HH:MM). Max 24:00."
               >
-                {config.cancelationRefundThresholdTime || 'Set Time'}
-              </Button>
-              <TimePickerModal
-                visible={timePickerVisible.cancelationRefundThresholdTime}
-                onDismiss={() => setTimePickerVisible({ ...timePickerVisible, cancelationRefundThresholdTime: false })}
-                onConfirm={(time) => onConfirmTime('cancelationRefundThresholdTime', time)}
-                hours={parseInt(config.cancelationRefundThresholdTime.split(':')[0], 10) || 0}
-                minutes={parseInt(config.cancelationRefundThresholdTime.split(':')[1], 10) || 0}
-                label="Select Refund Threshold Time"
-                animationType="fade"
-                use24HourClock={true}
-                // Optional: Set a minimum and maximum time
-                // You can set constraints here if the library supports it
-              />
-            </ConfigCard>
+                <Button
+                  mode="outlined"
+                  icon="clock-outline"
+                  onPress={() => openTimePicker('cancelationRefundThresholdTime')}
+                  style={styles.button}
+                  contentStyle={styles.buttonContent}
+                >
+                  {localConfig.cancelationRefundThresholdTime || 'Set Time'}
+                </Button>
+                <TimePickerModal
+                  visible={timePickerVisible.cancelationRefundThresholdTime}
+                  onDismiss={() => setTimePickerVisible({ ...timePickerVisible, cancelationRefundThresholdTime: false })}
+                  onConfirm={(time) => onConfirmTime('cancelationRefundThresholdTime', time)}
+                  hours={parseInt(localConfig.cancelationRefundThresholdTime?.split(':')[0], 10) || 0}
+                  minutes={parseInt(localConfig.cancelationRefundThresholdTime?.split(':')[1], 10) || 0}
+                  label="Select Refund Threshold Time"
+                  animationType="fade"
+                  use24HourClock={true}
+                />
+              </ConfigCard>
 
-            {/* Max Users Per Reservation */}
-            <ConfigCard
-              title="Max Users Per Reservation"
-              description="Set the maximum number of users allowed per reservation (whole positive number)."
-            >
-              <TextInput
-                mode="outlined"
-                label="Max Users"
-                value={config.maxUsersPerReservation}
-                onChangeText={(text) => {
-                  // Allow only digits
-                  const cleanedText = text.replace(/[^0-9]/g, '');
-                  setConfig({ ...config, maxUsersPerReservation: cleanedText });
-                }}
-                keyboardType="number-pad"
-                style={styles.input}
-                right={<TextInput.Icon name="account-multiple-outline" />}
-                // Prevent losing focus on input change
-                // No need for extra props; ensure parent components don't re-render unnecessarily
-              />
-            </ConfigCard>
-
-            {/* Timeslots Duration */}
-            <ConfigCard
-              title="Timeslots Duration"
-              description="Set the duration for each timeslot (24-hour format, HH:MM). Max 24:00."
-            >
-              <Button
-                mode="outlined"
-                icon="clock-outline"
-                onPress={() => openTimePicker('timeslotsDuration')}
-                style={styles.button}
-                contentStyle={styles.buttonContent}
+              {/* Max Users Per Reservation */}
+              <ConfigCard
+                title="Max Users Per Reservation"
+                description="Set the maximum number of users allowed per reservation (whole positive number)."
               >
-                {config.timeslotsDuration || 'Set Time'}
-              </Button>
-              <TimePickerModal
-                visible={timePickerVisible.timeslotsDuration}
-                onDismiss={() => setTimePickerVisible({ ...timePickerVisible, timeslotsDuration: false })}
-                onConfirm={(time) => onConfirmTime('timeslotsDuration', time)}
-                hours={parseInt(config.timeslotsDuration.split(':')[0], 10) || 0}
-                minutes={parseInt(config.timeslotsDuration.split(':')[1], 10) || 0}
-                label="Select Timeslot Duration"
-                animationType="fade"
-                use24HourClock={true}
-              />
-            </ConfigCard>
+                <TextInput
+                  mode="outlined"
+                  label="Max Users"
+                  value={localConfig.maxUsersPerReservation}
+                  onChangeText={(text) => {
+                    const cleanedText = text.replace(/[^0-9]/g, '');
+                    setLocalConfig({ ...localConfig, maxUsersPerReservation: cleanedText });
+                  }}
+                  keyboardType="number-pad"
+                  style={styles.input}
+                  right={<TextInput.Icon name="account-multiple-outline" />}
+                />
+              </ConfigCard>
 
-            {/* Save Button */}
-            <Button
-              mode="contained"
-              onPress={handleSave}
-              loading={loading}
-              disabled={loading}
-              style={styles.saveButton}
-              contentStyle={styles.saveButtonContent}
-              labelStyle={styles.saveButtonLabel}
-              icon="content-save-outline"
-            >
-              Save Changes
-            </Button>
+              {/* Timeslots Duration */}
+              <ConfigCard
+                title="Timeslots Duration"
+                description="Set the duration for each timeslot (24-hour format, HH:MM). Max 24:00."
+              >
+                <Button
+                  mode="outlined"
+                  icon="clock-outline"
+                  onPress={() => openTimePicker('timeslotsDuration')}
+                  style={styles.button}
+                  contentStyle={styles.buttonContent}
+                >
+                  {localConfig.timeslotsDuration || 'Set Time'}
+                </Button>
+                <TimePickerModal
+                  visible={timePickerVisible.timeslotsDuration}
+                  onDismiss={() => setTimePickerVisible({ ...timePickerVisible, timeslotsDuration: false })}
+                  onConfirm={(time) => onConfirmTime('timeslotsDuration', time)}
+                  hours={parseInt(localConfig.timeslotsDuration?.split(':')[0], 10) || 0}
+                  minutes={parseInt(localConfig.timeslotsDuration?.split(':')[1], 10) || 0}
+                  label="Select Timeslot Duration"
+                  animationType="fade"
+                  use24HourClock={true}
+                />
+              </ConfigCard>
+
+              {/* Save Button */}
+              <Button
+                mode="contained"
+                onPress={handleSave}
+                loading={loading}
+                disabled={loading}
+                style={styles.saveButton}
+                contentStyle={styles.saveButtonContent}
+                labelStyle={styles.saveButtonLabel}
+                icon="content-save-outline"
+              >
+                Save Changes
+              </Button>
+            </View>
           </ScrollView>
-        </KeyboardAvoidingView>
-      </TouchableWithoutFeedback>
+        </TouchableWithoutFeedback>
+      </KeyboardAvoidingView>
 
       {/* Snackbar for notifications */}
       <Snackbar
@@ -351,7 +335,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   iconButton: {
-    padding: 0, // Reduced padding for better alignment
+    padding: 0,
   },
   button: {
     marginVertical: 8,
@@ -389,7 +373,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(238, 242, 243, 0.7)', // Semi-transparent overlay
+    backgroundColor: 'rgba(238, 242, 243, 0.7)',
     justifyContent: 'center',
     alignItems: 'center',
   },

@@ -27,6 +27,7 @@ import { getUserReservations, cancelUserReservation } from "../../utils/axios";
 import { useUserContext } from "../../contexts/UserContext";
 import { useTranslation } from "react-i18next";
 import { useConfigContext } from "../../contexts/ConfigContext";
+import { isWithinThreshold } from "../../utils/validationUtils";
 
 import moment from "moment";
 import ConfirmationModal from "../../components/common/ConfirmationModal";
@@ -34,6 +35,8 @@ import ConfirmationModal from "../../components/common/ConfirmationModal";
 const ReservationsScreen = () => {
   const { t } = useTranslation();
   const { user, updateCredits } = useUserContext();
+  const { config, loading: configLoading } = useConfigContext();
+  const [cancelRefundThreshold, setCancelRefundThreshold] = useState(null);
   const [reservations, setReservations] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [modalVisible, setModalVisible] = useState(false);
@@ -46,13 +49,20 @@ const ReservationsScreen = () => {
   const { height } = Dimensions.get("window");
 
   useEffect(() => {
+    if (config && config.reservations) {
+      const thresholdTime =
+        config.reservations["cancelation-refund-threshold-time"];
+      if (thresholdTime) setCancelRefundThreshold(thresholdTime); // Setting threshold properly
+    }
+  }, [config, configLoading]); // Make sure config and configLoading are dependencies
+
+  useEffect(() => {
     if (user) fetchUserReservations();
   }, [user]);
 
   const fetchUserReservations = async () => {
     try {
       const response = await getUserReservations();
-      console.log("userReservations: ", response.data);
       const userReservations = response.data;
       setReservations(userReservations);
     } catch (error) {
@@ -87,18 +97,6 @@ const ReservationsScreen = () => {
 
   const handleCancelReservation = useCallback(
     (reservation) => {
-      const reservationTime = moment(
-        `${reservation.date} ${reservation.start_time}`,
-        "YYYY-MM-DD HH:mm:ss"
-      );
-      const currentTime = moment();
-
-      const [durationHours, durationMinutes] = reservation.duration
-        .split(":")
-        .map(Number);
-      const thresholdInHours = durationHours + durationMinutes / 60;
-      const hoursDifference = reservationTime.diff(currentTime, "hours", true);
-
       let modalTitle = t("myReservationsScreen.areYouSure");
       let modalMessage = t(
         "myReservationsScreen.deleteReservationConfirmation",
@@ -109,8 +107,14 @@ const ReservationsScreen = () => {
       );
 
       let shouldUpdateCredits = true;
-
-      if (hoursDifference <= thresholdInHours) {
+      console.log("hmmmmmmm: ", config?.reservations?.["cancelation-refund-threshold-time"])
+      if (
+        !isWithinThreshold(
+          reservation.date,
+          reservation.start_time,
+          cancelRefundThreshold
+        )
+      ) {
         modalTitle = t("myReservationsScreen.cancellationWarning");
         modalMessage = t("cancellationWarningMessageSimple");
         shouldUpdateCredits = false;
@@ -148,7 +152,7 @@ const ReservationsScreen = () => {
 
       setConfirmationModalVisible(true);
     },
-    [t, handleReservationCancellation]
+    [t, handleReservationCancellation, cancelRefundThreshold]
   );
 
   const handleShowAllParticipants = useCallback(
@@ -210,99 +214,22 @@ const ReservationsScreen = () => {
     [theme.colors.accent, handleShowAllParticipants, t]
   );
 
-  // const renderReservation = useCallback(
-  //   ({ item }) => {
-  //     console.log("item: ", item)
-  //     const startTime = moment(item.start_time, "HH:mm:ss");
-  //     const duration = moment.duration(item.duration);
-  //     const endTime = startTime.clone().add(duration);
-
-  //     return (
-  //       <View style={styles.card}>
-  //         <View style={styles.cardHeader}>
-  //           <MaterialCommunityIcons
-  //             name="calendar"
-  //             size={24}
-  //             color={theme.colors.primary}
-  //           />
-  //           <View style={styles.dateTimeContainer}>
-  //             <Text style={styles.dateText}>{item.date}</Text>
-  //             <View style={styles.timeRow}>
-  //               <MaterialCommunityIcons
-  //                 name="clock-start"
-  //                 size={20}
-  //                 color={theme.colors.primary}
-  //                 style={styles.timeIcon}
-  //               />
-  //               <Text style={styles.timeText}>
-  //                 {t("myReservationsScreen.startTime")}{" "}
-  //                 {startTime.format("HH:mm")}
-  //               </Text>
-  //             </View>
-  //             <View style={styles.timeRow}>
-  //               <MaterialCommunityIcons
-  //                 name="clock-end"
-  //                 size={20}
-  //                 color={theme.colors.primary}
-  //                 style={styles.timeIcon}
-  //               />
-  //               <Text style={styles.timeText}>
-  //                 {t("myReservationsScreen.endTime")} {endTime.format("HH:mm")}
-  //               </Text>
-  //             </View>
-  //           </View>
-  //           <TouchableOpacity
-  //             onPress={() => handleCancelReservation(item)}
-  //             style={styles.cancelButton}
-  //           >
-  //             <MaterialCommunityIcons
-  //               name="trash-can-outline"
-  //               size={24}
-  //               color="#C70000"
-  //             />
-  //           </TouchableOpacity>
-  //         </View>
-  //         <View style={styles.trainerContainer}>
-  //           <MaterialCommunityIcons
-  //             name="account-tie"
-  //             size={24}
-  //             color={theme.colors.primary}
-  //           />
-  //           <Text style={styles.trainerText}>
-  //             {t("myReservationsScreen.trainer")}: {item.trainer}
-  //           </Text>
-  //         </View>
-  //         <View style={styles.participantsContainer}>
-  //           <MaterialCommunityIcons
-  //             name="account-group"
-  //             size={24}
-  //             color={theme.colors.primary}
-  //           />
-  //           {renderParticipants(item.otherUsers)}
-  //         </View>
-  //       </View>
-  //     );
-  //   },
-  //   [theme.colors.primary, handleCancelReservation, renderParticipants, t]
-  // );
-
-
   const renderReservation = useCallback(
     ({ item }) => {
       // Validate item properties to avoid undefined errors
       if (!item) return null;
-  
+
       const { date, start_time, duration, trainer, participants } = item;
-  
+
       if (!date || !start_time || !duration) {
         console.error("Missing required reservation details:", item);
         return null; // If any essential detail is missing, skip rendering this item
       }
-  
+
       const startTime = moment(start_time, "HH:mm:ss");
       const durationMoment = moment.duration(duration);
       const endTime = startTime.clone().add(durationMoment);
-  
+
       return (
         <View style={styles.card}>
           <View style={styles.cardHeader}>
@@ -321,7 +248,8 @@ const ReservationsScreen = () => {
                   style={styles.timeIcon}
                 />
                 <Text style={styles.timeText}>
-                  {t("myReservationsScreen.startTime")} {startTime.format("HH:mm")}
+                  {t("myReservationsScreen.startTime")}{" "}
+                  {startTime.format("HH:mm")}
                 </Text>
               </View>
               <View style={styles.timeRow}>

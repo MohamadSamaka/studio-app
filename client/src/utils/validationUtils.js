@@ -1,5 +1,5 @@
 import { Alert } from 'react-native';
-
+import moment from 'moment';
 // user Section
 export const validateForm = (fields) => {
   let errors = {};
@@ -114,3 +114,19 @@ export const validateChanges = (changedBusinessHours) => {
   }
   return true;
 };
+
+
+export const isWithinThreshold = (date, time, cancelRefundThresholdDuration) => {
+  const now = moment();
+  const reservationDateTime = moment(
+    `${date} ${time}`,
+    "YYYY-MM-DD HH:mm"
+  );
+
+  const durationMinutes = moment
+        .duration(cancelRefundThresholdDuration, "HH:mm")
+        .asMinutes();
+
+  const timeDifferenceMinutes = reservationDateTime.diff(now, "minutes");
+  return timeDifferenceMinutes >= durationMinutes
+}

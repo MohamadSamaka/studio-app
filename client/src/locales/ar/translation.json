@@ -1,5 +1,10 @@
 {
   "BookingScreen": {
+    "BookingTitles": {
+      "Begginer": "مبتدئ",
+      "advance": "متقدم"
+    },
+    "location": "كفر كنا",
     "title": "أحجز",
     "areYouSure": "هل أنت متأكد؟",
     "insufficientCreditsTitle": "رصيد غير كافٍ",
@@ -82,7 +87,7 @@
     "close": "إغلاق",
     "statusLabels": {
       "pending": "قيد الانتظار",
-      "awaitingPayment": "بانتظار الدفع",
+      "awaiting_payment": "بانتظار الدفع",
       "success": "نجاح",
       "cancelled": "ملغي",
       "unknown": "غير معروف"

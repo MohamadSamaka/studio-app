@@ -25,6 +25,7 @@ import ConfirmationModal from "../../components/common/ConfirmationModal";
 import { useTranslation } from "react-i18next";
 import { useUserContext } from "../../contexts/UserContext";
 import { useConfigContext } from "../../contexts/ConfigContext";
+import { isWithinThreshold } from "../../utils/validationUtils";
 import {
   getOrganizedReservationsByDateAndTime,
   bookTimeSlot,
@@ -49,7 +50,7 @@ const ReservationItem = ({
     time,
     title = "Untitled",
     isReserved = false,
-    location = "N/A",
+    location = t("BookingScreen.location"),
     trainer = null, // Initialize as null
     attendees = [],
     max_participants = 0,
@@ -109,7 +110,7 @@ const ReservationItem = ({
               style={styles.overlay}
             />
             <Card.Content style={styles.cardContent}>
-              <Title style={styles.title}>{title}</Title>
+              <Title style={styles.title}>{t(`BookingScreen.${title}`, { defaultValue: title })}</Title>
               <View style={styles.detailsContainer}>
                 <View style={styles.iconTextContainer}>
                   <Icon name="clock-outline" size={18} color="#fff" />
@@ -167,7 +168,6 @@ const ReservationSystem = () => {
   const [confirmationModalVisible, setConfirmationModalVisible] =
     useState(false);
   const [confirmationModalProps, setConfirmationModalProps] = useState({});
-  const [slotDuration, setSlotDuration] = useState(null);
   const [cancelRefundThreshold, setCancelRefundThreshold] = useState(null);
   const [loading, setLoading] = useState(true); // Loading state to manage data fetching
 
@@ -232,7 +232,6 @@ const ReservationSystem = () => {
   // Load slotDuration and cancelRefundThreshold from config
   useEffect(() => {
     if (config && config.reservations) {
-      setSlotDuration(config.reservations["timeslots-duration"]);
       setCancelRefundThreshold(
         config.reservations["cancelation-refund-threshold-time"]
       );
@@ -320,14 +319,7 @@ const ReservationSystem = () => {
         },
       }));
 
-      const now = moment();
-      const reservationDateTime = moment(`${date} ${time}`, "YYYY-MM-DD HH:mm");
-      const durationHours = moment
-        .duration(cancelRefundThreshold, "HH:mm:ss")
-        .asHours();
-      const timeDifference = reservationDateTime.diff(now, "hours", true);
-
-      if (timeDifference > durationHours) {
+      if (isWithinThreshold(date, time, cancelRefundThreshold)) {
         // Eligible for credit refund
         updateCredits(1); // Add one credit
         Alert.alert(
@@ -366,11 +358,11 @@ const ReservationSystem = () => {
       const userIsReserved = isUserReserved(reservation.attendees);
       // If user is already reserved, handle cancellation
       if (userIsReserved) {
-        const now = moment();
-        const reservationDateTime = moment(
-          `${date} ${time}`,
-          "YYYY-MM-DD HH:mm"
-        );
+        // const now = moment();
+        // const reservationDateTime = moment(
+        //   `${date} ${time}`,
+        //   "YYYY-MM-DD HH:mm"
+        // );
 
         // Ensure cancelRefundThreshold is valid
         if (
@@ -389,26 +381,20 @@ const ReservationSystem = () => {
         }
 
         // Parse cancelRefundThreshold as a duration in hours
-        const durationHours = moment
-          .duration(cancelRefundThreshold, "HH:mm:ss")
-          .asHours();
+        const durationMinutes = moment.duration(cancelRefundThreshold, "HH:mm").asMinutes();
 
-        if (isNaN(durationHours)) {
-          console.error("Parsed durationHours is NaN:", cancelRefundThreshold);
+        if (isNaN(durationMinutes)) {
+          console.error("Parsed durationMinutes is NaN:", cancelRefundThreshold);
           Alert.alert(
             t("myReservationsScreen.error"),
             t("myReservationsScreen.invalidRefundThresholdFormat")
           );
           return;
         }
-
-        const timeDifference = reservationDateTime.diff(now, "hours", true);
-
         let warningMessage = null;
 
-        if (timeDifference <= durationHours) {
-          warningMessage = t("BookingScreen.cancellationWarningNoRefund");
-        }
+        if(!isWithinThreshold(date,time, cancelRefundThreshold))
+            warningMessage = t("BookingScreen.cancellationWarningNoRefund");
 
         setConfirmationModalProps({
           title: t("BookingScreen.areYouSure"),

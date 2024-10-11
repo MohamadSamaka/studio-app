@@ -67,8 +67,8 @@ const SubscriptionsScreen = () => {
         const subscriptionType = t(`subscriptionTypes.${subscriptionName.toLowerCase()}`)
         Alert.alert(
             t(`subscriptionsScreen.requiestingConfirmationTitle`),
-            t(`subscriptionsScreen.requestingSubscriptionConfirmationMessage`, { subscriptionType: subscriptionType }),
-            // `Are you sure you want to request the "${subscriptionName}" subscription?`,
+            // t(`subscriptionsScreen.requestingSubscriptionConfirmationMessage`, { subscriptionType: subscriptionType }),
+            t(`subscriptionsScreen.requestingSubscriptionConfirmationMessage`, { subscriptionType: "" }),
             [
                 {
                     text: `${t('cancel')}`,
@@ -140,8 +140,7 @@ const SubscriptionsScreen = () => {
                             />
                             {/* Subscription Name */}
                             <Text style={styles.featureText}> {t('subscriptionsScreen.meetings', { count: item.meetings_num })}</Text>
-                            <Title style={styles.title}>{t(`subscriptionTypes.${item.subscription_name.toLowerCase()}`)}</Title>
-                            {/* <Title style={styles.title}>{item.subscription_name}</Title> */}
+                            {/*<Title style={styles.title}>{t(`subscriptionTypes.${item.subscription_name.toLowerCase()}`)}</Title>*/}
                             {/* Subscription Features */}
                             <View style={styles.featureRow}>
                                 <FontAwesome5 name="users" size={16} color={theme.colors.placeholder} />
