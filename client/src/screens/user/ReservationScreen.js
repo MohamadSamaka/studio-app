@@ -157,6 +157,7 @@ const ReservationSystem = () => {
   const { user, credits, updateCredits } = useUserContext();
 
   const [reservations, setReservations] = useState({});
+  const [loadingReservations, setLoadingReservations] = useState(true);
   const [selectedDate, setSelectedDate] = useState(
     moment().format("YYYY-MM-DD")
   );
@@ -175,7 +176,7 @@ const ReservationSystem = () => {
     try {
       const response = await getOrganizedReservationsByDateAndTime(); // Ensure this function is correctly imported
       const fetchedReservations = response.data;
-
+      setLoadingReservations(false)
       // Validate fetchedReservations
       if (!fetchedReservations || typeof fetchedReservations !== "object") {
         console.warn(
@@ -213,7 +214,6 @@ const ReservationSystem = () => {
       );
 
       setReservations(sanitizedReservations);
-      console.log("Fetched Reservations: ", sanitizedReservations);
 
       const marked = Object.keys(sanitizedReservations).reduce((acc, date) => {
         acc[date] = { marked: true, dots: [{ color: "#00adf5" }] };
@@ -249,7 +249,7 @@ const ReservationSystem = () => {
   useEffect(() => {
     if (
       cancelRefundThreshold !== null &&
-      Object.keys(reservations).length > 0
+      loadingReservations
     ) {
       setLoading(false);
     }
