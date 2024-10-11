@@ -5,6 +5,10 @@ class SubscriptionService {
     return await subscriptionRepository.findAll();
   }
 
+  async getAllActiveSubscriptions() {
+    return await subscriptionRepository.findAllActive();
+  }
+
   async getSubscriptionById(id) {
     return await subscriptionRepository.findById(id);
   }

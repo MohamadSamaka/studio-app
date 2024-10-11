@@ -287,18 +287,12 @@ class ReservationService {
       );
       // force
       userService.IncreaseUserCreditByOne(userIds);
-      // // Send notifications to affected users
-      // await notificationService.sendReservationCancelledNotifications(
-      //   userIds,
-      //   reservationDate,
-      //   reservationTime
-      // );
 
       // Optionally, you can return some data or a confirmation message
       return { message: "Reservation cancelled successfully by admin" };
     } else {
       // Non-admin users use the regular cancellation method
-      await this.cancelReservation(id, userId);
+      await this.cancelReservation(id, userId, false);
 
       // Optionally, return a confirmation message
       return { message: "Reservation cancelled successfully" };
@@ -315,7 +309,8 @@ class ReservationService {
       // Admin removes a user from a reservation
       const reservationDetails = await this.cancelReservation(
         reservationId,
-        targetUserId
+        targetUserId,
+        false
       );
 
       return { message: "User removed from reservation successfully by admin" };
@@ -326,7 +321,7 @@ class ReservationService {
     }
   }
 
-  async cancelReservation(id, userId) {
+  async cancelReservation(id, userId, cancelReservaionOnZero = true) {
     // Fetch the reservation with associated users
     const reservation = await AvailableReservationsRepository.findByIdWithUsers(
       id
@@ -352,11 +347,12 @@ class ReservationService {
       reservation
     );
 
+
+
     if (
       isWithinRefundThreshold(
         reservation.date,
-        reservation.start_time,
-        reservation.duration
+        reservation.start_time
       )
     )
       await userService.IncreaseUserCreditByOne(userId);
@@ -365,10 +361,9 @@ class ReservationService {
     const remainingUsersCount =
       await AvailableReservationsRepository.countUsersInReservation(id);
 
-    if (remainingUsersCount === 0) {
-      // Delete the reservation if no users are left
+    if (cancelReservaionOnZero && remainingUsersCount === 0)
       await AvailableReservationsRepository.delete(id);
-    }
+
     return reservation.id;
   }
 }

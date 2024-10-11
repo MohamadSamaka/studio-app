@@ -9,7 +9,7 @@ const initializeWebSocketServer = (server) => {
 
   wss.on("connection", (ws, req) => {
     // Extract the token from the Authorization header
-    const authHeader = req.headers.authorization;
+    const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(" ")[1];
 
     if (!token) {
@@ -20,17 +20,18 @@ const initializeWebSocketServer = (server) => {
     try {
       // Verify the token and extract user information
       const user = verifyToken(token, ACCESS_TOKEN_SECRET);
+      // console.log('User authenticated:', user);
 
       // Attach user information to the WebSocket connection
       ws.user = user;
 
       ws.on("message", (message) => {
-        console.log(`Received message from ${user.username}: ${message}`);
+        // console.log(`Received message from ${user.username}: ${message}`);
         handleMessage(ws, message);
       });
 
       ws.on("close", () => {
-        console.log(`WebSocket connection closed for user: ${user.username}`);
+        // console.log(`WebSocket connection closed for user: ${user.username}`);
       });
     } catch (err) {
       console.error("Token verification failed:", err);

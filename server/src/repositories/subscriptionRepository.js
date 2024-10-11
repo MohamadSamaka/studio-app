@@ -5,6 +5,14 @@ class SubscriptionRepository {
     return await Subscription.findAll();
   }
 
+  async findAllActive() {
+    return await Subscription.findAll({
+      where:{
+        active: true,
+      }
+    });
+  }
+
   async findOne(condition) {
     return await Subscription.findOne(condition);
   }

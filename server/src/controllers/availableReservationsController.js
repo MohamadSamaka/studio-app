@@ -199,8 +199,6 @@ class ReservationController {
   async removeUserFromReservation(req, res) {
     const userRole = req.user.Role.name.toLowerCase();
     const { id, userId } = req.params; // Reservation ID and user ID to remove
-    console.log("id : ", id)
-    console.log("userId : ", userId)
 
     try {
       await availableReservationService.removeUserFromReservation(

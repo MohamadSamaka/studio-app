@@ -20,7 +20,8 @@ class ConfigController {
       configManager.updateConfig(newConfig);
       
       const updatedConfig = configManager.getConfig(); // Fetch updated config
-      
+
+      console.log('notifictying: ', req.user.id)
       // Broadcast the updated config to all WebSocket clients
       broadcastConfigUpdate(req.user.id, updatedConfig);
       

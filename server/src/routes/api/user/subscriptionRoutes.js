@@ -5,7 +5,7 @@ const { authenticateToken } = require('../../../middleware/authMiddleware');
 
 const router = express.Router();
 
-router.get('/', authenticateToken, subscriptionController.getSubscriptions);
+router.get('/', authenticateToken, subscriptionController.getActiveSubscriptions);
 router.post('/request', authenticateToken, rechargeCreditController.createRequest);
 
 

@@ -10,6 +10,15 @@ class SubscriptionController {
     }
   }
 
+  async getActiveSubscriptions(req, res) {
+    try {
+      const activeSubscriptions = await subscriptionService.getAllActiveSubscriptions();
+      res.json(activeSubscriptions);
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
+  }
+
 
   async createSubscription(req, res) {
     try {
