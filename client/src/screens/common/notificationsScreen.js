@@ -14,6 +14,7 @@ import { useNavigation } from "@react-navigation/native";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { getNotifications, markNotificationAsRead } from "../../utils/axios";
 import { useUserContext } from "../../contexts/UserContext";
+import moment from "moment";
 
 const NotificationsScreen = () => {
   const navigation = useNavigation();

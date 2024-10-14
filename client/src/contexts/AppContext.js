@@ -1,6 +1,5 @@
 import React, { createContext, useState, useContext, useEffect } from "react";
 import * as Notifications from 'expo-notifications';
-import * as Permissions from "expo-permissions";
 import { isDevice } from "expo-device";
 import { Alert } from 'react-native';
 

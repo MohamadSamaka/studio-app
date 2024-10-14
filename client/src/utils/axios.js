@@ -9,11 +9,11 @@ import {
 import { Alert } from "react-native";
 
 import emitter from "../utils/EventEmitter";
-import { API_URL } from "@env";
+import { EXPO_PUBLIC_API_URL } from "@env";
 
 // Axios instance with auth token
 const api = axios.create({
-  baseURL: API_URL,
+  baseURL: EXPO_PUBLIC_API_URL,
 });
 
 // Queue to hold pending requests during token refresh
@@ -292,6 +292,5 @@ export const markNotificationAsRead = (notificationIds) =>
   api.put("/user/notification/read", { notificationIds });
 export const pushNotification = (token) =>
   api.post("/auth/push-token", { token });
-export const testNotify = (userId) => api.post("/auth/notify-test", { userId });
 
 export default api;

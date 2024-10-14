@@ -4,7 +4,7 @@ import { useAuthContext } from '../../contexts/AuthContext';
 import {
   getToken,
 } from "../../utils/tokenManager";
-import { WEBSORCKET_URL } from '@env';
+import { EXPO_PUBLIC_WEBSOCKET_URL } from '@env';
 
 const WebSocketComponent = () => {
   const { config, setConfig } = useConfigContext();
@@ -16,7 +16,7 @@ const WebSocketComponent = () => {
       return;
     }
     const token = await getToken()
-    const socket = new WebSocket(WEBSORCKET_URL, [], {
+    const socket = new WebSocket(EXPO_PUBLIC_WEBSOCKET_URL, [], {
       headers: {
         authorization: `token ${token}`,
       },
