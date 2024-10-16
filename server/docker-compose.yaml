@@ -56,7 +56,6 @@ services:
       - MYSQL_PASSWORD=${DB_PASSWORD}
     volumes:
       - ./db_backups:/backups
-      - ./cron.log:/var/log/cron.log # Updated mapping
     depends_on:
       - mysql-db
     networks:
