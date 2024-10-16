@@ -1,4 +1,4 @@
-# Exit immediately if a command exits with a non-zero status
+#!/bin/sh
 set -e
 
 # Function to display messages in color
@@ -7,17 +7,6 @@ echo_info() {
 }
 
 echo_info "Starting entrypoint.sh"
-
-# Check if .env exists; if not, copy from .env.example
-if [ ! -f .env ]; then
-  echo_info ".env not found. Copying from .env.example."
-  cp .env.example .env
-fi
-
-# Generate DATABASE_URL from other environment variables
-export DATABASE_URL="mysql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:3306/${DB_NAME}"
-
-echo_info "DATABASE_URL set to: ${DATABASE_URL}"
 
 # Function to check if MySQL is ready
 wait_for_mysql() {

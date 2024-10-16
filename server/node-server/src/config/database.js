@@ -1,9 +1,12 @@
 const { Sequelize } = require('sequelize');
-const { DATABASE_URL } = require('../config/env');
+const { DATABASE_URL } = require('./env');
 
 // Check if DATABASE_URL is defined in your environment variables
 if (!DATABASE_URL) {
-  throw new Error('DATABASE_URL environment variable is not defined, given current DATABASE_URL: ', DATABASE_URL);
+  throw new Error(
+    'DATABASE_URL environment variable is not defined, given current DATABASE_URL: ',
+    DATABASE_URL
+  );
 }
 
 const sequelize = new Sequelize(DATABASE_URL, {

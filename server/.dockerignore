@@ -1,7 +1,43 @@
+# Node.js Dependencies
 node_modules
-npm-debug.log
-Dockerfile
-docker-compose.yaml
+**/node_modules
+
+# Logs
+logs/
+*.log
+cron.log
+
+# Environment Variables
 .env
+
+# Git Files
 .git
 .gitignore
+
+# Docker Files
+docker-compose.yml
+Dockerfile
+.dockerignore
+
+# Backup Files
+db_backups
+**/db_backups/
+
+# OS Generated Files
+.DS_Store
+Thumbs.db
+
+# Editor/IDE Configurations
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Temporary Files
+tmp/
+temp/
+*.tmp
+
+# Build Artifacts
+dist/
+build/

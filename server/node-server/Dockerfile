@@ -11,7 +11,7 @@ RUN apt-get update && \
 COPY package*.json ./
 
 # Install dependencies
-RUN npm install 
+RUN npm install
 
 # Install nodemon for development (optional)
 RUN npm install -g nodemon

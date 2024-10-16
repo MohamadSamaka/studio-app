@@ -1,0 +1,2 @@
+# Run the backup script every Sunday at 2 AM
+0 2 * * 0 /app/mysql_backup.sh >> /var/log/cron.log 2>&1

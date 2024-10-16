@@ -1,3 +1,37 @@
-node_modules
-# Keep environment variables out of version control
+# Node.js Dependencies
+node_modules/
+**/node_modules/
+
+# Logs
+logs/
+*.log
+cron.log
+
+# Environment Variables
 .env
+
+# Docker Files
+docker-compose.override.yml
+
+# Backup Files
+db_backups/
+**/db_backups/
+
+# OS Generated Files
+.DS_Store
+Thumbs.db
+
+# Editor/IDE Configurations
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Temporary Files
+tmp/
+temp/
+*.tmp
+
+# Build Artifacts
+dist/
+build/

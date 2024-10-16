@@ -2,29 +2,27 @@ version: '3.8'
 
 services:
   node-server:
-    build: .
+    build: ./node-server
     image: studio-server:v1.0.0
     container_name: node-server
     ports:
       - "${PORT}:3000"
     environment:
-      - NODE_ENV=${NODE_ENV}
+      - NODE_ENV=production
       - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
       - DB_HOST=${DB_HOST}
       - DB_NAME=${DB_NAME}
-      - DB_PASSWORD=${DB_PASSWORD}
-      - PASSWORD_HASHING_SEED=${PASSWORD_HASHING_SEED}
       - ACCESS_TOKEN_SECRET=${ACCESS_TOKEN_SECRET}
       - REFRESH_TOKEN_SECRET=${REFRESH_TOKEN_SECRET}
+      - PASSWORD_HASHING_SEED=${PASSWORD_HASHING_SEED}
       - TOKEN_EXPIRATION=${TOKEN_EXPIRATION}
       - REFRESH_TOKEN_EXPIRATION=${REFRESH_TOKEN_EXPIRATION}
     depends_on:
       - mysql-db
-    volumes:
-      - ./:/usr/src/app
-      - /usr/src/app/node_modules # Prevent host's node_modules from overwriting container's node_modules
     networks:
       - app-network
+    # Volumes section removed as per previous recommendations
 
   mysql-db:
     image: mysql:8.0
@@ -35,7 +33,9 @@ services:
       - MYSQL_USER=${MYSQL_USER}
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
     ports:
-      - "3310:3306" 
+      - "3310:3306"
+    volumes:
+      - db_data:/var/lib/mysql
     networks:
       - app-network
     healthcheck:
@@ -44,6 +44,27 @@ services:
       timeout: 10s
       retries: 5
 
+  mysql-backup:
+    build:
+      context: ./mysql-backup
+      dockerfile: Dockerfile
+    container_name: mysql-backup
+    environment:
+      - MYSQL_HOST=${DB_HOST}
+      - MYSQL_DATABASE=${DB_NAME}
+      - MYSQL_USER=${DB_USER}
+      - MYSQL_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - ./db_backups:/backups
+      - ./cron.log:/var/log/cron.log # Updated mapping
+    depends_on:
+      - mysql-db
+    networks:
+      - app-network
+
 networks:
   app-network:
     driver: bridge
+
+volumes:
+  db_data:
