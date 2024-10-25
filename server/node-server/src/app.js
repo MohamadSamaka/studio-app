@@ -1,5 +1,6 @@
 const express = require("express");
 const cors = require("cors"); // Import the cors package
+const morgan = require("morgan"); // For logging
 
 // Import your route handlers
 const adminConfigRoutes = require("./routes/api/admin/configRoutes");
@@ -22,9 +23,23 @@ const {
 
 const app = express();
 
+// Use morgan for logging HTTP requests
+app.use(morgan('combined'));
+
+// Define allowed origins from environment variables
+const allowedOrigins = ["http://localhost:8081"]
+
 // CORS configuration
 const corsOptions = {
-  origin: 'http://localhost:8081', // Replace with your frontend's origin if different
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'x-refresh-token'],
   credentials: true, // Allow cookies and authentication headers
@@ -36,6 +51,7 @@ app.use(cors(corsOptions));
 // Handle preflight requests
 app.options('*', cors(corsOptions));
 
+// Body parser middleware
 app.use(express.json());
 
 // Public routes
@@ -57,6 +73,16 @@ app.use("/api/user/reservations", userReservationRoutes);
 app.use("/api/user/subscriptions", userSubscriptionRoutes);
 app.use("/api/user/recharge-credit-requests", userRechargeCreditRequestRoutes);
 app.use("/api/user/config", userConfigRoutes);
+
+// Error handler to ensure CORS headers are sent with errors
+app.use((err, req, res, next) => {
+  if (allowedOrigins.includes(req.headers.origin)) {
+    res.header('Access-Control-Allow-Origin', req.headers.origin);
+  }
+  res.header('Access-Control-Allow-Methods', corsOptions.methods.join(','));
+  res.header('Access-Control-Allow-Headers', corsOptions.allowedHeaders.join(','));
+  res.status(err.status || 500).json({ error: err.message });
+});
 
 // Export the app instance for use in index.js
 module.exports = app;
