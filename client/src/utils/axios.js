@@ -11,6 +11,7 @@ import { Alert } from "react-native";
 import emitter from "../utils/EventEmitter";
 import { EXPO_PUBLIC_API_URL } from "@env";
 
+
 // Axios instance with auth token
 const api = axios.create({
   baseURL: EXPO_PUBLIC_API_URL,

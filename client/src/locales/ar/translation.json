@@ -1,8 +1,8 @@
 {
   "BookingScreen": {
     "BookingTitles": {
-      "Begginer": "مبتدئ",
-      "advance": "متقدم"
+      "begginer": "مبتدئ",
+      "advanced": "متقدم"
     },
     "location": "كفر كنا",
     "title": "أحجز",
@@ -37,6 +37,7 @@
       "success": "تم طلب الاشتراك بنجاح!",
       "failed": "فشل في طلب الاشتراك، حاول مرة أخرى لاحقًا!"
     },
+    "noSubscriptionsAvailable": "لا توجد اشتراكات متاحة",
     "failedToLoadSubscriptions": "خطأ: فشل في تحميل الاشتراكات.",
     "requiestingConfirmationTitle": "تأكيد الطلب",
     "meetings": "اجتماعات {{count}} ",

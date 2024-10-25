@@ -1,11 +1,11 @@
-import React from 'react';
+import React from "react";
 import {
   View,
   TouchableOpacity,
   StyleSheet,
   Alert,
   Dimensions,
-} from 'react-native';
+} from "react-native";
 import {
   Modal,
   Portal,
@@ -14,12 +14,13 @@ import {
   IconButton,
   Divider,
   Switch,
-} from 'react-native-paper';
-import { MaterialIcons } from '@expo/vector-icons';
-import DateTimePicker from '@react-native-community/datetimepicker';
-import moment from 'moment';
+} from "react-native-paper";
+import { MaterialIcons } from "@expo/vector-icons";
+import DateTimePicker from "@react-native-community/datetimepicker";
+import moment from "moment";
+import { theme } from "../../../../utils/theme";
 
-const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get('window');
+const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get("window");
 
 const FilterModal = ({
   visible,
@@ -72,16 +73,16 @@ const FilterModal = ({
         {/* Filter Type Selection */}
         <View style={styles.filterTypeContainer}>
           <Button
-            mode={filterType === 'date' ? 'contained' : 'outlined'}
-            onPress={() => setFilterType('date')}
+            mode={filterType === "date" ? "contained" : "outlined"}
+            onPress={() => setFilterType("date")}
             style={styles.filterTypeButton}
             icon="calendar-today"
           >
             Date
           </Button>
           <Button
-            mode={filterType === 'time' ? 'contained' : 'outlined'}
-            onPress={() => setFilterType('time')}
+            mode={filterType === "time" ? "contained" : "outlined"}
+            onPress={() => setFilterType("time")}
             style={styles.filterTypeButton}
             icon="clock"
           >
@@ -90,7 +91,7 @@ const FilterModal = ({
         </View>
 
         {/* Conditional Rendering Based on Filter Type */}
-        {filterType === 'date' && (
+        {filterType === "date" && (
           <View style={styles.filterSection}>
             <View style={styles.filterOption}>
               <Text>Single Date</Text>
@@ -111,11 +112,15 @@ const FilterModal = ({
                   <Text>
                     {tempDateFilter.start
                       ? `Start: ${moment(tempDateFilter.start).format(
-                          'MM/DD/YYYY'
+                          "MM/DD/YYYY"
                         )}`
-                      : 'Select Start Date'}
+                      : "Select Start Date"}
                   </Text>
-                  <MaterialIcons name="calendar-today" size={24} color="#6200ee" />
+                  <MaterialIcons
+                    name="calendar-today"
+                    size={24}
+                    color="#6200ee"
+                  />
                 </TouchableOpacity>
 
                 {/* End Date Picker */}
@@ -124,8 +129,8 @@ const FilterModal = ({
                   onPress={() => {
                     if (!tempDateFilter.start) {
                       Alert.alert(
-                        'Select Start Date First',
-                        'Please select the start date before selecting the end date.'
+                        "Select Start Date First",
+                        "Please select the start date before selecting the end date."
                       );
                       return;
                     }
@@ -134,10 +139,16 @@ const FilterModal = ({
                 >
                   <Text>
                     {tempDateFilter.end
-                      ? `End: ${moment(tempDateFilter.end).format('MM/DD/YYYY')}`
-                      : 'Select End Date'}
+                      ? `End: ${moment(tempDateFilter.end).format(
+                          "MM/DD/YYYY"
+                        )}`
+                      : "Select End Date"}
                   </Text>
-                  <MaterialIcons name="calendar-today" size={24} color="#6200ee" />
+                  <MaterialIcons
+                    name="calendar-today"
+                    size={24}
+                    color="#6200ee"
+                  />
                 </TouchableOpacity>
               </>
             ) : (
@@ -148,16 +159,22 @@ const FilterModal = ({
               >
                 <Text>
                   {tempDateFilter.single
-                    ? `Date: ${moment(tempDateFilter.single).format('MM/DD/YYYY')}`
-                    : 'Select Date'}
+                    ? `Date: ${moment(tempDateFilter.single).format(
+                        "MM/DD/YYYY"
+                      )}`
+                    : "Select Date"}
                 </Text>
-                <MaterialIcons name="calendar-today" size={24} color="#6200ee" />
+                <MaterialIcons
+                  name="calendar-today"
+                  size={24}
+                  color="#6200ee"
+                />
               </TouchableOpacity>
             )}
           </View>
         )}
 
-        {filterType === 'time' && (
+        {filterType === "time" && (
           <View style={styles.filterSection}>
             <View style={styles.filterOption}>
               <Text>Single Time</Text>
@@ -177,8 +194,10 @@ const FilterModal = ({
                 >
                   <Text>
                     {tempTimeFilter.start
-                      ? `Start: ${moment(tempTimeFilter.start).format('hh:mm A')}`
-                      : 'Select Start Time'}
+                      ? `Start: ${moment(tempTimeFilter.start).format(
+                          "hh:mm A"
+                        )}`
+                      : "Select Start Time"}
                   </Text>
                   <MaterialIcons name="access-time" size={24} color="#6200ee" />
                 </TouchableOpacity>
@@ -189,8 +208,8 @@ const FilterModal = ({
                   onPress={() => {
                     if (!tempTimeFilter.start) {
                       Alert.alert(
-                        'Select Start Time First',
-                        'Please select the start time before selecting the end time.'
+                        "Select Start Time First",
+                        "Please select the start time before selecting the end time."
                       );
                       return;
                     }
@@ -199,8 +218,8 @@ const FilterModal = ({
                 >
                   <Text>
                     {tempTimeFilter.end
-                      ? `End: ${moment(tempTimeFilter.end).format('hh:mm A')}`
-                      : 'Select End Time'}
+                      ? `End: ${moment(tempTimeFilter.end).format("hh:mm A")}`
+                      : "Select End Time"}
                   </Text>
                   <MaterialIcons name="access-time" size={24} color="#6200ee" />
                 </TouchableOpacity>
@@ -213,8 +232,8 @@ const FilterModal = ({
               >
                 <Text>
                   {tempTimeFilter.single
-                    ? `Time: ${moment(tempTimeFilter.single).format('hh:mm A')}`
-                    : 'Select Time'}
+                    ? `Time: ${moment(tempTimeFilter.single).format("hh:mm A")}`
+                    : "Select Time"}
                 </Text>
                 <MaterialIcons name="access-time" size={24} color="#6200ee" />
               </TouchableOpacity>
@@ -303,7 +322,7 @@ const FilterModal = ({
 
 const styles = StyleSheet.create({
   filterModalContainer: {
-    backgroundColor: 'white',
+    backgroundColor: theme.colors.surface,
     padding: 20,
     margin: 20,
     borderRadius: 12,
@@ -312,21 +331,21 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   filterModalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
   filterModalTitle: {
     fontSize: 24,
-    fontWeight: 'bold',
-    color: '#6200ee',
+    fontWeight: "bold",
+    color: theme.colors.primary,
   },
   divider: {
     marginVertical: 10,
   },
   filterTypeContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
+    flexDirection: "row",
+    justifyContent: "space-around",
     marginBottom: 20,
   },
   filterTypeButton: {
@@ -337,41 +356,44 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   filterOption: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     marginVertical: 10,
   },
   datePickerButton: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    borderColor: '#6200ee',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    borderColor: theme.colors.primary,
     borderWidth: 1,
     borderRadius: 8,
     padding: 12,
     marginBottom: 10,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.surface,
   },
   timePickerButton: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    borderColor: '#6200ee',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    borderColor: theme.colors.primary,
     borderWidth: 1,
     borderRadius: 8,
     padding: 12,
     marginBottom: 10,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.surface,
   },
   filterModalActions: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     marginTop: 20,
   },
   filterActionButton: {
     flex: 1,
     marginHorizontal: 5,
+  },
+  text: {
+    color: theme.colors.text,
   },
 });
 

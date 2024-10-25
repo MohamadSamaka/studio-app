@@ -1,8 +1,8 @@
 {
   "BookingScreen": {
     "BookingTitle": {
-      "Begginer": "מתחיל",
-      "advance": "מתקדם"
+      "begginer": "מתחיל",
+      "advanced": "מתקדם"
     },
     "location": "כפר כנא",
     "title": "הזמן",
@@ -37,6 +37,7 @@
       "success": "הבקשה למנוי נשלחה בהצלחה!",
       "failed": "הבקשה למנוי נכשלה, נסה שוב מאוחר יותר!"
     },
+    "noSubscriptionsAvailable": "אין מנויים זמינים",
     "failedToLoadSubscriptions": "שגיאה: כשל בטעינת המנויים.",
     "requiestingConfirmationTitle": "אישור בקשה",
     "meetings": "{{count}} פגישות ",

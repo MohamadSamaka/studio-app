@@ -2,6 +2,7 @@ import React from 'react';
 import { View, FlatList, StyleSheet } from 'react-native';
 import { DataTable, Checkbox } from 'react-native-paper';
 import ReservationItem from './ReservationItem';
+import { theme } from '../../../../utils/theme';
 
 const ReservationsTable = ({
   reservations,
@@ -89,12 +90,22 @@ const ReservationsTable = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: theme.colors.background,
+  },
+  header: {
+    backgroundColor: theme.colors.surface,
   },
   list: {
     flex: 1,
   },
   centeredCell: {
     flex: 2, // Adjust as needed
+  },
+  headerText: {
+    color: theme.colors.text,
+  },
+  pagination: {
+    backgroundColor: theme.colors.surface,
   },
 });
 

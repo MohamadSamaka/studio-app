@@ -83,7 +83,7 @@ const styles = StyleSheet.create({
   modalContainer: {
     flex: 1,
     justifyContent: 'center',
-    backgroundColor: theme.colors.backdrop,
+    backgroundColor: theme.colors.surface,
     paddingHorizontal: 16,
   },
   modalContent: {
@@ -158,6 +158,23 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginTop: 5,
     marginBottom: 10,
+  },
+  // **SearchBar Style**
+  searchBar: {
+    marginBottom: 16,
+    backgroundColor: theme.colors.surface,
+    borderRadius: 8,
+  },
+  // **Empty State Styles**
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  emptyText: {
+    fontSize: 16,
+    color: theme.colors.text,
   },
 });
 

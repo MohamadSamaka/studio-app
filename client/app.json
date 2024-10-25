@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "studio-reservation-app",
+    "name": "Pilates",
     "slug": "studio-reservation-app",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -9,19 +9,26 @@
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#4A90E2"
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.Pilates"
+      "bundleIdentifier": "com.Pilates",
+      "infoPlist": {
+        "NSAppTransportSecurity": {
+          "NSAllowsArbitraryLoads": true
+        }
+      }
     },
     "android": {
       "package": "com.Pilates",
-      "versionCode": 2,
+      "versionCode": 3,
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "permissions": ["INTERNET"],
+      "usesCleartextTraffic": true
     },
     "web": {
       "favicon": "./assets/favicon.png",
@@ -31,11 +38,19 @@
       "expo-updates",
       "expo-localization",
       "expo-secure-store",
-      "expo-font"
+      "expo-font",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "usesCleartextTraffic": true
+          }
+        }
+      ]
     ],
     "extra": {
       "eas": {
-        "projectId": "<Your ID HERE >"
+        "projectId": "< Your ID HERE > "
       }
     },
     "owner": "thexjoker"

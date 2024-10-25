@@ -12,6 +12,7 @@ import {
 import { MaterialIcons } from '@expo/vector-icons';
 import moment from 'moment';
 import PropTypes from 'prop-types';
+import { theme } from '../../../../utils/theme';
 
 const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -156,6 +157,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 15,
     color: '#6200ee',
+    color: theme.colors.text,
   },
   modalSubtitle: {
     fontSize: 18,

@@ -37,6 +37,12 @@
     }
   },
   "submit": {
-    "production": {}
+    "production": {
+      "ios": {
+        "appleId": "fawaz.abbas.1997@gmail.com",
+        "appleTeamId": "V66825Q72B",
+        "ascAppId": "6737288165"
+      }
+    }
   }
 }

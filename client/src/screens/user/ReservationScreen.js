@@ -48,13 +48,22 @@ const ReservationItem = ({
   const {
     date,
     time,
-    title = "Untitled",
     isReserved = false,
     location = t("BookingScreen.location"),
     trainer = null, // Initialize as null
     attendees = [],
     max_participants = 0,
   } = item;
+
+  let title = item.title || "Untitled";
+
+  // Normalize the title to lowercase
+  const normalizedTitle = title.toLowerCase();
+
+  // Reassign 'title' to its translated value
+  title = t(`BookingScreen.BookingTitles.${normalizedTitle}`);
+
+  console.log("title: ", title)
 
   const userIsReserved = attendees.some((attendee) => attendee.id === userId);
   const isFullyBooked = attendees.length >= max_participants;
@@ -110,7 +119,7 @@ const ReservationItem = ({
               style={styles.overlay}
             />
             <Card.Content style={styles.cardContent}>
-              <Title style={styles.title}>{t(`BookingScreen.${title}`, { defaultValue: title })}</Title>
+              <Title style={styles.title}>{title}</Title>
               <View style={styles.detailsContainer}>
                 <View style={styles.iconTextContainer}>
                   <Icon name="clock-outline" size={18} color="#fff" />

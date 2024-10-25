@@ -8,7 +8,7 @@ import {
   Text,
   TouchableOpacity,
   View,
-  ScrollView,
+  ScrollView
 } from "react-native";
 import DropDownPicker from "react-native-dropdown-picker";
 import {
@@ -32,11 +32,10 @@ import {
   getUsers,
   updateUser,
 } from "../../utils/axios";
-import { theme } from "../../utils/theme";
 import { isFormValid, validateForm } from "../../utils/validationUtils";
+import { theme } from '../../utils/theme';  
 
 const UserManagementScreen = () => {
-  // **State Variables**
   const [users, setUsers] = useState([]);
   const [roles, setRoles] = useState([]); // State to store roles
   const [selectedUser, setSelectedUser] = useState(null);

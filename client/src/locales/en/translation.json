@@ -1,8 +1,8 @@
 {
   "BookingScreen": {
     "BookingTitles":{
-      "Begginer": "Begginer",
-      "advance": "Advance"
+      "begginer": "Begginer",
+      "advanced": "Advance"
     },
     "location": "Kafr Kanna",
     "title": "Book",
@@ -37,6 +37,7 @@
       "success": "Subscription has been requested successfully!",
       "failed": "Failed to request the subscription, try again later!"
     },
+    "noSubscriptionsAvailable": "No subscriptions available",
     "failedToLoadSubscriptions": "Error: Failed to load subscriptions.",
     "requiestingConfirmationTitle": "Confirm Request",
     "meetings": "Meetings {{count}}",

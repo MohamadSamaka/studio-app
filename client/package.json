@@ -12,7 +12,6 @@
     "@chakra-ui/react": "^2.8.2",
     "@emotion/react": "^11.13.3",
     "@emotion/styled": "^11.13.0",
-    "@expo/config-plugins": "~8.0.8",
     "@expo/metro-runtime": "~3.2.3",
     "@expo/prebuild-config": "~7.0.0",
     "@expo/vector-icons": "^14.0.2",
@@ -42,6 +41,7 @@
     "date-fns": "^3.6.0",
     "events": "^3.3.0",
     "expo": "~51.0.37",
+    "expo-build-properties": "^0.12.5",
     "expo-device": "~6.0.2",
     "expo-font": "~12.0.10",
     "expo-linear-gradient": "~13.0.2",
@@ -91,10 +91,12 @@
     "react-native-wheel-picker-expo": "^0.5.4",
     "reanimated-bottom-sheet": "^1.0.0-alpha.22",
     "typescript": "~5.3.3",
-    "uuid": "^10.0.0"
+    "uuid": "^10.0.0",
+    "expo-dev-client": "~4.0.28"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
+    "@expo/config-plugins": "^8.0.10",
     "babel-plugin-module-resolver": "^5.0.2",
     "eas-cli": "^12.5.2"
   },

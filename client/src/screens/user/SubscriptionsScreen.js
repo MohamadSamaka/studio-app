@@ -208,7 +208,7 @@ const SubscriptionsScreen = () => {
             ) : (
                 subscriptions.length === 0 ? (
                     <View style={styles.emptyContainer}>
-                        <Text style={styles.emptyText}>No subscriptions available.</Text>
+                        <Text style={styles.emptyText}>{t("subscriptionsScreen.noSubscriptionsAvailable")}</Text>
                     </View>
                 ) : (
                     <FlatList

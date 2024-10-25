@@ -8,6 +8,7 @@ import {
   Snackbar,
   ActivityIndicator,
 } from "react-native-paper";
+import { theme } from '../../utils/theme';  
 import { Feather, MaterialIcons } from "@expo/vector-icons";
 import moment from "moment";
 import debounce from "lodash.debounce";
@@ -291,7 +292,7 @@ const ReservationsManagementScreen = () => {
   };
 
   return (
-    <PaperProvider>
+    <PaperProvider theme={theme}>
       <AppBar title="Reservations Management" />
       <View style={styles.container}>
         {/* Show Loading Indicator if configLoading or loading is true */}
@@ -443,7 +444,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 10,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: theme.colors.background,
   },
   topBar: {
     flexDirection: "row",
@@ -453,17 +454,19 @@ const styles = StyleSheet.create({
   searchBar: {
     flex: 1,
     marginRight: 10,
+    backgroundColor: theme.colors.surface,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    backgroundColor: theme.colors.background,
   },
   snackbarSuccess: {
-    backgroundColor: "#4CAF50",
+    backgroundColor: theme.colors.success,
   },
   snackbarError: {
-    backgroundColor: "#F44336",
+    backgroundColor: theme.colors.error,
   },
   noDataContainer: {
     flex: 1,

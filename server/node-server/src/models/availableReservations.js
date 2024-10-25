@@ -63,7 +63,7 @@ AvailableReservations.init(
     sequelize,
     modelName: "AvailableReservations",
     timestamps: false,
-    indexes: [{ unique: true, fields: ["date", "start_time"] }], // Ensures no duplicate date/time slots
+    indexes: [{ unique: true, fields: ["date", "start_time", "trainer_id"] }], // Ensures no duplicate date/time slots
     hooks: {
       beforeValidate: (reservation) => {
         const currentDateTime = moment();
