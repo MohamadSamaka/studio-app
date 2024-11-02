@@ -3,7 +3,6 @@ import {
   SafeAreaView,
   StyleSheet,
   FlatList,
-  Alert,
   Dimensions,
   View,
 } from "react-native";
@@ -15,10 +14,12 @@ import {
   ActivityIndicator,
   Text,
   Snackbar,
+  Portal,
+  Dialog,
 } from "react-native-paper";
 import * as Animatable from "react-native-animatable";
 import { LinearGradient } from "expo-linear-gradient";
-import { MaterialIcons, FontAwesome5 } from "@expo/vector-icons";
+import { MaterialIcons, FontAwesome5, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
 
@@ -45,11 +46,15 @@ const RechargeRequestsScreen = () => {
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarColor, setSnackbarColor] = useState(theme.colors.success); // Default to success color
 
+  // Dialog state
+  const [dialogVisible, setDialogVisible] = useState(false);
+  const [selectedRequestId, setSelectedRequestId] = useState(null);
+
   const navigation = useNavigation();
 
   useEffect(() => {
     if (user) fetchRechargeRequests();
-  }, []);
+  }, [user]); // Added dependency on user
 
   const fetchRechargeRequests = async (isRefreshing = false) => {
     if (isRefreshing) setRefreshing(true);
@@ -59,8 +64,10 @@ const RechargeRequestsScreen = () => {
     } catch (error) {
       console.error("Error fetching recharge requests:", error);
       Alert.alert(
-        t("rechargeRequestsScreen.error"),
-        t("rechargeRequestsScreen.failedToLoadRechargeRequests")
+        t("rechargeRequestsScreen.error", { defaultValue: "Error" }),
+        t("rechargeRequestsScreen.failedToLoadRechargeRequests", {
+          defaultValue: "Failed to load recharge requests.",
+        })
       );
     } finally {
       if (isRefreshing) setRefreshing(false);
@@ -70,30 +77,21 @@ const RechargeRequestsScreen = () => {
 
   // Handle cancellation with confirmation
   const handleCancelRequest = (requestId) => {
-    Alert.alert(
-      t("rechargeRequestsScreen.confirmCancellation"),
-      t("rechargeRequestsScreen.confirmCancellationMessage"),
-      [
-        {
-          text: t("rechargeRequestsScreen.no"),
-          style: "cancel",
-        },
-        {
-          text: t("rechargeRequestsScreen.yes"),
-          onPress: () => cancelRequest(requestId),
-        },
-      ],
-      { cancelable: true }
-    );
+    console.log("handleCancelRequest called with requestId:", requestId);
+    setSelectedRequestId(requestId);
+    setDialogVisible(true);
   };
 
   // Perform the cancellation
   const cancelRequest = async (requestId) => {
     setCancellingId(requestId);
+    setDialogVisible(false); // Dismiss the dialog
     try {
       await cancelRechargeRequest(requestId);
       setSnackbarMessage(
-        t("rechargeRequestsScreen.rechargeRequestCancelledSuccessfully")
+        t("rechargeRequestsScreen.rechargeRequestCancelledSuccessfully", {
+          defaultValue: "Recharge request cancelled successfully.",
+        })
       );
       setSnackbarColor(theme.colors.success);
       // Refresh the list
@@ -101,7 +99,9 @@ const RechargeRequestsScreen = () => {
     } catch (error) {
       console.error("Error cancelling recharge request:", error);
       setSnackbarMessage(
-        t("rechargeRequestsScreen.failedToCancelRechargeRequest")
+        t("rechargeRequestsScreen.failedToCancelRechargeRequest", {
+          defaultValue: "Failed to cancel recharge request.",
+        })
       );
       setSnackbarColor(theme.colors.error);
     } finally {
@@ -142,13 +142,6 @@ const RechargeRequestsScreen = () => {
             <Title style={styles.title}>
               {t("rechargeRequestsScreen.requestNumber", { id: item.id })}
             </Title>
-            {/* <Paragraph style={styles.detailText}>
-              {t(
-                `subscriptionTypes.${item.Subscription[
-                  "subscription_name"
-                ].toLowerCase()}`
-              )}
-            </Paragraph> */}
             <Paragraph style={styles.detailText}>
               {t("rechargeRequestsScreen.dateAtTime", {
                 date: formatDate(item.date),
@@ -158,13 +151,6 @@ const RechargeRequestsScreen = () => {
 
             {/* Status Display */}
             <View style={styles.statusContainer}>
-              {/* Optional: Remove the status icon if redundant */}
-              {/* <FontAwesome5
-                                name="circle"
-                                size={12}
-                                color={getStatusColor(item.status)}
-                                style={styles.statusIcon}
-                            /> */}
               <View
                 style={[
                   styles.statusBadge,
@@ -181,15 +167,24 @@ const RechargeRequestsScreen = () => {
             {isCancellable(item.status) && (
               <Button
                 mode="contained"
-                onPress={() => handleCancelRequest(item.id)}
+                onPress={() => {
+                  console.log("Cancel button pressed for request ID:", item.id);
+                  handleCancelRequest(item.id);
+                }}
                 style={styles.button}
                 disabled={cancellingId === item.id}
                 loading={cancellingId === item.id}
                 contentStyle={styles.buttonContent}
                 uppercase={false}
-                icon="cancel"
+                icon={() => (
+                  <MaterialCommunityIcons
+                    name="cancel"
+                    size={20}
+                    color="#fff"
+                  />
+                )}
               >
-                {t('cancel')}
+                {t("cancel", { defaultValue: "Cancel" })}
               </Button>
             )}
           </Card.Actions>
@@ -277,17 +272,13 @@ const RechargeRequestsScreen = () => {
 
   // Format time
   const formatTime = (timeString) => {
+    if (!timeString) return "00:00";
     const [hour, minute, second] = timeString.split(":");
     const date = new Date();
     date.setHours(parseInt(hour, 10));
     date.setMinutes(parseInt(minute, 10));
     date.setSeconds(parseInt(second, 10));
     return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-  };
-
-  // Capitalize first letter
-  const capitalizeFirstLetter = (string) => {
-    return string.charAt(0).toUpperCase() + string.slice(1);
   };
 
   return (
@@ -321,6 +312,40 @@ const RechargeRequestsScreen = () => {
           ListFooterComponent={<View style={{ height: 20 }} />}
         />
       )}
+
+      {/* Confirmation Dialog */}
+      <Portal>
+        <Dialog
+          visible={dialogVisible}
+          onDismiss={() => setDialogVisible(false)}
+        >
+          <Dialog.Title>
+            {t("rechargeRequestsScreen.confirmCancellation", { defaultValue: "Confirm Cancellation" })}
+          </Dialog.Title>
+          <Dialog.Content>
+            <Paragraph>
+              {t("rechargeRequestsScreen.confirmCancellationMessage", {
+                defaultValue: "Are you sure you want to cancel this request?",
+              })}
+            </Paragraph>
+          </Dialog.Content>
+          <Dialog.Actions>
+            <Button onPress={() => setDialogVisible(false)}>
+              {t("rechargeRequestsScreen.no", { defaultValue: "No" })}
+            </Button>
+            <Button
+              onPress={() => {
+                if (selectedRequestId !== null) {
+                  cancelRequest(selectedRequestId);
+                }
+              }}
+            >
+              {t("rechargeRequestsScreen.yes", { defaultValue: "Yes" })}
+            </Button>
+          </Dialog.Actions>
+        </Dialog>
+      </Portal>
+
       {/* Snackbar for feedback */}
       <Snackbar
         visible={snackbarVisible}
@@ -328,12 +353,23 @@ const RechargeRequestsScreen = () => {
         duration={3000}
         style={{ backgroundColor: snackbarColor }}
         action={{
-          label: t("rechargeRequestsScreen.close"),
+          label: t("rechargeRequestsScreen.close", { defaultValue: "Close" }),
           onPress: () => setSnackbarVisible(false),
         }}
       >
         {snackbarMessage}
       </Snackbar>
+
+      {/* Activity Indicator Overlay */}
+      {loading && (
+        <View style={styles.loadingOverlay}>
+          <ActivityIndicator
+            animating={true}
+            size="large"
+            color={theme.colors.primary}
+          />
+        </View>
+      )}
     </SafeAreaView>
   );
 };
@@ -387,9 +423,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     marginTop: 8,
-  },
-  statusIcon: {
-    marginRight: 6,
   },
   statusBadge: {
     paddingHorizontal: 8,
@@ -446,5 +479,15 @@ const styles = StyleSheet.create({
   snackbarText: {
     color: "#FFFFFF",
     flex: 1,
+  },
+  loadingOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(238, 242, 243, 0.7)",
+    justifyContent: "center",
+    alignItems: "center",
   },
 });

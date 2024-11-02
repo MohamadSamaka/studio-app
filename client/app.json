@@ -30,10 +30,6 @@
       "permissions": ["INTERNET"],
       "usesCleartextTraffic": true
     },
-    "web": {
-      "favicon": "./assets/favicon.png",
-      "bundler": "metro"
-    },
     "plugins": [
       "expo-updates",
       "expo-localization",
@@ -50,9 +46,22 @@
     ],
     "extra": {
       "eas": {
-        "projectId": "< Your ID HERE > "
+        "projectId": "5e4538cd-3d74-4a73-9d74-ef2fa58186ca "
       }
     },
-    "owner": "thexjoker"
+    "owner": "thexjoker",
+
+    "web": {
+      "links": [
+        {
+          "rel": "stylesheet",
+          "href": "https://fonts.googleapis.com/css?family=Material+Icons"
+        },
+        {
+          "rel": "stylesheet",
+          "href": "https://cdn.materialdesignicons.com/5.4.55/css/materialdesignicons.min.css"
+        }
+      ]
+    }
   }
 }

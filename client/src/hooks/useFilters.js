@@ -1,13 +1,14 @@
+// useFilters.js
 import { useState } from 'react';
-import moment from 'moment';
 import { Alert } from 'react-native';
+import moment from 'moment';
 
 const useFilters = (setCurrentPage, showSnackbar) => {
-  // Filter Modal States
+  // Filter Modal Visibility
   const [filterModalVisible, setFilterModalVisible] = useState(false);
 
   // Filter Type: 'date' or 'time'
-  const [filterType, setFilterType] = useState(null);
+  const [filterType, setFilterType] = useState('date'); // Default to 'date' for better UX
 
   // Date Filter States
   const [isDateRange, setIsDateRange] = useState(false);
@@ -43,16 +44,17 @@ const useFilters = (setCurrentPage, showSnackbar) => {
     }
     closeFilterModal();
     setCurrentPage(1); // Reset to first page when filters are applied
+    showSnackbar('Filters applied successfully!', 'success');
   };
 
   // Reset filters function modified to close filter modal if open
   const resetFilters = () => {
     resetDateFilter();
     resetTimeFilter();
+    setFilterType('date'); // Reset filter type to default
     setCurrentPage(1); // Reset to first page when filters are reset
-    // Optionally close filter modal
-    closeFilterModal();
-    showSnackbar('All filters have been reset.', 'success');
+    closeFilterModal(); // Close the modal if open
+    showSnackbar('All filters have been reset.', 'info');
   };
 
   // Apply Date Filter
@@ -76,7 +78,6 @@ const useFilters = (setCurrentPage, showSnackbar) => {
         end,
       });
     } else {
-      console.log("is single")
       if (!tempDateFilter.single) {
         Alert.alert('No Date Selected', 'Please select a date.');
         return;
@@ -93,7 +94,8 @@ const useFilters = (setCurrentPage, showSnackbar) => {
   // Reset Date Filter
   const resetDateFilter = () => {
     setDateFilter({ single: null, start: null, end: null });
-    setCurrentPage(1); // Reset to first page when filters are reset
+    setTempDateFilter({ single: null, start: null, end: null });
+    setIsDateRange(false);
   };
 
   // Apply Time Filter
@@ -134,7 +136,8 @@ const useFilters = (setCurrentPage, showSnackbar) => {
   // Reset Time Filter
   const resetTimeFilter = () => {
     setTimeFilter({ single: null, start: null, end: null });
-    setCurrentPage(1); // Reset to first page when filters are reset
+    setTempTimeFilter({ single: null, start: null, end: null });
+    setIsTimeRange(false);
   };
 
   // Date Picker Handlers
@@ -147,18 +150,26 @@ const useFilters = (setCurrentPage, showSnackbar) => {
       return;
     }
 
-    if (showSingleDatePicker) {
-      // Handling single date selection
-      setTempDateFilter({ ...tempDateFilter, single: selectedDate });
-      setShowSingleDatePicker(false);
-    } else if (showDatePickerStart) {
-      // Handling start date selection in range
-      setTempDateFilter({ ...tempDateFilter, start: selectedDate });
-      setShowDatePickerStart(false);
-    } else if (showDatePickerEnd) {
-      // Handling end date selection in range
-      setTempDateFilter({ ...tempDateFilter, end: selectedDate });
-      setShowDatePickerEnd(false);
+    if (filterType === 'date') {
+      if (isDateRange) {
+        if (showDatePickerStart) {
+          setTempDateFilter(prev => ({ ...prev, start: selectedDate }));
+          setShowDatePickerStart(false);
+        } else if (showDatePickerEnd) {
+          if (selectedDate < tempDateFilter.start) {
+            Alert.alert(
+              'Invalid Date',
+              'End date cannot be before start date.'
+            );
+            return;
+          }
+          setTempDateFilter(prev => ({ ...prev, end: selectedDate }));
+          setShowDatePickerEnd(false);
+        }
+      } else {
+        setTempDateFilter(prev => ({ ...prev, single: selectedDate }));
+        setShowSingleDatePicker(false);
+      }
     }
   };
 
@@ -172,51 +183,73 @@ const useFilters = (setCurrentPage, showSnackbar) => {
       return;
     }
 
-    if (showSingleTimePicker) {
-      // Handling single time selection
-      setTempTimeFilter({ ...tempTimeFilter, single: selectedTime });
-      setShowSingleTimePicker(false);
-    } else if (showTimePickerStart) {
-      // Handling start time selection in range
-      setTempTimeFilter({ ...tempTimeFilter, start: selectedTime });
-      setShowTimePickerStart(false);
-    } else if (showTimePickerEnd) {
-      // Handling end time selection in range
-      setTempTimeFilter({ ...tempTimeFilter, end: selectedTime });
-      setShowTimePickerEnd(false);
+    if (filterType === 'time') {
+      if (isTimeRange) {
+        if (showTimePickerStart) {
+          setTempTimeFilter(prev => ({ ...prev, start: selectedTime }));
+          setShowTimePickerStart(false);
+        } else if (showTimePickerEnd) {
+          if (selectedTime < tempTimeFilter.start) {
+            Alert.alert(
+              'Invalid Time',
+              'End time cannot be before start time.'
+            );
+            return;
+          }
+          setTempTimeFilter(prev => ({ ...prev, end: selectedTime }));
+          setShowTimePickerEnd(false);
+        }
+      } else {
+        setTempTimeFilter(prev => ({ ...prev, single: selectedTime }));
+        setShowSingleTimePicker(false);
+      }
     }
   };
 
   return {
+    // Filter Modal Visibility
     filterModalVisible,
     openFilterModal,
     closeFilterModal,
+
+    // Filter Type
     filterType,
     setFilterType,
+
+    // Date Filters
     isDateRange,
     setIsDateRange,
     dateFilter,
     tempDateFilter,
     setTempDateFilter,
+
+    // Time Filters
     isTimeRange,
     setIsTimeRange,
     timeFilter,
     tempTimeFilter,
     setTempTimeFilter,
+
+    // Picker Visibility
     showSingleDatePicker,
     setShowSingleDatePicker,
     showDatePickerStart,
     setShowDatePickerStart,
     showDatePickerEnd,
     setShowDatePickerEnd,
+
     showSingleTimePicker,
     setShowSingleTimePicker,
     showTimePickerStart,
     setShowTimePickerStart,
     showTimePickerEnd,
     setShowTimePickerEnd,
+
+    // Handlers
     handleDateChange,
     handleTimeChange,
+
+    // Actions
     applyFiltersFromModal,
     resetFilters,
     resetDateFilter,

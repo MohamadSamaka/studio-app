@@ -2,6 +2,8 @@ import React, { createContext, useState, useContext, useEffect } from "react";
 import * as Notifications from 'expo-notifications';
 import { isDevice } from "expo-device";
 import { Alert } from 'react-native';
+import { Platform } from 'react-native';
+
 
 const AppContext = createContext();
 
@@ -39,7 +41,8 @@ export const AppProvider = ({ children }) => {
 
   // Hook to request notification permissions when the app starts
   useEffect(() => {
-    requestNotificationPermission();
+    if (Platform.OS !== 'web')
+      requestNotificationPermission();
   }, []);
 
   return (

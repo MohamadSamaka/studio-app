@@ -1,7 +1,7 @@
 import React from 'react';
 import { TouchableOpacity, View, StyleSheet } from 'react-native';
 import { TextInput } from 'react-native-paper';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 const TimeInput = ({ label, value, onPress }) => (
   <TouchableOpacity style={styles.timeInputContainer} onPress={onPress}>
@@ -15,7 +15,7 @@ const TimeInput = ({ label, value, onPress }) => (
         editable={false}
         pointerEvents="none"
       />
-      <Icon name="clock-outline" size={24} color="#4a90e2" style={styles.clockIcon} />
+      <MaterialCommunityIcons name="clock-outline" size={24} color="#4a90e2" style={styles.clockIcon} />
     </View>
   </TouchableOpacity>
 );

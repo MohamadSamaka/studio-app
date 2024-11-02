@@ -27,7 +27,11 @@ const app = express();
 app.use(morgan('combined'));
 
 // Define allowed origins from environment variables
-const allowedOrigins = ["http://localhost:8081"]
+const allowedOrigins = [
+  "http://localhost:8081",             // Local development
+  "http://pilates-kfarkna.com",        // Non-SSL production domain
+  "https://pilates-kfarkna.com"        // SSL-enabled production domain
+];
 
 // CORS configuration
 const corsOptions = {

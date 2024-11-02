@@ -39,7 +39,7 @@
     },
     "noSubscriptionsAvailable": "No subscriptions available",
     "failedToLoadSubscriptions": "Error: Failed to load subscriptions.",
-    "requiestingConfirmationTitle": "Confirm Request",
+    "requestingConfirmationTitle": "Confirm Request",
     "meetings": "Meetings {{count}}",
     "requestingSubscription": "Request",
     "requestingSubscriptionConfirmationMessage": "Are you sure you want to request the {{subscriptionType}} subscription?"

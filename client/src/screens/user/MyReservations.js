@@ -107,7 +107,6 @@ const ReservationsScreen = () => {
       );
 
       let shouldUpdateCredits = true;
-      console.log("hmmmmmmm: ", config?.reservations?.["cancelation-refund-threshold-time"])
       if (
         !isWithinThreshold(
           reservation.date,
@@ -341,6 +340,13 @@ const ReservationsScreen = () => {
         onChangeText={setSearchQuery}
         value={searchQuery}
         style={styles.searchBar}
+        icon={() => (
+          <MaterialCommunityIcons
+            name="magnify"
+            size={20}
+            color={theme.colors.placeholder}
+          />
+        )}
       />
       {filteredReservations.length === 0 ? (
         <View style={styles.noReservationsContainer}>

@@ -1,12 +1,28 @@
-import React, { useState, useCallback, useMemo} from 'react';
-import { View, StyleSheet, TouchableOpacity, Text } from 'react-native';
-import { Appbar, Surface, Badge, Menu, Portal, Modal, RadioButton, Button } from 'react-native-paper';
+import React, { useState, useRef } from 'react';
+import {
+  View,
+  StyleSheet,
+  Pressable,
+  Text,
+  TouchableOpacity,
+  findNodeHandle,
+  UIManager,
+} from 'react-native';
+import {
+  Appbar,
+  Surface,
+  Badge,
+  Portal,
+  Modal,
+  RadioButton,
+  Button,
+} from 'react-native-paper';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useAuthContext } from '../../contexts/AuthContext';
 import { useUserContext } from '../../contexts/UserContext';
 import { useLanguageContext } from '../../contexts/LanguageContext';
 import { useTranslation } from 'react-i18next';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 const AppBarComponent = React.memo(() => {
   const navigation = useNavigation();
@@ -16,88 +32,118 @@ const AppBarComponent = React.memo(() => {
   const { language, changeLanguage } = useLanguageContext();
   const { t } = useTranslation();
 
-
   const [profileMenuVisible, setProfileMenuVisible] = useState(false);
   const [languageModalVisible, setLanguageModalVisible] = useState(false);
   const [tempSelectedLanguage, setTempSelectedLanguage] = useState(language);
 
+  const profileAnchorRef = useRef(null);
+  const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
+
+  const handleProfileMenuOpen = () => {
+    if (profileAnchorRef.current) {
+      UIManager.measure(
+        findNodeHandle(profileAnchorRef.current),
+        (x, y, width, height, pageX, pageY) => {
+          setMenuPosition({ top: pageY + height, left: pageX });
+          setProfileMenuVisible(true);
+        }
+      );
+    }
+  };
+
+  const handleLanguageChange = () => {
+    changeLanguage(tempSelectedLanguage);
+    setLanguageModalVisible(false);
+  };
 
   const getActiveRouteName = (route) => {
-    if (!route.state) return route.params?.Title ? route.params.Title : route.name;
+    if (!route.state)
+      return route.params?.Title ? route.params.Title : route.name;
     const { routes, index } = route.state;
     return getActiveRouteName(routes[index]);
   };
 
   const activeRouteName = getActiveRouteName(route);
 
-  const handleLanguageChange = useCallback(() => {
-    // Implement language change logic
-    changeLanguage(tempSelectedLanguage);
-    setLanguageModalVisible(false);
-  }, [tempSelectedLanguage]);
-
   return (
     <>
       <Appbar.Header style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.openDrawer()} style={styles.menuButton}>
-          <Icon name="menu" size={24} color="#fff" />
-        </TouchableOpacity>
+        <Pressable onPress={() => navigation.openDrawer()} style={styles.menuButton}>
+          <MaterialCommunityIcons name="menu" size={24} color="#fff" />
+        </Pressable>
 
         <Text style={styles.title}>{activeRouteName}</Text>
 
         <View style={styles.rightContainer}>
           <Surface style={styles.pointsContainer}>
-            <Icon name="ticket-percent" size={18} color="#fff" />
+            <MaterialCommunityIcons name="ticket-percent" size={18} color="#fff" />
             <Text style={styles.pointsText}>{credits}</Text>
           </Surface>
 
           {/* Notifications Button */}
-          <TouchableOpacity
+          <Pressable
             onPress={() => navigation.navigate('Notifications')}
             style={styles.notificationButton}
           >
-            <Icon name="bell-outline" size={24} color="#fff" />
+            <MaterialCommunityIcons name="bell-outline" size={24} color="#fff" />
             {notificationsCount > 0 && (
               <Badge style={styles.badge}>{notificationsCount}</Badge>
             )}
-          </TouchableOpacity>
+          </Pressable>
 
           {/* Profile/Menu Button */}
-          <Menu
-            visible={profileMenuVisible}
-            onDismiss={() => setProfileMenuVisible(false)}
-            anchor={
-              <TouchableOpacity
-                onPress={() => setProfileMenuVisible(true)}
-                style={styles.profileAnchor}
-              >
-                <Icon name="account-circle" size={24} color="#fff" />
-                <Text style={styles.selectedLanguage}>{language.toUpperCase()}</Text>
-              </TouchableOpacity>
-            }
-            contentStyle={styles.profileMenuStyle}
+          <Pressable
+            onPress={handleProfileMenuOpen}
+            style={styles.profileAnchor}
+            ref={profileAnchorRef}
           >
-            <Menu.Item
-              onPress={() => {
-                setProfileMenuVisible(false);
-                setLanguageModalVisible(true);
-              }}
-              title={t('changeLanguage')}
-              leadingIcon="translate"
-              titleStyle={styles.menuItemText}
-            />
-            <Menu.Item
-              onPress={() => {
-                setProfileMenuVisible(false);
-                logoutUser();
-              }}
-              title={t('logout')}
-              leadingIcon="logout"
-              titleStyle={styles.menuItemText}
-            />
-          </Menu>
+            <MaterialCommunityIcons name="account-circle" size={24} color="#fff" />
+            <Text style={styles.selectedLanguage}>{language.toUpperCase()}</Text>
+          </Pressable>
         </View>
       </Appbar.Header>
+
+      {/* Custom Menu rendered in Portal */}
+      <Portal>
+        {profileMenuVisible && (
+          <>
+            {/* Overlay to detect outside clicks */}
+            <Pressable
+              style={styles.overlay}
+              onPress={() => setProfileMenuVisible(false)}
+            />
+
+            {/* Menu positioned absolutely */}
+            <View
+              style={[
+                styles.customMenu,
+                { top: menuPosition.top, left: menuPosition.left - 150 }, // Adjust 'left' as needed
+              ]}
+            >
+              <TouchableOpacity
+                onPress={() => {
+                  setProfileMenuVisible(false);
+                  setLanguageModalVisible(true);
+                }}
+                style={styles.menuItem}
+              >
+                <MaterialCommunityIcons name="translate" size={20} color="#333" />
+                <Text style={styles.menuItemText}>{t('changeLanguage')}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => {
+                  setProfileMenuVisible(false);
+                  logoutUser();
+                }}
+                style={styles.menuItem}
+              >
+                <MaterialCommunityIcons name="logout" size={20} color="#333" />
+                <Text style={styles.menuItemText}>{t('logout')}</Text>
+              </TouchableOpacity>
+            </View>
+          </>
+        )}
+      </Portal>
 
       {/* Language Modal */}
       <Portal>
@@ -149,8 +195,7 @@ const styles = StyleSheet.create({
   },
   title: {
     color: '#fff',
-    textAlign: 'left', // Ensures text is aligned to the left
-
+    textAlign: 'left',
     fontSize: 20,
     fontWeight: 'bold',
     flex: 1,
@@ -201,13 +246,27 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: 'bold',
   },
-  profileMenuStyle: {
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 999,
+  },
+  customMenu: {
+    position: 'absolute',
     backgroundColor: '#fff',
     borderRadius: 8,
     elevation: 5,
     width: 200,
+    paddingVertical: 5,
+    zIndex: 1000,
+  },
+  menuItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 15,
   },
   menuItemText: {
+    marginLeft: 10,
     color: '#333',
   },
   modalContainer: {

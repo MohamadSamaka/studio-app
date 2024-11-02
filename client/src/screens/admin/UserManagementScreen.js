@@ -8,7 +8,7 @@ import {
   Text,
   TouchableOpacity,
   View,
-  ScrollView
+  ScrollView,
 } from "react-native";
 import DropDownPicker from "react-native-dropdown-picker";
 import {
@@ -33,7 +33,8 @@ import {
   updateUser,
 } from "../../utils/axios";
 import { isFormValid, validateForm } from "../../utils/validationUtils";
-import { theme } from '../../utils/theme';  
+import { theme } from "../../utils/theme";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 const UserManagementScreen = () => {
   const [users, setUsers] = useState([]);
@@ -147,7 +148,6 @@ const UserManagementScreen = () => {
     }
   };
 
-
   // **Fetch Roles**
   const fetchRoles = async () => {
     try {
@@ -177,7 +177,6 @@ const UserManagementScreen = () => {
 
     const validationErrors = validateForm(fields);
 
-
     if (!isFormValid(validationErrors)) {
       setErrors(validationErrors);
       return;
@@ -201,7 +200,6 @@ const UserManagementScreen = () => {
 
   // **Handle Updating a User**
   const handleUpdateUser = async () => {
-
     // Prepare the fields to validate (exclude password if not changed)
     const fields = {
       username: selectedUser.username,
@@ -347,13 +345,17 @@ const UserManagementScreen = () => {
         <Text style={[styles.cell, styles.phoneNumber]}>{item.phone_num}</Text>
         <View style={[styles.cell, styles.actions]}>
           <IconButton
-            icon="pencil"
+            icon={({ color, size }) => (
+              <MaterialCommunityIcons name="pencil" color={color} size={size} />
+            )}
             size={20}
             color={theme.colors.primary}
             onPress={() => handleEditPress(item)}
           />
           <IconButton
-            icon="delete"
+            icon={({ color, size }) => (
+              <MaterialCommunityIcons name="delete" color={color} size={size} />
+            )}
             size={20}
             color={theme.colors.error}
             onPress={() => handleDeleteUser(item.id)}
@@ -428,15 +430,20 @@ const UserManagementScreen = () => {
           mode="outlined"
           error={!!errors.password}
         />
-        
+
         <IconButton
-          icon={passwordVisible ? "eye-off" : "eye"}
+          icon={() => (
+            <MaterialCommunityIcons
+              name={passwordVisible ? "eye-off" : "eye"}
+              size={20}
+              color={theme.colors.primary}
+            />
+          )}
           size={20}
           onPress={() => setPasswordVisible(!passwordVisible)}
           style={styles.passwordToggle}
         />
       </View>
-      
 
       <TextInput
         label="Credits"
@@ -460,16 +467,20 @@ const UserManagementScreen = () => {
         placeholder="Enter credits (min 0)"
         error={!!errors.credits}
       />
-      {errors.credits && (
-        <Text style={styles.errorText}>{errors.credits}</Text>
-      )}
+      {errors.credits && <Text style={styles.errorText}>{errors.credits}</Text>}
 
-      
       {/* 2. Language Dropdown */}
-      <View style={[styles.dropdownContainer, { zIndex: 2000, elevation: 2000, position: 'relative' }]}>
+      <View
+        style={[
+          styles.dropdownContainer,
+          { zIndex: 2000, elevation: 2000, position: "relative" },
+        ]}
+      >
         <DropDownPicker
           open={openLang}
-          value={selectedUser ? selectedUser.default_lang : newUser.default_lang}
+          value={
+            selectedUser ? selectedUser.default_lang : newUser.default_lang
+          }
           items={languages}
           setOpen={() => onDropdownOpen("lang")}
           setValue={(value) =>
@@ -491,7 +502,12 @@ const UserManagementScreen = () => {
       </View>
 
       {/* 3. Role Dropdown */}
-      <View style={[styles.dropdownContainer, { zIndex: 3000, elevation: 3000, position: 'relative' }]}>
+      <View
+        style={[
+          styles.dropdownContainer,
+          { zIndex: 3000, elevation: 3000, position: "relative" },
+        ]}
+      >
         <DropDownPicker
           open={openRole}
           value={selectedUser ? selectedUser.role_id : newUser.role_id}
@@ -608,7 +624,13 @@ const UserManagementScreen = () => {
             onChangeText={onChangeSearch}
             value={searchQuery}
             style={styles.searchBar}
-            icon="magnify"
+            icon={({ color, size }) => (
+              <MaterialCommunityIcons
+                name="magnify"
+                color={color}
+                size={size}
+              />
+            )}
             clearIcon="close"
           />
 
@@ -635,7 +657,9 @@ const UserManagementScreen = () => {
           {/* **Floating Action Button (FAB)** */}
           <FAB
             style={styles.fab}
-            icon="plus"
+            icon={({ color, size }) => (
+              <MaterialCommunityIcons name="plus" color={color} size={size} />
+            )}
             onPress={() => {
               setNewUser({
                 username: "",

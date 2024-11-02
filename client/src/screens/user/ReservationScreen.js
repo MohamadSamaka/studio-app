@@ -14,7 +14,7 @@ import {
 } from "react-native";
 import { WeekCalendar, CalendarProvider } from "react-native-calendars";
 import { Card, Title, Paragraph, Avatar } from "react-native-paper";
-import Icon from "react-native-vector-icons/MaterialCommunityIcons";
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from "expo-linear-gradient";
 import AppBar from "../../components/common/AppBar";
 import moment from "moment";
@@ -31,6 +31,7 @@ import {
   bookTimeSlot,
   cancelUserReservation,
 } from "../../utils/axios";
+import i18n from '../../utils/i18n'; // Adjust the path accordingly
 
 // Import the default avatar image
 const defaultAvatar = require("../../../assets/images/user.png"); // Adjust the path as necessary
@@ -60,8 +61,11 @@ const ReservationItem = ({
   // Normalize the title to lowercase
   const normalizedTitle = title.toLowerCase();
 
-  // Reassign 'title' to its translated value
-  title = t(`BookingScreen.BookingTitles.${normalizedTitle}`);
+  if (i18n.exists(`BookingScreen.BookingTitles.${normalizedTitle}`)) {
+    title = t(`BookingScreen.BookingTitles.${normalizedTitle}`);
+  } else {
+    title = '';
+  }
 
   console.log("title: ", title)
 
@@ -122,17 +126,17 @@ const ReservationItem = ({
               <Title style={styles.title}>{title}</Title>
               <View style={styles.detailsContainer}>
                 <View style={styles.iconTextContainer}>
-                  <Icon name="clock-outline" size={18} color="#fff" />
+                  <MaterialCommunityIcons name="clock-outline" size={18} color="#fff" />
                   <Paragraph style={styles.details}>{time}</Paragraph>
                 </View>
                 <View style={styles.iconTextContainer}>
-                  <Icon name="map-marker-outline" size={18} color="#fff" />
+                  <MaterialCommunityIcons name="map-marker-outline" size={18} color="#fff" />
                   <Paragraph style={styles.details}>{location}</Paragraph>
                 </View>
               </View>
               {/* Render Trainer Icon Safely */}
               <View style={styles.iconTextContainer}>
-                <Icon name="account-outline" size={18} color="#fff" />
+                <MaterialCommunityIcons name="account-outline" size={18} color="#fff" />
                 <Paragraph style={styles.details}>
                   {trainer && trainer.name ? trainer.name : "N/A"}
                 </Paragraph>
@@ -147,7 +151,7 @@ const ReservationItem = ({
               <Animated.View
                 style={[styles.fullyBookedOverlay, { opacity: fadeAnim }]}
               >
-                <Icon name="alert-circle-outline" size={30} color="#fff" />
+                <MaterialCommunityIcons name="alert-circle-outline" size={30} color="#fff" />
                 <Text style={styles.fullyBookedText}>
                   {t("BookingScreen.fullyBooked")}
                 </Text>
@@ -557,7 +561,7 @@ const ReservationSystem = () => {
               },
             }}
             renderArrow={(direction) => (
-              <Icon
+              <MaterialCommunityIcons
                 name={direction === "left" ? "chevron-left" : "chevron-right"}
                 size={24}
                 color="#00adf5"

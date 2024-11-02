@@ -39,7 +39,7 @@
     },
     "noSubscriptionsAvailable": "لا توجد اشتراكات متاحة",
     "failedToLoadSubscriptions": "خطأ: فشل في تحميل الاشتراكات.",
-    "requiestingConfirmationTitle": "تأكيد الطلب",
+    "requestingConfirmationTitle": "تأكيد الطلب",
     "meetings": "اجتماعات {{count}} ",
     "requestingSubscription": "طلب",
     "requestingSubscriptionConfirmationMessage": "هل أنت متأكد أنك تريد طلب اشتراك \u200F{{subscriptionType}}\u200E؟"

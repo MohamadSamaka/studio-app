@@ -39,7 +39,7 @@
     },
     "noSubscriptionsAvailable": "אין מנויים זמינים",
     "failedToLoadSubscriptions": "שגיאה: כשל בטעינת המנויים.",
-    "requiestingConfirmationTitle": "אישור בקשה",
+    "requestingConfirmationTitle": "אישור בקשה",
     "meetings": "{{count}} פגישות ",
     "requestingSubscription": "בקשה",
     "requestingSubscriptionConfirmationMessage": "האם אתה בטוח שברצונך לבקש את המנוי \u200F{{subscriptionType}}\u200E?"

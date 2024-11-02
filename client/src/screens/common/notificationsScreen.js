@@ -11,14 +11,14 @@ import {
   IconButton,
 } from "react-native-paper";
 import { useNavigation } from "@react-navigation/native";
-import Icon from "react-native-vector-icons/MaterialCommunityIcons";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { getNotifications, markNotificationAsRead } from "../../utils/axios";
 import { useUserContext } from "../../contexts/UserContext";
 import moment from "moment";
 
 const NotificationsScreen = () => {
   const navigation = useNavigation();
-  const { setNotificaionsCount } = useUserContext()
+  const { setNotificaionsCount } = useUserContext();
   const theme = useTheme();
 
   const [notifications, setNotifications] = useState([]);
@@ -35,7 +35,7 @@ const NotificationsScreen = () => {
       const response = await getNotifications();
       const notifications = response.data;
       setNotifications(notifications);
-      setNotificaionsCount(notifications.length)
+      setNotificaionsCount(notifications.length);
       setRefreshing(false);
     } catch (error) {
       console.log("Error: failed to fetch notificaions");
@@ -66,7 +66,7 @@ const NotificationsScreen = () => {
     );
     markAsRead(notificaionsListId);
     setNotifications([]);
-    setNotificaionsCount(notifications.length)
+    setNotificaionsCount(notifications.length);
   };
 
   const renderItem = ({ item }) => (
@@ -75,13 +75,12 @@ const NotificationsScreen = () => {
         styles.card,
         { backgroundColor: item.read ? "#ffffff" : "#D0E8FF" }, // Light blue for unread
       ]}
-
       onPress={() => {
         if (!item.read) markAsRead([item.id]);
       }}
     >
       <View style={styles.cardContent}>
-        <Icon
+        <MaterialCommunityIcons
           name={item.icon}
           size={30}
           color={item.read ? "#666666" : theme.colors.primary} // Dark gray for read, vibrant blue for unread
@@ -102,16 +101,30 @@ const NotificationsScreen = () => {
   return (
     <>
       <Appbar.Header style={styles.header}>
-        <Appbar.BackAction onPress={() => navigation.goBack()} />
+        <Appbar.Action
+          icon={() => (
+            <MaterialCommunityIcons
+              name="arrow-left"
+              size={24}
+              color="#ffffff"
+            />
+          )}
+          onPress={() => navigation.goBack()}
+          accessibilityLabel="Go Back"
+        />{" "}
         <Appbar.Content
           title="Notifications"
           titleStyle={styles.screenTitle} // Corrected prop name
         />
         {notifications.length > 0 && (
           <IconButton
-            icon="delete-outline"
-            color="#ffffff"
-            size={24}
+            icon={() => (
+              <MaterialCommunityIcons
+                name="delete-outline"
+                size={24}
+                color={theme.colors.primary}
+              />
+            )}
             onPress={clearAllNotifications}
             accessibilityLabel="Clear All Notifications"
           />
@@ -120,7 +133,11 @@ const NotificationsScreen = () => {
 
       {notifications.length === 0 ? (
         <View style={styles.emptyContainer}>
-          <Icon name="bell-off-outline" size={80} color="#cccccc" />
+          <MaterialCommunityIcons
+            name="bell-off-outline"
+            size={80}
+            color="#cccccc"
+          />
           <Text style={styles.emptyText}>No Notifications</Text>
         </View>
       ) : (

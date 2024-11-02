@@ -1,7 +1,9 @@
 import { DefaultTheme } from 'react-native-paper';
+import { MaterialCommunityIcons } from 'react-native-vector-icons';
 
 export const theme = {
   ...DefaultTheme,
+
   dark: false,
   colors: {
     ...DefaultTheme.colors,
@@ -16,5 +18,5 @@ export const theme = {
     backdrop: 'rgba(0, 0, 0, 0.5)',
     success: '#4CAF50',
     awaiting: '#FFA500',
-  },
+  }
 };
