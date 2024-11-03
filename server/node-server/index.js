@@ -1,10 +1,10 @@
 const sequelize = require('./src/config/database'); // Sequelize instance
 const app = require('./src/app'); // Express app
-const http = require('http'); // To create an HTTP server
+const https = require('https'); // To create an HTTPS server
 const { initializeWebSocketServer } = require('./src/utils/websocket'); // WebSocket utils
 
 // Create an HTTP server from the Express app
-const server = http.createServer(app);
+const server = https.createServer(app);
 
 const port = process.env.PORT || 3000;
 
@@ -16,7 +16,7 @@ sequelize.authenticate()
     // Initialize WebSocket server
     initializeWebSocketServer(server);
 
-    // Start the HTTP server with WebSocket support
+    // Start the HTTPS server with WebSocket support
     server.listen(port, () => {
       console.log(`Server running on port ${port}`);
     });
