@@ -1,96 +1,42 @@
+// ConfirmationModal.js
 import React from "react";
-import { Modal, View, Text, TouchableOpacity, StyleSheet } from "react-native";
-import { useTranslation } from "react-i18next";
+import { StyleSheet } from "react-native";
+import { Portal, Dialog, Text, Button } from "react-native-paper";
 
 const ConfirmationModal = ({
   visible,
-  onRequestClose,
-  title,
-  message,
-  confirmText,
-  cancelText,
+  onDismiss,
   onConfirm,
-  onCancel,
+  onCancel, // Added onCancel prop
+  title = "Confirm",
+  message = "Are you sure?",
+  confirmText = "Yes",
+  cancelText = "No",
+  confirmColor = "red",
 }) => {
-  const { t } = useTranslation();
+  // If onCancel is not provided, default it to onDismiss
+  const handleCancel = onCancel || onDismiss;
 
   return (
-    <Modal
-      transparent={true}
-      visible={visible}
-      onRequestClose={onRequestClose}
-      animationType="fade"
-    >
-      <View style={styles.modalBackground}>
-        <View style={styles.modalContainer}>
-          <Text style={styles.modalTitle}>{title}</Text>
-          <Text style={styles.modalMessage}>{message}</Text>
-          <View style={styles.buttonContainer}>
-            <TouchableOpacity
-              style={[styles.button, styles.cancelButton]}
-              onPress={onCancel}
-            >
-              <Text style={styles.buttonText}>{cancelText || t("Cancel")}</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.button, styles.confirmButton]}
-              onPress={onConfirm}
-            >
-              <Text style={styles.buttonText}>{confirmText || t("Confirm")}</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </View>
-    </Modal>
+    <Portal>
+      <Dialog visible={visible} onDismiss={onDismiss}>
+        {title && <Dialog.Title>{title}</Dialog.Title>}
+        <Dialog.Content>
+          <Text>{message}</Text>
+        </Dialog.Content>
+        <Dialog.Actions>
+          <Button onPress={handleCancel}>{cancelText}</Button> {/* Mapped to handleCancel */}
+          <Button onPress={onConfirm} color={confirmColor}>
+            {confirmText}
+          </Button>
+        </Dialog.Actions>
+      </Dialog>
+    </Portal>
   );
 };
 
 const styles = StyleSheet.create({
-  modalBackground: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.5)",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  modalContainer: {
-    width: "80%",
-    backgroundColor: "#fff",
-    borderRadius: 8,
-    padding: 20,
-    elevation: 10,
-  },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: "bold",
-    marginBottom: 12,
-    textAlign: "center",
-  },
-  modalMessage: {
-    fontSize: 16,
-    marginBottom: 20,
-    textAlign: "center",
-  },
-  buttonContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  button: {
-    flex: 1,
-    paddingVertical: 12,
-    marginHorizontal: 5,
-    borderRadius: 5,
-    alignItems: "center",
-  },
-  cancelButton: {
-    backgroundColor: "#ccc",
-  },
-  confirmButton: {
-    backgroundColor: "#00adf5",
-  },
-  buttonText: {
-    color: "#fff",
-    fontWeight: "bold",
-  },
+  // Add any custom styles if needed
 });
 
 export default ConfirmationModal;

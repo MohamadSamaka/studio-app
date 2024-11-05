@@ -3,8 +3,9 @@ FROM node:18
 # Create app directory
 WORKDIR /usr/src/app
 
+# Install necessary packages including mysql-client and netcat
 RUN apt-get update && \
-    apt-get install -y netcat-openbsd && \
+    apt-get install -y netcat-openbsd mysql-client && \
     rm -rf /var/lib/apt/lists/*
 
 # Install app dependencies
@@ -34,5 +35,5 @@ ENTRYPOINT ["/bin/sh","./entrypoint.sh"]
 # Start the app
 CMD ["npm", "run", "start"]
 
-#ready command to keep container running for testing instead of running npm
-#CMD ["tail", "-f", "/dev/null"]
+# Ready command to keep container running for testing instead of running npm
+# CMD ["tail", "-f", "/dev/null"]

@@ -32,7 +32,10 @@ if (process.env.NODE_ENV !== 'production') {
     REFRESH_TOKEN_SECRET: process.env.REFRESH_TOKEN_SECRET || "",
     TOKEN_EXPIRATION: process.env.TOKEN_EXPIRATION || "1h",
     REFRESH_TOKEN_EXPIRATION: process.env.REFRESH_TOKEN_EXPIRATION || "7d",
-  
+    ALLOWED_ORIGINS: process.env.ALLOWED_ORIGINS
+    ? process.env.ALLOWED_ORIGINS.split(',').map(origin => origin.trim())
+    : [],
+    
     // Merge environment variables with JSON config values (give precedence to environment variables)
     RESERVATIONS_CANCELLATION_REFUND_THRESHOLD_TIME:
       process.env.RESERVATIONS_CANCELLATION_REFUND_THRESHOLD_TIME ||

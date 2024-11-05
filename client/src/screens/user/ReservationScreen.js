@@ -1,3 +1,4 @@
+// ReservationSystem.js
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import {
   View,
@@ -7,14 +8,13 @@ import {
   ImageBackground,
   FlatList,
   Dimensions,
-  Alert,
   ActivityIndicator,
   Animated,
   I18nManager,
 } from "react-native";
 import { WeekCalendar, CalendarProvider } from "react-native-calendars";
-import { Card, Title, Paragraph, Avatar } from "react-native-paper";
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { Card, Title, Paragraph, Avatar, Snackbar } from "react-native-paper";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import AppBar from "../../components/common/AppBar";
 import moment from "moment";
@@ -31,11 +31,10 @@ import {
   bookTimeSlot,
   cancelUserReservation,
 } from "../../utils/axios";
-import i18n from '../../utils/i18n'; // Adjust the path accordingly
+import i18n from "../../utils/i18n"; // Adjust the path accordingly
 
 // Import the default avatar image
 const defaultAvatar = require("../../../assets/images/user.png"); // Adjust the path as necessary
-
 
 const ReservationItem = ({
   item,
@@ -64,12 +63,14 @@ const ReservationItem = ({
   if (i18n.exists(`BookingScreen.BookingTitles.${normalizedTitle}`)) {
     title = t(`BookingScreen.BookingTitles.${normalizedTitle}`);
   } else {
-    title = '';
+    title = "";
   }
 
-  console.log("title: ", title)
+  console.log("title: ", title);
 
-  const userIsReserved = attendees.some((attendee) => attendee.id === userId);
+  const userIsReserved = attendees.some(
+    (attendee) => attendee.id === userId
+  );
   const isFullyBooked = attendees.length >= max_participants;
 
   // Start fade-in animation for Fully Booked Overlay
@@ -126,17 +127,29 @@ const ReservationItem = ({
               <Title style={styles.title}>{title}</Title>
               <View style={styles.detailsContainer}>
                 <View style={styles.iconTextContainer}>
-                  <MaterialCommunityIcons name="clock-outline" size={18} color="#fff" />
+                  <MaterialCommunityIcons
+                    name="clock-outline"
+                    size={18}
+                    color="#fff"
+                  />
                   <Paragraph style={styles.details}>{time}</Paragraph>
                 </View>
                 <View style={styles.iconTextContainer}>
-                  <MaterialCommunityIcons name="map-marker-outline" size={18} color="#fff" />
+                  <MaterialCommunityIcons
+                    name="map-marker-outline"
+                    size={18}
+                    color="#fff"
+                  />
                   <Paragraph style={styles.details}>{location}</Paragraph>
                 </View>
               </View>
               {/* Render Trainer Icon Safely */}
               <View style={styles.iconTextContainer}>
-                <MaterialCommunityIcons name="account-outline" size={18} color="#fff" />
+                <MaterialCommunityIcons
+                  name="account-outline"
+                  size={18}
+                  color="#fff"
+                />
                 <Paragraph style={styles.details}>
                   {trainer && trainer.name ? trainer.name : "N/A"}
                 </Paragraph>
@@ -151,7 +164,11 @@ const ReservationItem = ({
               <Animated.View
                 style={[styles.fullyBookedOverlay, { opacity: fadeAnim }]}
               >
-                <MaterialCommunityIcons name="alert-circle-outline" size={30} color="#fff" />
+                <MaterialCommunityIcons
+                  name="alert-circle-outline"
+                  size={30}
+                  color="#fff"
+                />
                 <Text style={styles.fullyBookedText}>
                   {t("BookingScreen.fullyBooked")}
                 </Text>
@@ -163,7 +180,6 @@ const ReservationItem = ({
     </View>
   );
 };
-
 
 const ReservationSystem = () => {
   const { t, i18n } = useTranslation();
@@ -178,18 +194,59 @@ const ReservationSystem = () => {
   const [markedDates, setMarkedDates] = useState({});
   const [isModalVisible, setModalVisible] = useState(false);
   const [modalAttendees, setModalAttendees] = useState([]);
-  const [confirmationModalVisible, setConfirmationModalVisible] =
-    useState(false);
+  const [fadeAnim] = useState(new Animated.Value(0));
+  const [confirmationModalVisible, setConfirmationModalVisible] = useState(false);
   const [confirmationModalProps, setConfirmationModalProps] = useState({});
   const [cancelRefundThreshold, setCancelRefundThreshold] = useState(null);
   const [loading, setLoading] = useState(true); // Loading state to manage data fetching
 
-  // Function to fetch reservations from API
+  // **Snackbar State for Inside Modal (Add & Update)**
+  const [snackbarVisibleInside, setSnackbarVisibleInside] = useState(false);
+  const [snackbarMessageInside, setSnackbarMessageInside] = useState("");
+  const [snackbarTypeInside, setSnackbarTypeInside] = useState("success"); // 'success' or 'error'
+
+  // **Snackbar State for Outside Modal (Delete Actions)**
+  const [snackbarVisibleOutside, setSnackbarVisibleOutside] = useState(false);
+  const [snackbarMessageOutside, setSnackbarMessageOutside] = useState("");
+  const [snackbarTypeOutside, setSnackbarTypeOutside] = useState("success"); // 'success' or 'error'
+
+  // **Error State**
+  const [errors, setErrors] = useState({});
+
+  // **Snackbar Helper Functions for Inside Modal (Add & Update)**
+  const showSnackbarInside = (message, type = "success") => {
+    setSnackbarMessageInside(message);
+    setSnackbarTypeInside(type);
+    setSnackbarVisibleInside(true);
+  };
+
+  const hideSnackbarInside = () => {
+    setSnackbarVisibleInside(false);
+    // Close the Modal after Snackbar is dismissed if it's a success message
+    if (snackbarTypeInside === "success") {
+      setModalVisible(false);
+      setModalAttendees([]);
+      // Reset any other necessary state here
+    }
+  };
+
+  // **Snackbar Helper Functions for Outside Modal (Delete Actions)**
+  const showSnackbarOutside = (message, type = "success") => {
+    setSnackbarMessageOutside(message);
+    setSnackbarTypeOutside(type);
+    setSnackbarVisibleOutside(true);
+  };
+
+  const hideSnackbarOutside = () => {
+    setSnackbarVisibleOutside(false);
+  };
+
+  // **Fetch Reservations from API**
   const fetchUserReservations = async () => {
     try {
       const response = await getOrganizedReservationsByDateAndTime(); // Ensure this function is correctly imported
       const fetchedReservations = response.data;
-      setLoadingReservations(false)
+      setLoadingReservations(false);
       // Validate fetchedReservations
       if (!fetchedReservations || typeof fetchedReservations !== "object") {
         console.warn(
@@ -228,21 +285,24 @@ const ReservationSystem = () => {
 
       setReservations(sanitizedReservations);
 
-      const marked = Object.keys(sanitizedReservations).reduce((acc, date) => {
-        acc[date] = { marked: true, dots: [{ color: "#00adf5" }] };
-        return acc;
-      }, {});
+      const marked = Object.keys(sanitizedReservations).reduce(
+        (acc, date) => {
+          acc[date] = { marked: true, dots: [{ color: "#00adf5" }] };
+          return acc;
+        },
+        {}
+      );
       setMarkedDates(marked);
     } catch (error) {
       console.error("Error fetching reservations:", error);
-      Alert.alert(
-        t("myReservationsScreen.error"),
-        t("myReservationsScreen.errorFetchingReservations")
+      showSnackbarOutside(
+        t("myReservationsScreen.errorFetchingReservations"),
+        "error"
       );
     }
   };
 
-  // Load slotDuration and cancelRefundThreshold from config
+  // **Load cancelRefundThreshold from config**
   useEffect(() => {
     if (config && config.reservations) {
       setCancelRefundThreshold(
@@ -251,28 +311,25 @@ const ReservationSystem = () => {
     }
   }, [config]);
 
-  // Fetch reservations when component mounts
+  // **Fetch reservations when component mounts**
   useEffect(() => {
     if (!user) return; // Prevent fetching if user is null
     fetchUserReservations();
-  }, []);
+  }, [user]);
 
-  // Set loading to false once cancelRefundThreshold and reservations are loaded
+  // **Set loading to false once cancelRefundThreshold and reservations are loaded**
   useEffect(() => {
-    if (
-      cancelRefundThreshold !== null &&
-      loadingReservations
-    ) {
+    if (cancelRefundThreshold !== null && !loadingReservations) {
       setLoading(false);
     }
-  }, [cancelRefundThreshold, reservations]);
+  }, [cancelRefundThreshold, reservations, loadingReservations]);
 
-  // Helper function to check if the user is already booked in the reservation
+  // **Helper function to check if the user is already booked in the reservation**
   const isUserReserved = (attendees) => {
     return attendees.some((attendee) => attendee.id === user.id);
   };
 
-  // Function to handle booking a reservation
+  // **Function to handle booking a reservation**
   const bookReservation = async (date, time, reservation) => {
     try {
       await bookTimeSlot(reservation.id);
@@ -302,18 +359,16 @@ const ReservationSystem = () => {
       });
 
       updateCredits(-1); // Deduct one credit
-      Alert.alert(
-        t("BookingScreen.title"),
-        t("BookingScreen.confirmBookingSuccess")
-      );
+      showSnackbarInside(t("BookingScreen.confirmBookingSuccess"), "success");
     } catch (error) {
       console.error("Failed to book reservation:", error);
-      Alert.alert(t("BookingScreen.error"), t("BookingScreen.bookingFailed"));
+      showSnackbarInside(t("BookingScreen.bookingFailed"), "error");
     }
   };
 
-  // Function to handle canceling a reservation
+  // **Function to handle canceling a reservation**
   const cancelReservation = async (date, time, reservation) => {
+    console.log("canceliing..")
     try {
       await cancelUserReservation(reservation.id);
 
@@ -335,48 +390,30 @@ const ReservationSystem = () => {
       if (isWithinThreshold(date, time, cancelRefundThreshold)) {
         // Eligible for credit refund
         updateCredits(1); // Add one credit
-        Alert.alert(
-          t("BookingScreen.title"),
-          t("BookingScreen.cancelSuccessWithRefund")
-        );
+        showSnackbarOutside(t("BookingScreen.cancelSuccessWithRefund"), "success");
       } else {
         // Not eligible for credit refund
-        Alert.alert(
-          t("BookingScreen.title"),
-          t("BookingScreen.cancelSuccessNoRefund")
-        );
+        showSnackbarOutside(t("BookingScreen.cancelSuccessNoRefund"), "success");
       }
     } catch (error) {
       console.error("Failed to cancel reservation:", error);
-      Alert.alert(
-        t("BookingScreen.error"),
-        t("BookingScreen.cancellationFailed")
-      );
+      showSnackbarOutside(t("BookingScreen.cancellationFailed"), "error");
     }
   };
 
-  // Function to handle toggling a reservation with confirmation and pre-checks
+  // **Function to handle toggling a reservation with confirmation and pre-checks**
   const handleToggleReservation = useCallback(
     (date, time) => {
       const reservation = reservations[date]?.[time];
       if (!reservation) {
         console.error(`Reservation not found for date: ${date}, time: ${time}`);
-        Alert.alert(
-          t("myReservationsScreen.error"),
-          t("myReservationsScreen.reservationNotFound")
-        );
+        showSnackbarOutside(t("myReservationsScreen.reservationNotFound"), "error");
         return;
       }
 
       const userIsReserved = isUserReserved(reservation.attendees);
       // If user is already reserved, handle cancellation
       if (userIsReserved) {
-        // const now = moment();
-        // const reservationDateTime = moment(
-        //   `${date} ${time}`,
-        //   "YYYY-MM-DD HH:mm"
-        // );
-
         // Ensure cancelRefundThreshold is valid
         if (
           !cancelRefundThreshold ||
@@ -386,28 +423,28 @@ const ReservationSystem = () => {
             "Invalid cancelRefundThreshold:",
             cancelRefundThreshold
           );
-          Alert.alert(
-            t("myReservationsScreen.error"),
-            t("myReservationsScreen.invalidRefundThreshold")
-          );
+          showSnackbarOutside(t("myReservationsScreen.invalidRefundThreshold"), "error");
           return;
         }
 
-        // Parse cancelRefundThreshold as a duration in hours
-        const durationMinutes = moment.duration(cancelRefundThreshold, "HH:mm").asMinutes();
-
-        if (isNaN(durationMinutes)) {
-          console.error("Parsed durationMinutes is NaN:", cancelRefundThreshold);
-          Alert.alert(
-            t("myReservationsScreen.error"),
-            t("myReservationsScreen.invalidRefundThresholdFormat")
-          );
+        // Parse cancelRefundThreshold as a duration in HH:mm format
+        const [hours, minutes] = cancelRefundThreshold.split(":").map(Number);
+        if (
+          isNaN(hours) ||
+          isNaN(minutes) ||
+          hours < 0 ||
+          minutes < 0 ||
+          minutes >= 60
+        ) {
+          console.error("Parsed durationMinutes is invalid:", cancelRefundThreshold);
+          showSnackbarOutside(t("myReservationsScreen.invalidRefundThresholdFormat"), "error");
           return;
         }
+
         let warningMessage = null;
 
-        if(!isWithinThreshold(date,time, cancelRefundThreshold))
-            warningMessage = t("BookingScreen.cancellationWarningNoRefund");
+        if (!isWithinThreshold(date, time, cancelRefundThreshold))
+          warningMessage = t("BookingScreen.cancellationWarningNoRefund");
 
         setConfirmationModalProps({
           title: t("BookingScreen.areYouSure"),
@@ -420,6 +457,7 @@ const ReservationSystem = () => {
             }),
           confirmText: t("BookingScreen.yesCancel"),
           cancelText: t("BookingScreen.cancel"),
+          confirmColor: "#F44336", // Red color for cancel
           onConfirm: () => {
             cancelReservation(date, time, reservation);
             setConfirmationModalVisible(false);
@@ -433,19 +471,13 @@ const ReservationSystem = () => {
         // User is not reserved, handle booking
         // Check if user has enough credits
         if (credits <= 0) {
-          Alert.alert(
-            t("BookingScreen.insufficientCreditsTitle"),
-            t("BookingScreen.insufficientCredits")
-          );
+          showSnackbarOutside(t("BookingScreen.insufficientCredits"), "error");
           return;
         }
 
         // Check if reservation is fully booked
         if (reservation.attendees.length >= reservation.max_participants) {
-          Alert.alert(
-            t("BookingScreen.fullyBookedTitle"),
-            t("BookingScreen.fullyBooked")
-          );
+          showSnackbarOutside(t("BookingScreen.fullyBooked"), "error");
           return;
         }
 
@@ -459,6 +491,7 @@ const ReservationSystem = () => {
           }),
           confirmText: t("BookingScreen.yesBook"),
           cancelText: t("BookingScreen.cancel"),
+          confirmColor: "#4CAF50", // Green color for booking
           onConfirm: () => {
             bookReservation(date, time, reservation);
             setConfirmationModalVisible(false);
@@ -473,13 +506,13 @@ const ReservationSystem = () => {
     [reservations, t, cancelRefundThreshold, credits]
   );
 
-  // Function to handle showing attendees modal
+  // **Function to handle showing attendees modal**
   const handleShowAttendees = (attendees) => {
     setModalAttendees(attendees);
     setModalVisible(true);
   };
 
-  // Transform the reservations[selectedDate] object into an array for FlatList
+  // **Transform the reservations[selectedDate] object into an array for FlatList**
   const reservationsForSelectedDate = selectedDate
     ? Object.entries(reservations[selectedDate] || {}).map(
         ([time, reservation]) => ({
@@ -490,7 +523,7 @@ const ReservationSystem = () => {
       )
     : [];
 
-  // Render item for FlatList using ReservationItem component
+  // **Render item for FlatList using ReservationItem component**
   const renderItem = ({ item }) => (
     <ReservationItem
       item={item}
@@ -501,7 +534,7 @@ const ReservationSystem = () => {
     />
   );
 
-  // If loading, show ActivityIndicator
+  // **If loading, show ActivityIndicator**
   if (loading) {
     return (
       <View style={styles.container}>
@@ -513,7 +546,7 @@ const ReservationSystem = () => {
     );
   }
 
-
+  // **If user is not logged in, prompt to log in**
   if (!user) {
     return (
       <View style={styles.container}>
@@ -524,9 +557,12 @@ const ReservationSystem = () => {
           </Text>
           <TouchableOpacity
             style={styles.loginButton}
-            onPress={() => navigation.navigate('Login')} // Replace 'Login' with your actual login route name
+            onPress={() => navigation.navigate("Login")} // Replace 'Login' with your actual login route name
+            accessibilityLabel="Navigate to Login Screen"
           >
-            <Text style={styles.loginButtonText}>{t("BookingScreen.login")}</Text>
+            <Text style={styles.loginButtonText}>
+              {t("BookingScreen.login")}
+            </Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -551,7 +587,7 @@ const ReservationSystem = () => {
           <WeekCalendar
             firstDay={1}
             minDate={moment().format("YYYY-MM-DD")} // Added minDate
-            maxDate={moment().add(2, 'month').format("YYYY-MM-DD")}
+            maxDate={moment().add(2, "month").format("YYYY-MM-DD")}
             markedDates={{
               ...markedDates,
               [selectedDate]: {
@@ -605,6 +641,9 @@ const ReservationSystem = () => {
         onBackdropPress={() => setModalVisible(false)}
         onBackButtonPress={() => setModalVisible(false)}
         style={styles.modal}
+        animationIn="slideInUp"
+        animationOut="slideOutDown"
+        backdropTransitionOutTiming={0}
       >
         <View style={styles.modalContent}>
           <Text style={styles.modalTitle}>{t("BookingScreen.attendees")}</Text>
@@ -639,11 +678,53 @@ const ReservationSystem = () => {
         </View>
       </Modal>
 
+      {/* **Snackbar Inside Modal (Add & Update)** */}
+      <Snackbar
+        visible={snackbarVisibleInside}
+        onDismiss={hideSnackbarInside}
+        duration={3000}
+        style={
+          snackbarTypeInside === "success"
+            ? styles.snackbarSuccess
+            : styles.snackbarError
+        }
+        action={{
+          label: "Close",
+          onPress: hideSnackbarInside,
+        }}
+      >
+        {snackbarMessageInside}
+      </Snackbar>
+
+      {/* **Snackbar Outside Modal (Delete Actions)** */}
+      <Snackbar
+        visible={snackbarVisibleOutside}
+        onDismiss={hideSnackbarOutside}
+        duration={3000}
+        style={
+          snackbarTypeOutside === "success"
+            ? styles.snackbarSuccess
+            : styles.snackbarError
+        }
+        action={{
+          label: "Close",
+          onPress: hideSnackbarOutside,
+        }}
+      >
+        {snackbarMessageOutside}
+      </Snackbar>
+
       {/* Confirmation Modal */}
       <ConfirmationModal
         visible={confirmationModalVisible}
-        onRequestClose={() => setConfirmationModalVisible(false)}
-        {...confirmationModalProps}
+        onDismiss={() => setConfirmationModalVisible(false)}
+        title={confirmationModalProps.title}
+        message={confirmationModalProps.message}
+        confirmText={confirmationModalProps.confirmText}
+        cancelText={confirmationModalProps.cancelText}
+        confirmColor={confirmationModalProps.confirmColor}
+        onConfirm={confirmationModalProps.onConfirm}
+        onCancel={confirmationModalProps.onCancel}
       />
     </View>
   );
@@ -826,6 +907,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     borderRadius: 15,
     alignItems: "center",
+    marginLeft: 8,
   },
   moreParticipantsText: {
     color: "#2c3e50",
@@ -868,6 +950,32 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "bold",
     marginTop: 10,
+  },
+  snackbarSuccess: {
+    backgroundColor: "#4CAF50", // Green color for success
+  },
+  snackbarError: {
+    backgroundColor: "#F44336", // Red color for errors
+  },
+  notLoggedInContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  notLoggedInText: {
+    fontSize: 18,
+    marginBottom: 20,
+  },
+  loginButton: {
+    backgroundColor: "#00adf5",
+    paddingVertical: 10,
+    paddingHorizontal: 30,
+    borderRadius: 25,
+  },
+  loginButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
   },
 });
 

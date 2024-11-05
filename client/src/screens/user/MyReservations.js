@@ -1,3 +1,4 @@
+// ReservationsScreen.js
 import React, { useState, useEffect, useCallback } from "react";
 import {
   SafeAreaView,
@@ -10,7 +11,6 @@ import {
   ScrollView,
   Animated,
   Dimensions,
-  Alert,
   I18nManager,
   ActivityIndicator,
 } from "react-native";
@@ -20,10 +20,14 @@ import {
   Avatar,
   Button,
   Divider,
+  Snackbar, // Imported Snackbar
 } from "react-native-paper";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import AppBar from "../../components/common/AppBar";
-import { getUserReservations, cancelUserReservation } from "../../utils/axios";
+import {
+  getUserReservations,
+  cancelUserReservation,
+} from "../../utils/axios";
 import { useUserContext } from "../../contexts/UserContext";
 import { useTranslation } from "react-i18next";
 import { useConfigContext } from "../../contexts/ConfigContext";
@@ -32,7 +36,7 @@ import { isWithinThreshold } from "../../utils/validationUtils";
 import moment from "moment";
 import ConfirmationModal from "../../components/common/ConfirmationModal";
 
-const ReservationsScreen = () => {
+const MyReservationsScreen = () => {
   const { t } = useTranslation();
   const { user, updateCredits } = useUserContext();
   const { config, loading: configLoading } = useConfigContext();
@@ -42,16 +46,42 @@ const ReservationsScreen = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedParticipants, setSelectedParticipants] = useState([]);
   const [fadeAnim] = useState(new Animated.Value(0));
-  const [confirmationModalVisible, setConfirmationModalVisible] =
-    useState(false);
+  const [confirmationModalVisible, setConfirmationModalVisible] = useState(false);
   const [confirmationModalProps, setConfirmationModalProps] = useState({});
   const theme = useTheme();
   const { height } = Dimensions.get("window");
 
+  // **Snackbar State for Success Messages**
+  const [snackbarVisibleSuccess, setSnackbarVisibleSuccess] = useState(false);
+  const [snackbarMessageSuccess, setSnackbarMessageSuccess] = useState("");
+
+  // **Snackbar State for Error Messages**
+  const [snackbarVisibleError, setSnackbarVisibleError] = useState(false);
+  const [snackbarMessageError, setSnackbarMessageError] = useState("");
+
+  // **Snackbar Helper Functions for Success Messages**
+  const showSuccessSnackbar = (message) => {
+    setSnackbarMessageSuccess(message);
+    setSnackbarVisibleSuccess(true);
+  };
+
+  const hideSuccessSnackbar = () => {
+    setSnackbarVisibleSuccess(false);
+  };
+
+  // **Snackbar Helper Functions for Error Messages**
+  const showErrorSnackbar = (message) => {
+    setSnackbarMessageError(message);
+    setSnackbarVisibleError(true);
+  };
+
+  const hideErrorSnackbar = () => {
+    setSnackbarVisibleError(false);
+  };
+
   useEffect(() => {
     if (config && config.reservations) {
-      const thresholdTime =
-        config.reservations["cancelation-refund-threshold-time"];
+      const thresholdTime = config.reservations["cancelation-refund-threshold-time"];
       if (thresholdTime) setCancelRefundThreshold(thresholdTime); // Setting threshold properly
     }
   }, [config, configLoading]); // Make sure config and configLoading are dependencies
@@ -67,10 +97,7 @@ const ReservationsScreen = () => {
       setReservations(userReservations);
     } catch (error) {
       console.error("Error fetching reservations:", error);
-      Alert.alert(
-        t("myReservationsScreen.error"),
-        t("myReservationsScreen.errorFetchingReservations")
-      );
+      showErrorSnackbar(t("myReservationsScreen.errorFetchingReservations"));
     }
   };
 
@@ -79,9 +106,7 @@ const ReservationsScreen = () => {
       try {
         if (reservation) {
           await cancelUserReservation(reservation.id);
-          setReservations((prev) =>
-            prev.filter((r) => r.id !== reservation.id)
-          );
+          setReservations((prev) => prev.filter((r) => r.id !== reservation.id));
 
           if (shouldUpdateCredits) {
             updateCredits(+1);
@@ -130,14 +155,12 @@ const ReservationsScreen = () => {
               reservation,
               shouldUpdateCredits
             );
-            Alert.alert(
-              t("myReservationsScreen.success"),
+            showSuccessSnackbar(
               t("myReservationsScreen.reservationCancelledSuccessfully")
             );
           } catch (error) {
             console.error("Error cancelling reservation:", error);
-            Alert.alert(
-              t("myReservationsScreen.error"),
+            showErrorSnackbar(
               t("myReservationsScreen.failedToCancelReservation")
             );
           } finally {
@@ -145,7 +168,7 @@ const ReservationsScreen = () => {
           }
         },
         onCancel: () => {
-          setConfirmationModalVisible(false);
+          setConfirmationModalVisible(false); // Only dismisses the modal
         },
       });
 
@@ -194,19 +217,19 @@ const ReservationsScreen = () => {
               labelStyle={styles.avatarText}
             />
           ))}
-          <TouchableOpacity
-            onPress={() => handleShowAllParticipants(updatedParticipants)}
-          >
-            <View style={styles.moreParticipantsChip}>
-              <Text style={styles.moreParticipantsText}>
-                {remainingParticipants > 0
-                  ? t("myReservationsScreen.moreParticipants", {
-                      count: remainingParticipants,
-                    })
-                  : t("myReservationsScreen.showAll")}
-              </Text>
-            </View>
-          </TouchableOpacity>
+          {remainingParticipants > 0 && (
+            <TouchableOpacity
+              onPress={() => handleShowAllParticipants(updatedParticipants)}
+            >
+              <View style={styles.moreParticipantsChip}>
+                <Text style={styles.moreParticipantsText}>
+                  {t("myReservationsScreen.moreParticipants", {
+                    count: remainingParticipants,
+                  })}
+                </Text>
+              </View>
+            </TouchableOpacity>
+          )}
         </View>
       );
     },
@@ -266,6 +289,7 @@ const ReservationsScreen = () => {
             <TouchableOpacity
               onPress={() => handleCancelReservation(item)}
               style={styles.cancelButton}
+              accessibilityLabel={`Cancel reservation on ${date} at ${start_time}`}
             >
               <MaterialCommunityIcons
                 name="trash-can-outline"
@@ -297,6 +321,7 @@ const ReservationsScreen = () => {
     },
     [theme.colors.primary, handleCancelReservation, renderParticipants, t]
   );
+
   const renderParticipantListItem = useCallback(
     (user) => (
       <View key={user} style={styles.participantListItem}>
@@ -318,17 +343,41 @@ const ReservationsScreen = () => {
   const filteredReservations = reservations.filter(
     (reservation) =>
       reservation.date.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      reservation.trainer.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      reservation.participants.some((user) =>
-        user.toLowerCase().includes(searchQuery.toLowerCase())
-      )
+      (reservation.trainer &&
+        reservation.trainer.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (reservation.participants &&
+        reservation.participants.some((user) =>
+          user.toLowerCase().includes(searchQuery.toLowerCase())
+        ))
   );
 
-  if (!reservations) {
+  if (configLoading) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color={theme.colors.primary} />
       </View>
+    );
+  }
+
+  if (!user) {
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <AppBar />
+        <View style={styles.noReservationsContainer}>
+          <Text style={styles.noReservationsText}>
+            {t("myReservationsScreen.notLoggedIn")}
+          </Text>
+          <TouchableOpacity
+            style={styles.loginButton}
+            onPress={() => navigation.navigate("Login")} // Ensure 'navigation' is defined or use useNavigation hook
+            accessibilityLabel="Navigate to Login Screen"
+          >
+            <Text style={styles.loginButtonText}>
+              {t("myReservationsScreen.login")}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
     );
   }
 
@@ -363,6 +412,7 @@ const ReservationsScreen = () => {
         />
       )}
 
+      {/* Modal for Participants */}
       <Modal
         visible={modalVisible}
         transparent={true}
@@ -390,6 +440,7 @@ const ReservationsScreen = () => {
               mode="contained"
               onPress={() => setModalVisible(false)}
               style={styles.closeButton}
+              accessibilityLabel="Close Participants Modal"
             >
               {t("close")}
             </Button>
@@ -397,10 +448,39 @@ const ReservationsScreen = () => {
         </View>
       </Modal>
 
+      {/* **Success Snackbar** */}
+      <Snackbar
+        visible={snackbarVisibleSuccess}
+        onDismiss={hideSuccessSnackbar}
+        duration={3000}
+        style={styles.snackbarSuccess}
+        action={{
+          label: "Close",
+          onPress: hideSuccessSnackbar,
+        }}
+      >
+        {snackbarMessageSuccess}
+      </Snackbar>
+
+      {/* **Error Snackbar** */}
+      <Snackbar
+        visible={snackbarVisibleError}
+        onDismiss={hideErrorSnackbar}
+        duration={3000}
+        style={styles.snackbarError}
+        action={{
+          label: "Close",
+          onPress: hideErrorSnackbar,
+        }}
+      >
+        {snackbarMessageError}
+      </Snackbar>
+
+      {/* Confirmation Modal */}
       <ConfirmationModal
         visible={confirmationModalVisible}
-        onRequestClose={() => setConfirmationModalVisible(false)}
-        {...confirmationModalProps}
+        onDismiss={() => setConfirmationModalVisible(false)}
+        {...confirmationModalProps} // This includes onConfirm and onCancel
       />
     </SafeAreaView>
   );
@@ -462,14 +542,16 @@ const styles = StyleSheet.create({
     padding: 8,
   },
   trainerContainer: {
-    flexDirection: "row",
+    flexDirection: I18nManager.isRTL ? "row-reverse" : "row",
     alignItems: "center",
     marginBottom: 8,
   },
   trainerText: {
-    marginLeft: 8,
     fontSize: 16,
     color: "#34495e",
+    marginLeft: I18nManager.isRTL ? 0 : 8,
+    marginRight: I18nManager.isRTL ? 8 : 0,
+    textAlign: I18nManager.isRTL ? "right" : "left",
   },
   participantsContainer: {
     flexDirection: "row",
@@ -495,6 +577,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     borderRadius: 15,
     alignItems: "center",
+    marginLeft: 8,
   },
   moreParticipantsText: {
     color: "#2c3e50",
@@ -513,17 +596,6 @@ const styles = StyleSheet.create({
   noReservationsText: {
     fontSize: 18,
     color: "#7f8c8d",
-  },
-  trainerContainer: {
-    flexDirection: I18nManager.isRTL ? "row-reverse" : "row",
-    alignItems: "center",
-    marginBottom: 8,
-  },
-  trainerText: {
-    fontSize: 16,
-    color: "#34495e",
-    marginLeft: 12,
-    textAlign: I18nManager.isRTL ? "right" : "left",
   },
   modalOverlay: {
     flex: 1,
@@ -581,6 +653,31 @@ const styles = StyleSheet.create({
     color: "#ffffff",
     fontWeight: "600",
   },
+  snackbarSuccess: {
+    backgroundColor: "#4CAF50", // Green color for success
+  },
+  snackbarError: {
+    backgroundColor: "#F44336", // Red color for errors
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  listContainer: {
+    padding: 16,
+  },
+  loginButton: {
+    backgroundColor: "#00adf5",
+    paddingVertical: 10,
+    paddingHorizontal: 30,
+    borderRadius: 25,
+  },
+  loginButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
 });
 
-export default ReservationsScreen;
+export default MyReservationsScreen;

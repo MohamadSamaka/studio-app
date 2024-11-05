@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
 import {
-  Alert,
   FlatList,
   KeyboardAvoidingView,
   Modal,
@@ -21,9 +20,10 @@ import {
   Switch,
   TextInput,
   Snackbar,
-  Provider as PaperProvider, // Import PaperProvider
+  Provider as PaperProvider,
 } from "react-native-paper";
 import AppBar from "../../components/common/AppBar";
+import ConfirmationModal from "../../components/common/ConfirmationModal"; // Updated Import
 import styles from "../../styles/userManagementStyles";
 import {
   createUser,
@@ -72,6 +72,10 @@ const UserManagementScreen = () => {
 
   // **Error State**
   const [errors, setErrors] = useState({});
+
+  // **Confirmation Modal State**
+  const [isConfirmModalVisible, setIsConfirmModalVisible] = useState(false);
+  const [userIdToDelete, setUserIdToDelete] = useState(null);
 
   // **Snackbar Helper Functions for Inside Modal**
   const showSnackbarInside = (message, type = "success") => {
@@ -248,22 +252,26 @@ const UserManagementScreen = () => {
 
   // **Handle Deleting a User**
   const handleDeleteUser = (id) => {
-    Alert.alert(
-      "Delete User",
-      "Are you sure you want to delete this user?",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Delete",
-          onPress: () => deleteUserById(id),
-          style: "destructive",
-        },
-      ],
-      { cancelable: true }
-    );
+    // Find the user to delete
+    const userToDelete = users.find((user) => user.id === id);
+    if (!userToDelete) {
+      showSnackbarOutside("User not found.", "error");
+      return;
+    }
+
+    // Define confirmation modal properties
+    const modalTitle = "Delete User";
+    const modalMessage = `Are you sure you want to delete the user "${userToDelete.username}"?`;
+
+    // Store the user ID to delete
+    setUserIdToDelete(id);
+
+    // Open the confirmation modal
+    setIsConfirmModalVisible(true); 
   };
 
-  const deleteUserById = async (id) => {
+  const confirmDeleteUser = async (id) => {
+    if (id === null) return;
     try {
       await deleteUser(id);
       fetchUsers();
@@ -274,7 +282,15 @@ const UserManagementScreen = () => {
         "There was an error deleting the user. Please try again.",
         "error"
       );
+    } finally {
+      setIsConfirmModalVisible(false); 
+      setUserIdToDelete(null);
     }
+  };
+
+  const cancelDeleteUser = () => {
+    setIsConfirmModalVisible(false); 
+    setUserIdToDelete(null);
   };
 
   // **Format Phone Number**
@@ -287,9 +303,7 @@ const UserManagementScreen = () => {
 
     // Apply dashes (xxx-xxx-xxxx)
     if (trimmed.length > 6) {
-      return `${trimmed.slice(0, 3)}-${trimmed.slice(3, 6)}-${trimmed.slice(
-        6
-      )}`;
+      return `${trimmed.slice(0, 3)}-${trimmed.slice(3, 6)}-${trimmed.slice(6)}`;
     } else if (trimmed.length > 3) {
       return `${trimmed.slice(0, 3)}-${trimmed.slice(3)}`;
     } else {
@@ -574,6 +588,7 @@ const UserManagementScreen = () => {
     <>
       <AppBar />
       <PaperProvider theme={theme}>
+        {/* **Add/Edit User Modal** */}
         <Modal
           visible={isModalVisible}
           animationType="slide"
@@ -618,6 +633,7 @@ const UserManagementScreen = () => {
           </KeyboardAvoidingView>
         </Modal>
 
+        {/* **Main Content** */}
         <View style={styles.container}>
           <Searchbar
             placeholder="Search by username"
@@ -694,6 +710,18 @@ const UserManagementScreen = () => {
             {snackbarMessageOutside}
           </Snackbar>
         </View>
+
+        {/* **Confirmation Modal for Delete Actions** */}
+        <ConfirmationModal
+          visible={isConfirmModalVisible}
+          onDismiss={cancelDeleteUser}
+          title="Delete User"
+          message="Are you sure you want to delete this user?"
+          confirmText="Delete"
+          cancelText="Cancel"
+          confirmColor={theme.colors.error}
+          onConfirm={() => confirmDeleteUser(userIdToDelete)}
+        />
       </PaperProvider>
     </>
   );

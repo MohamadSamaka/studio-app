@@ -18,11 +18,13 @@ services:
       - PASSWORD_HASHING_SEED=${PASSWORD_HASHING_SEED}
       - TOKEN_EXPIRATION=${TOKEN_EXPIRATION}
       - REFRESH_TOKEN_EXPIRATION=${REFRESH_TOKEN_EXPIRATION}
+      - DB_BACKUP_FILE=${DB_BACKUP_FILE}
     depends_on:
       - mysql-db
     networks:
       - app-network
-    # Volumes section removed as per previous recommendations
+    volumes:
+      - ./db_backups:/backups
 
   mysql-db:
     image: mysql:8.0

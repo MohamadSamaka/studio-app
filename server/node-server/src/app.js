@@ -1,6 +1,8 @@
 const express = require("express");
 const cors = require("cors"); // Import the cors package
 const morgan = require("morgan"); // For logging
+const { ALLOWED_ORIGINS } = require('./src/config/env')
+
 
 // Import your route handlers
 const adminConfigRoutes = require("./routes/api/admin/configRoutes");
@@ -27,11 +29,7 @@ const app = express();
 app.use(morgan('combined'));
 
 // Define allowed origins from environment variables
-const allowedOrigins = [
-  "http://localhost:8081",             // Local development
-  "http://pilates-kfarkna.com",        // Non-SSL production domain
-  "https://pilates-kfarkna.com"        // SSL-enabled production domain
-];
+const allowedOrigins = ALLOWED_ORIGINS
 
 // CORS configuration
 const corsOptions = {

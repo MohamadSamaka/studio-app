@@ -1,33 +1,46 @@
 #!/bin/sh
+
+# Exit immediately if a command exits with a non-zero status
 set -e
 
-# Function to display messages in color
-echo_info() {
-  echo "\033[1;34m$1\033[0m"
+# Function to check if a file exists
+file_exists() {
+    [ -f "$1" ]
 }
 
-echo_info "Starting entrypoint.sh"
-
-# Function to check if MySQL is ready
-wait_for_mysql() {
-  echo_info "Waiting for MySQL at ${DB_HOST}:3306..."
-  while ! nc -z "${DB_HOST}" 3306; do
-    echo_info "MySQL is unavailable - sleeping"
+# Wait for MySQL to be ready
+echo "Waiting for MySQL to be ready..."
+until mysqladmin ping -h"$DB_HOST" --silent; do
+    echo "Waiting for MySQL..."
     sleep 2
-  done
-  echo_info "MySQL is up - continuing"
-}
+done
 
-# Call the function to wait for MySQL
-wait_for_mysql
+echo "MySQL is up and running."
 
-# Execute database initialization script
-echo_info "Initializing the database..."
-if ! npm run initiate-db-setup; then
-  echo "\033[1;31mDatabase initialization failed. Exiting.\033[0m"
-  exit 1
+# Check if DB_BACKUP_FILE is set
+if [ -n "$DB_BACKUP_FILE" ]; then
+    BACKUP_PATH="/backups/$DB_BACKUP_FILE"
+    echo "DB_BACKUP_FILE is set to '$DB_BACKUP_FILE'. Checking for backup file..."
+
+    if file_exists "$BACKUP_PATH"; then
+        echo "Backup file found at '$BACKUP_PATH'. Restoring database..."
+        
+        # Restore the database
+        mysql -h "$DB_HOST" -u "$DB_USER" -p"$DB_PASSWORD" "$DB_NAME" < "$BACKUP_PATH"
+        
+        echo "Database restored successfully from '$BACKUP_PATH'."
+    else
+        echo "Backup file '$BACKUP_PATH' not found. Proceeding with standard database seeding."
+        
+        # Run the standard database setup
+        npm run initiate-db-setup
+    fi
+else
+    echo "DB_BACKUP_FILE is not set. Proceeding with standard database seeding."
+    
+    # Run the standard database setup
+    npm run initiate-db-setup
 fi
 
-# Execute the main command passed to the container
-echo_info "Starting the Node.js application..."
+# Execute the main container command
 exec "$@"
