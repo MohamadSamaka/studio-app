@@ -1,7 +1,7 @@
 const express = require("express");
 const cors = require("cors"); // Import the cors package
 const morgan = require("morgan"); // For logging
-const { ALLOWED_ORIGINS } = require('./src/config/env')
+const { ALLOWED_ORIGINS } = require('./config/env')
 
 
 // Import your route handlers

@@ -5,7 +5,7 @@ WORKDIR /usr/src/app
 
 # Install necessary packages including mysql-client and netcat
 RUN apt-get update && \
-    apt-get install -y netcat-openbsd mysql-client && \
+    apt-get install -y netcat-openbsd default-mysql-client && \
     rm -rf /var/lib/apt/lists/*
 
 # Install app dependencies

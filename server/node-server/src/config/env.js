@@ -27,6 +27,7 @@ if (process.env.NODE_ENV !== 'production') {
   
   module.exports = {
     DATABASE_URL,
+    PORT: process.env.port || 3000,
     ACCESS_TOKEN_SECRET: process.env.ACCESS_TOKEN_SECRET || "",
     PASSWORD_HASHING_SEED: Number(process.env.PASSWORD_HASHING_SEED),
     REFRESH_TOKEN_SECRET: process.env.REFRESH_TOKEN_SECRET || "",
