@@ -1,5 +1,5 @@
 import React from "react";
-import { View, StyleSheet } from "react-native";
+import { View, StyleSheet, ScrollView } from "react-native";
 import { DataTable, IconButton, Text } from "react-native-paper";
 import ReservationItem from "./ReservationItem";
 import { theme } from "../../../../utils/theme";
@@ -74,44 +74,49 @@ const ReservationsTable = ({
 
   return (
     <View style={styles.tableContainer}>
-      <DataTable>
-        <DataTable.Header style={styles.header}>
-          {/* Select All IconButton */}
-          <DataTable.Title style={styles.checkboxTitle}>
-            <IconButton
-              icon={() => (
-                <MaterialIcons
-                  name={getHeaderCheckboxIcon()}
-                  size={28} // Increased icon size for better visibility
-                  color={theme.colors.primary}
-                />
-              )}
-              onPress={() => {
-                if (
-                  selectedReservations.length === reservations.length &&
-                  reservations.length > 0
-                ) {
-                  deselectAll();
-                } else {
-                  selectAll(reservations); // Pass reservations array
-                }
-              }}
-              accessibilityLabel="Select All Reservations on Current Page"
-              style={styles.iconButton}
-            />
-          </DataTable.Title>
-          {/* Other Headers */}
-          <DataTable.Title style={styles.dateTitle}>Date</DataTable.Title>
-          {/* Time Column Removed */}
-          <DataTable.Title numeric style={styles.peopleTitle}>
-            People #
-          </DataTable.Title>
-          <DataTable.Title style={styles.actionsTitle}>Actions</DataTable.Title>
-        </DataTable.Header>
+      {/* Scrollable Table Content */}
+      <ScrollView style={styles.scrollView}>
+        <DataTable>
+          <DataTable.Header style={styles.header}>
+            {/* Select All IconButton */}
+            <DataTable.Title style={styles.checkboxTitle}>
+              <IconButton
+                icon={() => (
+                  <MaterialIcons
+                    name={getHeaderCheckboxIcon()}
+                    size={28} // Increased icon size for better visibility
+                    color={theme.colors.primary}
+                  />
+                )}
+                onPress={() => {
+                  if (
+                    selectedReservations.length === reservations.length &&
+                    reservations.length > 0
+                  ) {
+                    deselectAll();
+                  } else {
+                    selectAll(reservations); // Pass reservations array
+                  }
+                }}
+                accessibilityLabel="Select All Reservations on Current Page"
+                style={styles.iconButton}
+              />
+            </DataTable.Title>
+            {/* Other Headers */}
+            <DataTable.Title style={styles.dateTitle}>Date</DataTable.Title>
+            {/* Time Column Removed */}
+            <DataTable.Title numeric style={styles.peopleTitle}>
+              People #
+            </DataTable.Title>
+            <DataTable.Title style={styles.actionsTitle}>Actions</DataTable.Title>
+          </DataTable.Header>
 
-        {/* Render Rows */}
-        {renderRows()}
-      </DataTable>
+          {/* Render Rows */}
+          {renderRows()}
+        </DataTable>
+      </ScrollView>
+
+      {/* Pagination Fixed at the Bottom */}
       <CustomPagination
         currentPage={currentPage}
         totalPages={totalPages}
@@ -157,6 +162,11 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 10,
     backgroundColor: theme.colors.background,
+    flexDirection: 'column',
+    justifyContent: 'space-between',
+  },
+  scrollView: {
+    flex: 1,
   },
   header: {
     backgroundColor: theme.colors.surface,
@@ -204,7 +214,7 @@ const styles = StyleSheet.create({
     justifyContent: "center", // Centers pagination controls
   },
   iconButton: {
-
+    // Additional styles if needed
   }
 });
 

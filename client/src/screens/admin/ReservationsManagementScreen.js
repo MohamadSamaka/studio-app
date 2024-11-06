@@ -540,7 +540,7 @@ const ReservationsManagementScreen = () => {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flex: 1, // Ensure the container takes up the full screen
     padding: 10,
     backgroundColor: theme.colors.background,
   },
