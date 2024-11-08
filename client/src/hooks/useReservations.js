@@ -84,8 +84,3 @@ useEffect(() => {
 };
 
 export default useReservations;
-
-
-// useEffect(() => {
-//   fetchReservations(currentPage);
-// }, [currentPage, searchQuery, dateFilter, timeFilter]);

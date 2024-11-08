@@ -14,10 +14,7 @@ import {
   Title,
   Text,
   useTheme,
-  
-
-  Card,
-  Paragraph,
+  Menu,
   Snackbar,
   IconButton,
 } from "react-native-paper";
@@ -113,6 +110,9 @@ const AvailableReservationsModal = ({
   const [trainerLoading, setTrainerLoading] = useState(false);
   const [trainerError, setTrainerError] = useState(null);
 
+  // State for Title Picker
+  const [titleMenuVisible, setTitleMenuVisible] = useState(false);
+
   const handleInputChange = (name, value) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
@@ -200,12 +200,37 @@ const AvailableReservationsModal = ({
         <ScrollView>
           <Title style={styles.modalTitle}>Create Available Reservation</Title>
 
-          <TextInput
-            label="Title"
-            value={formData.title}
-            onChangeText={(value) => handleInputChange("title", value)}
-            style={styles.input}
-          />
+          {/* Title Picker */}
+          <Menu
+            visible={titleMenuVisible}
+            onDismiss={() => setTitleMenuVisible(false)}
+            anchor={
+              <TouchableOpacity onPress={() => setTitleMenuVisible(true)}>
+                <TextInput
+                  label="Title"
+                  value={formData.title}
+                  editable={false}
+                  right={<TextInput.Icon name="menu-down" />}
+                  style={styles.input}
+                />
+              </TouchableOpacity>
+            }
+          >
+            <Menu.Item
+              onPress={() => {
+                handleInputChange('title', 'Advanced');
+                setTitleMenuVisible(false);
+              }}
+              title="Advanced"
+            />
+            <Menu.Item
+              onPress={() => {
+                handleInputChange('title', 'Beginner');
+                setTitleMenuVisible(false);
+              }}
+              title="Beginner"
+            />
+          </Menu>
 
           {/* Date Input */}
           <TouchableOpacity onPress={() => setDatePickerVisible(true)}>

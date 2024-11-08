@@ -449,6 +449,55 @@ class AvailableReservationsRepository {
       throw error;
     }
   }
+
+  async update(id, data, options = {}) {
+    // Start a transaction if not provided
+    const transaction = options.transaction || (await sequelize.transaction());
+
+    try {
+      const { trainer_id, participant_ids, ...reservationData } = data;
+
+      // Find the reservation by ID
+      const reservation = await AvailableReservations.findByPk(id, {
+        transaction,
+        ...options,
+      });
+
+      if (!reservation) {
+        throw new Error('Reservation not found');
+      }
+
+      // Update reservation fields
+      await reservation.update(reservationData, { transaction, ...options });
+
+      // Update Trainer association if trainer_id is provided
+      if (trainer_id !== undefined) {
+        await reservation.setTrainer(trainer_id, { transaction, ...options });
+      }
+
+      // Update Participants association if participant_ids is provided
+      if (participant_ids !== undefined) {
+        await reservation.setParticipants(participant_ids, { transaction, ...options });
+      }
+
+      // Fetch the updated reservation with associations before committing
+      const updatedReservation = await this.findById(id, { transaction, ...options });
+
+      // Commit the transaction if we started it
+      if (!options.transaction) {
+        await transaction.commit();
+      }
+
+      // Return the updated reservation
+      return updatedReservation;
+    } catch (error) {
+      // Rollback the transaction if we started it
+      if (!options.transaction) {
+        await transaction.rollback();
+      }
+      throw error;
+    }
+  }
 }
 
 module.exports = new AvailableReservationsRepository();

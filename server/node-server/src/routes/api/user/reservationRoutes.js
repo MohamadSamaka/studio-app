@@ -9,7 +9,6 @@ router.get('/', availableReservationController.getUserReservations);
 router.get('/organized', availableReservationController.getOrganizedReservationsByDateAndTime);
 
 router.post('/', availableReservationController.bookReservation);
-router.put('/:id', availableReservationController.updateReservation);
 router.delete('/:id', availableReservationController.deleteReservation);
 
 

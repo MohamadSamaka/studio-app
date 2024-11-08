@@ -21,6 +21,7 @@ import debounce from "lodash.debounce";
 import AppBar from "../../components/common/AppBar";
 import NewReservationModal from "../../components/admin/cms/reservations/NewReservationModal";
 import ReservationDetailsModal from "../../components/admin/cms/reservations/ReservationDetailsModal";
+import EditReservationModal from "../../components/admin/cms/reservations/EditReservationModal"; // Import the new modal
 import FilterModal from "../../components/admin/cms/reservations/FilterModal";
 import FilterChips from "../../components/admin/cms/reservations/FilterChips";
 import ActionButtons from "../../components/admin/cms/reservations/ActionButtons";
@@ -32,6 +33,7 @@ import useSnackbar from "../../hooks/useSnackbar";
 import { useConfigContext } from "../../contexts/ConfigContext";
 import {
   createReservationSlot,
+  updateReservation, // Import the updateReservation API call
   deleteReservation,
   removeUserFromReservation,
 } from "../../utils/axios";
@@ -134,6 +136,10 @@ const ReservationsManagementScreen = () => {
   // New State Variables for Dialogs
   const [confirmCancelDialogVisible, setConfirmCancelDialogVisible] = useState(false);
   const [noSelectionSnackbarVisible, setNoSelectionSnackbarVisible] = useState(false);
+
+  // New state variables for editing reservation
+  const [editReservationModalVisible, setEditReservationModalVisible] = useState(false);
+  const [reservationToEdit, setReservationToEdit] = useState(null);
 
   // Handler for search input changes
   const onChangeSearch = (query) => {
@@ -313,6 +319,24 @@ const ReservationsManagementScreen = () => {
     }
   };
 
+  // Handler for editing a reservation
+  const handleEditReservation = (reservation) => {
+    setReservationToEdit(reservation);
+    setEditReservationModalVisible(true);
+  };
+
+  const handleUpdateReservation = async (updatedReservationData) => {
+    try {
+      await updateReservation(reservationToEdit.id, updatedReservationData);
+      showSnackbar('Reservation updated successfully.', 'success');
+      setEditReservationModalVisible(false);
+      fetchReservations(currentPage); // Refresh reservations list
+    } catch (error) {
+      console.error('Error updating reservation:', error);
+      showSnackbar('Failed to update reservation.', 'error');
+    }
+  };
+
   return (
     <>
       <AppBar title="Reservations Management" />
@@ -410,6 +434,7 @@ const ReservationsManagementScreen = () => {
                 deselectAll={deselectAll}
                 openReservationDetails={openReservationDetails}
                 handleDeleteReservation={handleDeleteReservation}
+                handleEditReservation={handleEditReservation} // Pass the new handler
                 currentPage={currentPage}
                 setCurrentPage={setCurrentPage}
                 totalPages={totalPages}
@@ -424,6 +449,16 @@ const ReservationsManagementScreen = () => {
                 onDismiss={closeReservationDetails}
                 reservation={selectedReservation}
                 handleRemoveUser={handleRemoveUser}
+              />
+            )}
+
+            {/* Edit Reservation Modal */}
+            {reservationToEdit && (
+              <EditReservationModal
+                visible={editReservationModalVisible}
+                onDismiss={() => setEditReservationModalVisible(false)}
+                reservation={reservationToEdit}
+                onUpdateReservation={handleUpdateReservation}
               />
             )}
 
@@ -498,7 +533,7 @@ const ReservationsManagementScreen = () => {
                   : ""}{" "}
                 at{" "}
                 {reservationToDelete
-                  ? moment(reservationToDelete.time, "HH:mm").format("hh:mm A")
+                  ? moment(reservationToDelete.time, "HH:mm:ss").format("hh:mm A")
                   : ""}{" "}
                 ?
               </Text>

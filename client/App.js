@@ -15,13 +15,13 @@ import i18n from "./src/utils/i18n";
 import * as Font from 'expo-font';
 import { theme } from "./src/utils/theme";
 import { MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons'; // Import both icon sets
-
 // Disable console logging in production
 if (!__DEV__) {
   console.log = () => {};
   console.warn = () => {};
   console.error = () => {};
 }
+
 
 // Load custom and MaterialCommunityIcons fonts
 const loadFonts = async () => {
@@ -32,17 +32,28 @@ const loadFonts = async () => {
   });
 };
 
+
 export default function App() {
   const [fontsLoaded, setFontsLoaded] = useState(false);
 
+
   useEffect(() => {
-    loadFonts().then(() => setFontsLoaded(true));
+    async function loadFonts() {
+      await Font.loadAsync({
+        // Load the MaterialCommunityIcons font
+        ...MaterialCommunityIcons.font,
+      });
+      setFontsLoaded(true);
+    }
+
+    loadFonts();
   }, []);
 
-  if (!fontsLoaded) {
-    return null; // Or a loading component
-  }
 
+  if (!fontsLoaded) {
+    return null;
+  }
+  
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <NavigationContainer>

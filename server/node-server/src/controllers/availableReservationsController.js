@@ -137,8 +137,6 @@ class ReservationController {
       // Ensure the reservation is always created for the logged-in user
       const { reservationId } = req.body;
       const userId = req.user.id
-      console.log("reservationId: ", reservationId)
-      console.log("userId: ", userId)
 
       const reservation = await availableReservationService.bookReservation(
         reservationId,
@@ -153,24 +151,14 @@ class ReservationController {
 
   async updateReservation(req, res) {
     try {
-      const reservation = await availableReservationService.getReservationById(
-        req.params.id
-      );
-      if (
-        req.user.role.name === "Admin" ||
-        reservation.userId === req.user.id
-      ) {
-        const updatedReservation =
-          await availableReservationService.updateReservation(
-            req.params.id,
-            req.body
-          );
-        res.json(updatedReservation);
-      } else {
-        res.status(403).json({ message: "Access denied" });
-      }
+      const id = req.params.id;
+      const data = req.body;
+      const updatedReservation = await availableReservationService.updateReservation(id, data);
+  
+      return res.status(200).json(updatedReservation);
     } catch (error) {
-      res.status(500).json({ message: error.message });
+      console.error('Error updating reservation:', error);
+      return res.status(500).json({ message: error.message });
     }
   }
 
