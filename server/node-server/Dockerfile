@@ -8,6 +8,8 @@ RUN apt-get update && \
     apt-get install -y netcat-openbsd default-mysql-client && \
     rm -rf /var/lib/apt/lists/*
 
+RUN timedatectl set-timezone Asia/Jerusalem
+
 # Install app dependencies
 COPY package*.json ./
 
