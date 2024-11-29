@@ -27,18 +27,15 @@ const ReservationDetailsModal = ({
 }) => {
   const [dialogVisible, setDialogVisible] = useState(false);
   const [participantToRemove, setParticipantToRemove] = useState(null);
+  const [isRemoveUserDialogVisible, setRemoveUserDialogVisible] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
 
   if (!reservation) {
     console.warn("ReservationDetailsModal received undefined reservation.");
     return null; // Safeguard: Do not render if reservation is undefined
   }
 
-  console.log(
-    `Rendering ReservationDetailsModal for reservation ID: ${reservation.id}`
-  );
-
   const renderParticipantItem = (participant, index) => {
-    console.log(`Rendering participant: ${participant.username}`);
     return (
       <View key={participant.id} style={styles.userRow}>
         <View style={styles.userInfo}>
@@ -54,9 +51,6 @@ const ReservationDetailsModal = ({
           )}
           size={20}
           onPress={() => {
-            console.log(
-              `Remove button pressed for participant: ${participant.username}`
-            );
             setParticipantToRemove(participant);
             setDialogVisible(true); // Show confirmation dialog
           }}
@@ -66,11 +60,43 @@ const ReservationDetailsModal = ({
     );
   };
 
-  const onRemoveParticipant = (participant) => {
-    console.log(`Removing participant: ${participant.username}`);
-    handleRemoveUser(participant); // Call the parent function to remove the participant
+  const onRemoveParticipant = () => {
+    handleRemoveUser(participantToRemove); // Call the parent function to remove the participant
     setDialogVisible(false); // Dismiss the dialog after removal
   };
+
+  const hideRemoveUserDialog = () => {
+    setRemoveUserDialogVisible(false);
+    setSelectedUser(null);
+  };
+
+  const showRemoveUserDialog = () => {
+    setSelectedUser(participantToRemove.username);
+    setRemoveUserDialogVisible(true);
+  };
+
+  const handleConfirmRemoveUser = () => {
+    console.log("hii")
+  };
+
+    <Portal>
+      <Dialog
+        visible={isRemoveUserDialogVisible}
+        onDismiss={hideRemoveUserDialog}
+      >
+        <Dialog.Title>Confirm Removal</Dialog.Title>
+        <Dialog.Content>
+          <Paragraph>
+            Are you sure you want to remove {selectedUser?.username} from
+            this reservation?
+          </Paragraph>
+        </Dialog.Content>
+        <Dialog.Actions>
+          <Button onPress={hideRemoveUserDialog}>No</Button>
+          <Button onPress={handleConfirmRemoveUser}>Yes</Button>
+        </Dialog.Actions>
+      </Dialog>
+    </Portal>
 
   return (
     <Portal>
@@ -161,7 +187,7 @@ const ReservationDetailsModal = ({
         </Dialog.Content>
         <Dialog.Actions>
           <Button onPress={() => setDialogVisible(false)}>No</Button>
-          <Button onPress={() => onRemoveParticipant(participantToRemove)}>Yes</Button>
+          <Button onPress={() => onRemoveParticipant()}>Yes</Button>
         </Dialog.Actions>
       </Dialog>
     </Portal>

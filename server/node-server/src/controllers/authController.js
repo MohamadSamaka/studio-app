@@ -3,6 +3,7 @@ const userRepository = require('../services/userService')
 const { verifyToken } = require('../utils/tokens');
 const { ACCESS_TOKEN_SECRET } = require('../config/env');
 const { trimString } = require("../utils/helpers")
+const { userLogger } = require('../utils/logger');
 
 
 class AuthController {
@@ -16,7 +17,11 @@ class AuthController {
         error.statusCode = 409;
         throw error;
       }
-      // console.log(`accessToken ${accessToken}`)
+
+      userLogger.info(`User logged in: ${user.username}`, { 
+        userId: user.id, 
+        credits: user.credits 
+      });
       res.json({ user, accessToken, refreshToken });
     } catch (error) {
       const statusCode = error.statusCode || 401;

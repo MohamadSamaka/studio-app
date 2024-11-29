@@ -8,16 +8,14 @@ RUN apt-get update && \
     apt-get install -y netcat-openbsd default-mysql-client && \
     rm -rf /var/lib/apt/lists/*
 
-RUN timedatectl set-timezone Asia/Jerusalem
-
 # Install app dependencies
-COPY package*.json ./
+COPY package*.json yarn.lock ./
 
 # Install dependencies
-RUN npm install
+RUN yarn install
 
 # Install nodemon for development (optional)
-RUN npm install -g nodemon
+RUN yarn add nodemon
 
 # Copy app source code
 COPY . .

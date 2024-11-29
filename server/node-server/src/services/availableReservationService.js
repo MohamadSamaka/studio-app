@@ -2,7 +2,9 @@ const userRepository = require("../repositories/userRepository"); // Using your 
 const AvailableReservationsRepository = require("../repositories/availableReservationsRepository");
 const notificationService = require("./notificationService");
 const sequelize = require("../config/database");
+const { isDateTimePast } = require("../utils/timeUtils");
 const { Op } = require("sequelize");
+const { userLogger, errorLogger } = require('../utils/logger')
 
 const {
   isWithinRefundThreshold,
@@ -16,6 +18,7 @@ const {
   RESERVATIONS_TIMESLOTS_DURATION,
 } = require("../config/env");
 const userService = require("./userService");
+const { loggers } = require("winston");
 
 class ReservationService {
   async getAllReservations() {
@@ -32,7 +35,7 @@ class ReservationService {
 
   async getOrganizedReservationsByDateAndTime(username) {
     const reservations =
-      await AvailableReservationsRepository.findAllExcludePast();
+      await AvailableReservationsRepository.findAllWithTrainer();
     const organizedReservations = {};
 
     reservations.forEach((reservation) => {
@@ -197,6 +200,11 @@ class ReservationService {
     );
 
     if (userAlreadyAttached) {
+      userLogger.info(`[-] User tried to book but he was already attached to reservation at ${reservation.date} ${reservation.start_time}`, { 
+        userId: userId,
+        reservationId: reservation.id
+      });
+
       return {
         status: "already_booked",
         code: 200,
@@ -208,6 +216,10 @@ class ReservationService {
     const userCount = reservation.Participants.length;
     const maxParticipants = reservation.max_participants;
     if (userCount >= maxParticipants) {
+      userLogger.info(`[-] User tried to book but reservation is already full`, { 
+        userId: userId,
+        reservationId: reservation.id,
+      });
       return {
         status: "fully_booked",
         code: 403,
@@ -221,6 +233,11 @@ class ReservationService {
       userId,
       { transaction }
     );
+
+    userLogger.info(`[+] User been attached to the reservation ${reservation.date} ${reservation.start_time}`, { 
+      userId: userId,
+      reservationId: reservation.id,
+    });
 
     // Deduct user's credits
     await userRepository.IncreaseDecreaseUsersCredits(
@@ -236,6 +253,7 @@ class ReservationService {
         "User successfully attached to the reservation. Credits deducted by 1.",
     };
   }
+  
   async bookReservation(reservationId, userId) {
     const transaction = await sequelize.transaction();
     try {
@@ -260,7 +278,14 @@ class ReservationService {
       };
     } catch (error) {
       await transaction.rollback();
-      console.error("Error bookring reservation ", error);
+      console.error("Error booking reservation ", error);
+      errorLogger.error('An unexpected error occurred', {
+        errorMessage: error.message,
+        stackTrace: error.stack,
+        additionalInfo: {
+          location: "availableReservationService.bookReservation"
+        },
+      });
       return {
         status: "error",
         code: 500,
@@ -292,7 +317,7 @@ class ReservationService {
       return { message: "Reservation cancelled successfully by admin" };
     } else {
       // Non-admin users use the regular cancellation method
-      await this.cancelReservation(id, userId, false);
+      await this.cancelReservation(id, userId, false, false);
 
       // Optionally, return a confirmation message
       return { message: "Reservation cancelled successfully" };
@@ -321,15 +346,37 @@ class ReservationService {
     }
   }
 
-  async cancelReservation(id, userId, cancelReservaionOnZero = true) {
+  async cancelReservation(id, userId, cancelReservaionOnZero = true, byPassPastCheck = true) {
     // Fetch the reservation with associated users
     const reservation = await AvailableReservationsRepository.findByIdWithUsers(
       id
     );
-
+    
+    
     if (!reservation) {
       throw new Error("Reservation not found");
     }
+
+    const isPast = isDateTimePast(reservation.date, reservation.start_time);
+
+    const user = await userRepository.findById(userId) 
+    console.log("found user is : ", user)
+
+    if(isPast && !byPassPastCheck){
+      userLogger.warn(`[-] User ${user.username} tried to cancel a reservaion that exists in the past`, { 
+        user: {
+          userId: userId,
+          username: user.username,
+        },
+        reservation: {
+          reservationId: reservation.id,
+          reservationDate: reservation.date,
+          reservationStartTime: reservation.start_time
+        }
+      });
+      throw new Error("Regular users are not allowed to cancel old reservations");
+    }
+
 
     // Check if the user is part of the reservation
     const userIsInReservation = reservation.Participants.some(
@@ -337,32 +384,73 @@ class ReservationService {
     );
 
     if (!userIsInReservation) {
+      userLogger.warn(`[-] User ${user.username} is trying to cancel a reservation that he is not in`, { 
+        user: {
+          userId: userId,
+          username: user.username,
+        },
+        reservation: {
+          reservationId: reservation.id,
+          reservationDate: reservation.date,
+          reservationStartTime: reservation.start_time
+        }
+      });
       throw new Error("User is not part of this reservation");
     }
 
     // Remove the user from the reservation
     await AvailableReservationsRepository.removeUserFromReservation(userId, id);
+    userLogger.info(`[+] User ${user.username} been successfully removed from reservation`, { 
+      user: {
+        userId: userId,
+        username: user.username,
+      },
+      reservation:{
+        reservationId: reservation.id,
+        reservationDate: reservation.date,
+        reservationStartTime: reservation.start_time
+      }
+      
+    });
+    
     await notificationService.sendUsersRemovedNotification(
       [userId],
       reservation
     );
 
 
+    const shouldIncreaseCredits = isWithinRefundThreshold( reservation.date, reservation.start_time)
 
-    if (
-      isWithinRefundThreshold(
-        reservation.date,
-        reservation.start_time
-      )
-    )
+    if (shouldIncreaseCredits){
       await userService.IncreaseUserCreditByOne(userId);
+      userLogger.info(`[+] ${user.username}'s credits has been increased by one`, { 
+        user: {
+          userId: userId,
+          username: user.username,
+        },
+        reservation: {
+          reservationId: reservation.id,
+          reservationDate: reservation.date,
+          reservationStartTime: reservation.start_time,
+          shouldIncreaseCredits
+        }
+      });
+    }
+
 
     // Check if there are any users left in the reservation
     const remainingUsersCount =
       await AvailableReservationsRepository.countUsersInReservation(id);
 
-    if (cancelReservaionOnZero && remainingUsersCount === 0)
+    if (cancelReservaionOnZero && remainingUsersCount === 0){
       await AvailableReservationsRepository.delete(id);
+      userLogger.info(`[+] reservation has been completly deleted`, { 
+        reservation: {
+          date: reservation.date,
+          time: reservation.start_time
+        }
+      })
+    }
 
     return reservation.id;
   }

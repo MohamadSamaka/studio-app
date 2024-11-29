@@ -2,7 +2,6 @@ const userRepository = require('../repositories/userRepository');
 const { ACCESS_TOKEN_SECRET } = require('../config/env');
 const { verifyToken } = require('../utils/tokens');
 
-
 const authenticateToken = async (req, res, next) => {
   // Extract the token from the Authorization header
   const authHeader = req.headers.authorization;

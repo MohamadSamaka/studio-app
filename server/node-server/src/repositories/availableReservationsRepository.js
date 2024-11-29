@@ -19,39 +19,41 @@ class AvailableReservationsRepository {
     });
   }
 
-  async findAllExcludePast() {
+
+// async findAllExcludePast() {
+  async findAllWithTrainer() {
     const now = new Date();
     const today = now.toISOString().split("T")[0]; // Get current date in YYYY-MM-DD
     const currentTime = now.toTimeString().split(" ")[0].slice(0, 5); // Get current time in HH:mm
 
     return AvailableReservations.findAll({
-      where: {
-        [Op.and]: [
-          {
-            // Exclude past dates
-            date: {
-              [Op.gte]: today, // Today's date or future
-            },
-          },
-          {
-            // For today's date, exclude past times
-            [Op.or]: [
-              {
-                date: {
-                  [Op.gt]: today, // Future date
-                },
-              },
-              {
-                // If the date is today, only include reservations for the current time or later
-                [Op.and]: [
-                  { date: today },
-                  { start_time: { [Op.gte]: currentTime } }, // Current time
-                ],
-              },
-            ],
-          },
-        ],
-      },
+      // where: {
+      //   [Op.and]: [
+      //     {
+      //       // Exclude past dates
+      //       date: {
+      //         [Op.gte]: today, // Today's date or future
+      //       },
+      //     },
+      //     {
+      //       // For today's date, exclude past times
+      //       [Op.or]: [
+      //         {
+      //           date: {
+      //             [Op.gt]: today, // Future date
+      //           },
+      //         },
+      //         {
+      //           // If the date is today, only include reservations for the current time or later
+      //           [Op.and]: [
+      //             { date: today },
+      //             { start_time: { [Op.gte]: currentTime } }, // Current time
+      //           ],
+      //         },
+      //       ],
+      //     },
+      //   ],
+      // },
       include: [
         {
           model: User,
@@ -141,6 +143,7 @@ class AvailableReservationsRepository {
       ],
     });
   }
+  
   async findByUserId(userId) {
     const now = new Date();
     const today = now.toISOString().split("T")[0]; // 'YYYY-MM-DD'
@@ -148,15 +151,15 @@ class AvailableReservationsRepository {
 
     try {
       const reservations = await AvailableReservations.findAll({
-        where: {
-          [Op.or]: [
-            { date: { [Op.gt]: today } }, // Future dates
-            {
-              date: today,
-              start_time: { [Op.gte]: currentTime }, // Today's reservations at or after current time
-            },
-          ],
-        },
+        // where: {
+        //   [Op.or]: [
+        //     { date: { [Op.gt]: today } }, // Future dates
+        //     {
+        //       date: today,
+        //       start_time: { [Op.gte]: currentTime }, // Today's reservations at or after current time
+        //     },
+        //   ],
+        // },
         attributes: ["id", "date", "start_time", "duration", "title"],
         include: [
           {

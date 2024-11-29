@@ -1,4 +1,5 @@
 const userService = require('../services/userService');
+const { adminLogger } = require('../utils/logger')
 
 class UserController {
   async getUsers(req, res) {
@@ -24,7 +25,12 @@ class UserController {
   async createUser(req, res) {
     try {
       const user = await userService.createUser(req.body);
+      adminLogger.info(`User Created: ${user.username}`, { 
+        id: user.id,
+        credits: user.credits
+      })
       res.status(201).json(user); // Return 201 status for a created resource
+      
     } catch (error) {
       console.log("Error Creating User: ", error)
       res.status(400).json({ error: error.message || 'An error occurred while creating the user.' });

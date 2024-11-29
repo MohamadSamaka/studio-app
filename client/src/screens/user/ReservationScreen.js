@@ -32,6 +32,7 @@ import {
   cancelUserReservation,
 } from "../../utils/axios";
 import i18n from "../../utils/i18n"; // Adjust the path accordingly
+import { isDateTimePast } from "../../utils/timeUtils";
 
 // Import the default avatar image
 const defaultAvatar = require("../../../assets/images/user.png"); // Adjust the path as necessary
@@ -368,7 +369,6 @@ const ReservationSystem = () => {
 
   // **Function to handle canceling a reservation**
   const cancelReservation = async (date, time, reservation) => {
-    console.log("canceliing..")
     try {
       await cancelUserReservation(reservation.id);
 
@@ -408,6 +408,12 @@ const ReservationSystem = () => {
       if (!reservation) {
         console.error(`Reservation not found for date: ${date}, time: ${time}`);
         showSnackbarOutside(t("myReservationsScreen.reservationNotFound"), "error");
+        return;
+      }
+
+      if(isDateTimePast(date, time)){
+        console.error(`You can't perform any action on past reservations...`);
+        showSnackbarOutside(t("BookingScreen.pastDateTimeActionForbidden"), "error");
         return;
       }
 

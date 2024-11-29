@@ -1,9 +1,10 @@
 {
   "BookingScreen": {
     "BookingTitles": {
-      "begginer": "مبتدئ",
+      "beginner": "مبتدئ",
       "advanced": "متقدم"
     },
+    "pastDateTimeActionForbidden": ".لا يمكنك القيام بأي إجراءات على الحجوزات السابقة",
     "location": "كفر كنا",
     "title": "أحجز",
     "areYouSure": "هل أنت متأكد؟",

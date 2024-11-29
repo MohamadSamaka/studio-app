@@ -1,9 +1,10 @@
 {
   "BookingScreen": {
-    "BookingTitle": {
-      "begginer": "מתחיל",
+    "BookingTitles": {
+      "beginner": "מתחיל",
       "advanced": "מתקדם"
     },
+    "pastDateTimeActionForbidden": "לא ניתן לבצע פעולות על הזמנות שעברו.",
     "location": "כפר כנא",
     "title": "הזמן",
     "areYouSure": "האם אתה בטוח?",

@@ -1,28 +1,24 @@
 // ReservationItem.js
+
 import React from "react";
-import { DataTable, IconButton } from "react-native-paper";
+import { DataTable, IconButton, Text } from "react-native-paper";
 import { StyleSheet, TouchableOpacity } from "react-native";
 import moment from "moment";
 import { MaterialIcons } from "@expo/vector-icons";
-import { theme } from '../../../../utils/theme';
-import PropTypes from 'prop-types';
+import { theme } from "../../../../utils/theme";
+import PropTypes from "prop-types";
 
 const ReservationItem = ({
   reservation,
   isSelected,
   toggleSelection,
   openReservationDetails,
-  handleDeleteReservation, // This function will handle the Dialog
+  handleDeleteReservation,
+  handleEditReservation,
 }) => {
-
-  // Remove the confirmDelete function
-  const onDeletePress = () => {
-    handleDeleteReservation(reservation);
-  };
-
   // Determine the icon based on selection state
   const getCheckboxIcon = () => {
-    return isSelected ? 'check-box' : 'check-box-outline-blank';
+    return isSelected ? "check-box" : "check-box-outline-blank";
   };
 
   return (
@@ -41,42 +37,47 @@ const ReservationItem = ({
           accessibilityLabel={`Select reservation on ${moment(
             reservation.date,
             "YYYY-MM-DD"
-          ).format("MM/DD/YYYY")} at ${moment(reservation.time, "HH:mm").format(
-            "hh:mm A"
-          )}`}
+          ).format("MM/DD/YYYY")}`}
           style={styles.iconButton}
         />
       </DataTable.Cell>
       {/* Date Cell */}
-      <TouchableOpacity style={styles.dateCell} onPress={() => openReservationDetails(reservation)}>
-        <DataTable.Cell>
+      <DataTable.Cell
+        style={styles.dateCell}
+        onPress={() => openReservationDetails(reservation)}
+      >
+        <Text style={styles.cellText}>
           {moment(reservation.date, "YYYY-MM-DD").format("MM/DD/YYYY")}
-        </DataTable.Cell>
-      </TouchableOpacity>
-      {/* Time Cell */}
-      {/* <TouchableOpacity style={styles.timeCell} onPress={() => openReservationDetails(reservation)}>
-        <DataTable.Cell>
-          {moment(reservation.time, "HH:mm").format("hh:mm A")}
-        </DataTable.Cell>
-      </TouchableOpacity> */}
+        </Text>
+      </DataTable.Cell>
       {/* People # Cell */}
-      <TouchableOpacity style={styles.peopleCell} onPress={() => openReservationDetails(reservation)}>
-        <DataTable.Cell numeric>
-          {reservation.participants.length}
-        </DataTable.Cell>
-      </TouchableOpacity>
+      <DataTable.Cell
+        numeric
+        style={styles.peopleCell}
+        onPress={() => openReservationDetails(reservation)}
+      >
+        <Text style={styles.cellText}>{reservation.participants.length}</Text>
+      </DataTable.Cell>
       {/* Actions Cell */}
       <DataTable.Cell style={styles.actionsCell}>
         <IconButton
           icon={() => (
-            <MaterialIcons name="delete" size={24} color="#f44336" />
+            <MaterialIcons name="edit" size={24} color={theme.colors.primary} />
           )}
           size={24}
-          onPress={onDeletePress} // Directly call handleDeleteReservation
+          onPress={() => handleEditReservation(reservation)}
+          accessibilityLabel="Edit Reservation"
+          style={styles.iconButton}
+        />
+        <IconButton
+          icon={() => (
+            <MaterialIcons name="delete" size={24} color={theme.colors.error} />
+          )}
+          size={24}
+          onPress={() => handleDeleteReservation(reservation)}
           accessibilityLabel="Delete Reservation"
           style={styles.iconButton}
         />
-        {/* Add more action buttons if needed */}
       </DataTable.Cell>
     </DataTable.Row>
   );
@@ -98,39 +99,36 @@ ReservationItem.propTypes = {
   toggleSelection: PropTypes.func.isRequired,
   openReservationDetails: PropTypes.func.isRequired,
   handleDeleteReservation: PropTypes.func.isRequired,
+  handleEditReservation: PropTypes.func.isRequired,
 };
 
 const styles = StyleSheet.create({
   tableRow: {
-    height: 80,
+    height: 60,
     backgroundColor: theme.colors.surface,
-    paddingVertical: 20,
   },
   checkboxCell: {
-    width: 60,
-    justifyContent: "center",
-    alignItems: "center",
+    width: 50,
   },
   dateCell: {
     flex: 2,
-    justifyContent: 'center',
-  },
-  timeCell: {
-    flex: 2,
-    justifyContent: 'center',
+    justifyContent: "center",
   },
   peopleCell: {
     flex: 1.5,
     justifyContent: "center",
-    alignItems: "flex-end",
   },
   actionsCell: {
     flex: 2,
-    justifyContent: "center",
-    alignItems: "center",
+    flexDirection: "row",
+    paddingTop: 0,
+    paddingBottom: 0,
   },
   iconButton: {
-    // Optional: Add any additional styling if needed
+    margin: 0,
+  },
+  cellText: {
+    textAlign: "center",
   },
 });
 

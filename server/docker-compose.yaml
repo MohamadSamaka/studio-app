@@ -8,6 +8,7 @@ services:
     ports:
       - "${PORT}:3000"
     environment:
+      - TZ=Asia/Jerusalem
       - NODE_ENV=production
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}

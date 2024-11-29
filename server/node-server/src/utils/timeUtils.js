@@ -48,6 +48,17 @@ function isFutureDateTime(date, time) {
   return reservationDateTime.isAfter(now);
 }
 
+function isDateTimePast(date, time) {
+  const inputDateTime = new Date(`${date}T${time}`); // Combine date and time
+  const currentDateTime = new Date(); // Current date and time
+
+  if (isNaN(inputDateTime.getTime())) {
+    throw new Error("Invalid date or time format. Use YYYY-MM-DD and HH:mm:ss.");
+  }
+
+  return inputDateTime < currentDateTime; // Returns true if the date-time is in the past
+}
+
 // Exporting the functions to use them in other files
 module.exports = {
   isTimeInRange,
@@ -55,4 +66,5 @@ module.exports = {
   isValidTimeSlot,
   isFutureDateTime,
   isStartTimeBeforeEndTime,
+  isDateTimePast
 };

@@ -32,9 +32,11 @@ import { useUserContext } from "../../contexts/UserContext";
 import { useTranslation } from "react-i18next";
 import { useConfigContext } from "../../contexts/ConfigContext";
 import { isWithinThreshold } from "../../utils/validationUtils";
-
 import moment from "moment";
+import { isDateTimePast } from "../../utils/timeUtils";
 import ConfirmationModal from "../../components/common/ConfirmationModal";
+
+
 
 const MyReservationsScreen = () => {
   const { t } = useTranslation();
@@ -286,7 +288,9 @@ const MyReservationsScreen = () => {
                 </Text>
               </View>
             </View>
-            <TouchableOpacity
+
+            {!isDateTimePast(date, start_time) && ( // if it's a past reservation, don't allow user to cancel it
+              <TouchableOpacity
               onPress={() => handleCancelReservation(item)}
               style={styles.cancelButton}
               accessibilityLabel={`Cancel reservation on ${date} at ${start_time}`}
@@ -297,6 +301,8 @@ const MyReservationsScreen = () => {
                 color="#C70000"
               />
             </TouchableOpacity>
+            )}
+
           </View>
           <View style={styles.trainerContainer}>
             <MaterialCommunityIcons

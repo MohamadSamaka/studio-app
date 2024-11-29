@@ -1,9 +1,10 @@
 {
   "BookingScreen": {
     "BookingTitles":{
-      "begginer": "Begginer",
+      "beginner": "Beginner",
       "advanced": "Advance"
     },
+    "pastDateTimeActionForbidden": "You cannot perform any actions on past reservations.",
     "location": "Kafr Kanna",
     "title": "Book",
     "areYouSure": "Are you sure?",

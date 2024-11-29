@@ -4,6 +4,7 @@ const AvailableReservations = require("../models/availableReservations");
 const Notification = require("../models/notification");
 const Sequelize = require("../config/database");
 const { Op } = require('sequelize');
+const { userLogger } = require('../utils/logger')
 
 class UserRepository {
   async findAll() {
@@ -117,14 +118,36 @@ class UserRepository {
       });
 
       if (users.length === 0) {
+        userLogger.info(`[-] Users not found to edit their credits`, { 
+          users
+        });
         throw new Error("No users found");
       }
 
       for (const user of users) {
+        const beforeCredits = user.credits;
+
         user.credits += val;
         await user.save({ transaction });
+
+        const afterCredits = user.credits;
+        
+        userLogger.info(`Updated user credits`, {
+          user: {
+            userIds: user.id,
+            username: user.username,
+            credits: beforeCredits
+          },
+          updatedTo: {
+            credits: afterCredits
+          }
+        });
+        
       }
     } catch (error) {
+      userLogger.warn(`[-] Failed to increase/decrease user credits`, { 
+        userIds: userIds
+      });
       console.error("Error increasing/decreasing user credits:", error);
     }
   }

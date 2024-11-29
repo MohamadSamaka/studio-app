@@ -1,4 +1,3 @@
-// ReservationsManagementScreen.js
 import React, { useState, useEffect, useCallback } from "react";
 import { View, StyleSheet, Alert } from "react-native";
 import {
@@ -10,6 +9,7 @@ import {
   Portal,
   Dialog,
   Button,
+  Paragraph,
 } from "react-native-paper";
 import { theme } from "../../utils/theme";
 import { Feather, MaterialIcons } from "@expo/vector-icons";
@@ -106,13 +106,7 @@ const ReservationsManagementScreen = () => {
     setCurrentPage,
     fetchReservations,
     setReservations,
-  } = useReservations(
-    searchQuery,
-    dateFilter,
-    timeFilter,
-    limit,
-    showSnackbar
-  );
+  } = useReservations(searchQuery, dateFilter, timeFilter, limit, showSnackbar);
 
   // Selection Hook
   const {
@@ -127,18 +121,20 @@ const ReservationsManagementScreen = () => {
   const [selectedReservation, setSelectedReservation] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [cancelling, setCancelling] = useState(false);
-  const [removingUser, setRemovingUser] = useState(false);
 
   // State for Delete Confirmation Dialog
   const [deleteDialogVisible, setDeleteDialogVisible] = useState(false);
   const [reservationToDelete, setReservationToDelete] = useState(null);
 
   // New State Variables for Dialogs
-  const [confirmCancelDialogVisible, setConfirmCancelDialogVisible] = useState(false);
-  const [noSelectionSnackbarVisible, setNoSelectionSnackbarVisible] = useState(false);
+  const [confirmCancelDialogVisible, setConfirmCancelDialogVisible] =
+    useState(false);
+  const [noSelectionSnackbarVisible, setNoSelectionSnackbarVisible] =
+    useState(false);
 
   // New state variables for editing reservation
-  const [editReservationModalVisible, setEditReservationModalVisible] = useState(false);
+  const [editReservationModalVisible, setEditReservationModalVisible] =
+    useState(false);
   const [reservationToEdit, setReservationToEdit] = useState(null);
 
   // Handler for search input changes
@@ -162,9 +158,7 @@ const ReservationsManagementScreen = () => {
 
   const openReservationDetails = (reservation) => {
     if (!reservation) {
-      console.warn(
-        "openReservationDetails called with undefined reservation."
-      );
+      console.warn("openReservationDetails called with undefined reservation.");
       return;
     }
     setSelectedReservation(reservation);
@@ -234,7 +228,10 @@ const ReservationsManagementScreen = () => {
 
   // Handler for delete reservation with confirmation dialog
   const handleDeleteReservation = (reservation) => {
-    console.log("handleDeleteReservation called for reservation ID:", reservation.id);
+    console.log(
+      "handleDeleteReservation called for reservation ID:",
+      reservation.id
+    );
     setReservationToDelete(reservation);
     setDeleteDialogVisible(true);
   };
@@ -287,8 +284,8 @@ const ReservationsManagementScreen = () => {
   // Remove a user from the selected reservation
   const removeUser = async ({ username, id }) => {
     if (!selectedReservation) return;
-    setRemovingUser(true);
     try {
+      console.log("removing...");
       await removeUserFromReservation(selectedReservation.id, id);
       setReservations((prev) =>
         prev
@@ -315,7 +312,6 @@ const ReservationsManagementScreen = () => {
       console.error("Error removing user:", error);
       showSnackbar("Failed to remove user.", "error");
     } finally {
-      setRemovingUser(false);
     }
   };
 
@@ -328,12 +324,12 @@ const ReservationsManagementScreen = () => {
   const handleUpdateReservation = async (updatedReservationData) => {
     try {
       await updateReservation(reservationToEdit.id, updatedReservationData);
-      showSnackbar('Reservation updated successfully.', 'success');
+      showSnackbar("Reservation updated successfully.", "success");
       setEditReservationModalVisible(false);
       fetchReservations(currentPage); // Refresh reservations list
     } catch (error) {
-      console.error('Error updating reservation:', error);
-      showSnackbar('Failed to update reservation.', 'error');
+      console.error("Error updating reservation:", error);
+      showSnackbar("Failed to update reservation.", "error");
     }
   };
 
@@ -342,7 +338,7 @@ const ReservationsManagementScreen = () => {
       <AppBar title="Reservations Management" />
       <View style={styles.container}>
         {/* Show Loading Indicator if configLoading or loading is true */}
-        {(configLoading || loading) ? (
+        {configLoading || loading ? (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" />
             <Text>Loading...</Text>
@@ -448,7 +444,7 @@ const ReservationsManagementScreen = () => {
                 visible={modalVisible}
                 onDismiss={closeReservationDetails}
                 reservation={selectedReservation}
-                handleRemoveUser={handleRemoveUser}
+                handleRemoveUser={removeUser}
               />
             )}
 
@@ -505,15 +501,22 @@ const ReservationsManagementScreen = () => {
             <Dialog.Title>Confirm Cancellation</Dialog.Title>
             <Dialog.Content>
               <Text>
-                Are you sure you want to cancel {selectedReservations.length} reservation(s)?
+                Are you sure you want to cancel {selectedReservations.length}{" "}
+                reservation(s)?
               </Text>
             </Dialog.Content>
             <Dialog.Actions>
-              <Button onPress={() => setConfirmCancelDialogVisible(false)}>No</Button>
-              <Button onPress={() => { 
-                setConfirmCancelDialogVisible(false); 
-                cancelReservations(); 
-              }}>Yes</Button>
+              <Button onPress={() => setConfirmCancelDialogVisible(false)}>
+                No
+              </Button>
+              <Button
+                onPress={() => {
+                  setConfirmCancelDialogVisible(false);
+                  cancelReservations();
+                }}
+              >
+                Yes
+              </Button>
             </Dialog.Actions>
           </Dialog>
         </Portal>
@@ -529,11 +532,13 @@ const ReservationsManagementScreen = () => {
               <Text>
                 Are you sure you want to delete this reservation on{" "}
                 {reservationToDelete
-                  ? moment(reservationToDelete.date, "YYYY-MM-DD").format("MM/DD/YYYY")
+                  ? moment(reservationToDelete.date, "YYYY-MM-DD").format(
+                      "MM/DD/YYYY"
+                    )
                   : ""}{" "}
                 at{" "}
                 {reservationToDelete
-                  ? moment(reservationToDelete.time, "HH:mm:ss").format("hh:mm A")
+                  ? moment(reservationToDelete.time, "HH:mm").format("hh:mm A")
                   : ""}{" "}
                 ?
               </Text>
