@@ -81,7 +81,7 @@ class UserRepository {
           required: false,
         },
       ],
-      group: ["User.id", "Role.role_id"], // Group by User and Role's correct column name
+      group: ["User.id", "Role.id"], // Group by User and Role's correct column name
     });
     return user;
   }

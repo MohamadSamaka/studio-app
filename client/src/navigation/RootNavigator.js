@@ -23,7 +23,7 @@ const AppNavigator = () => {
       }}
     >
       {user ? (
-        user.role_id === 1 ? (
+        user.roleId === 1 ? (
           <>
             <Stack.Screen name="AdminHome" component={AdminDrawerNavigator} />
             <Stack.Screen name="Notifications" component={NotificationsScreen} />

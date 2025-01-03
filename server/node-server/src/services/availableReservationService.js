@@ -1,8 +1,9 @@
-const userRepository = require("../repositories/userRepository"); // Using your existing userRepository
+const userRepository = require("../repositories/userRepository");
 const AvailableReservationsRepository = require("../repositories/availableReservationsRepository");
+const ReservationsGhostsRepository = require("../repositories/reservationsGhostsRepository");
 const notificationService = require("./notificationService");
 const sequelize = require("../config/database");
-const { isDateTimePast } = require("../utils/timeUtils");
+const { isDateTimePast, getCurrentTime } = require("../utils/timeUtils");
 const { Op } = require("sequelize");
 const { userLogger, errorLogger } = require('../utils/logger')
 
@@ -40,8 +41,8 @@ class ReservationService {
 
     reservations.forEach((reservation) => {
       const dateKey = reservation.date || null;
-      const timeKey = reservation.start_time
-        ? reservation.start_time.slice(0, 5)
+      const timeKey = reservation.startTime
+        ? reservation.startTime.slice(0, 5)
         : null;
 
       if (!dateKey || !timeKey) return;
@@ -59,8 +60,8 @@ class ReservationService {
 
       organizedReservations[dateKey][timeKey]["id"] = reservation.id;
       organizedReservations[dateKey][timeKey]["title"] = reservation.title;
-      organizedReservations[dateKey][timeKey]["max_participants"] =
-        reservation.max_participants;
+      organizedReservations[dateKey][timeKey]["maxParticipants"] =
+        reservation.maxParticipants;
       organizedReservations[dateKey][timeKey]["duration"] =
         reservation.duration;
 
@@ -90,7 +91,7 @@ class ReservationService {
   }
 
   async validateReservation(data) {
-    if (!isFutureDateTime(data.date, data.start_time)) {
+    if (!isFutureDateTime(data.date, data.startTime)) {
       return {
         status: "error",
         code: 400,
@@ -102,30 +103,6 @@ class ReservationService {
   }
 
   async getPaginatedReservationsByDateAndTime(
-    page,
-    limit,
-    search,
-    dateFilter,
-    timeFilter
-  ) {
-    try {
-      const organizedReservations =
-        await AvailableReservationsRepository.findAndCountAll({
-          page,
-          limit,
-          search,
-          dateFilter,
-          timeFilter,
-        });
-
-      return organizedReservations;
-    } catch (error) {
-      console.error("Error in getPaginatedReservationsByDateAndTime:", error);
-      throw error;
-    }
-  }
-
-  async getPaginatedReservationsByDaorganizedReservationsteAndTime(
     page,
     limit,
     search,
@@ -171,10 +148,10 @@ class ReservationService {
       const reservationData = {
         title: data.title,
         date: data.date,
-        start_time: data.start_time,
+        startTime: data.startTime,
         duration: data.duration,
-        trainer_id: data.trainer_id,
-        max_participants: data.max_participants,
+        trainerId: data.trainerId,
+        maxParticipants: data.maxParticipants,
       };
       return await AvailableReservationsRepository.create(reservationData);
     } catch (error) {
@@ -200,7 +177,7 @@ class ReservationService {
     );
 
     if (userAlreadyAttached) {
-      userLogger.info(`[-] User tried to book but he was already attached to reservation at ${reservation.date} ${reservation.start_time}`, { 
+      userLogger.info(`[-] User tried to book but he was already attached to reservation at ${reservation.date} ${reservation.startTime}`, { 
         userId: userId,
         reservationId: reservation.id
       });
@@ -214,7 +191,7 @@ class ReservationService {
 
     // Check if the reservation is fully booked
     const userCount = reservation.Participants.length;
-    const maxParticipants = reservation.max_participants;
+    const maxParticipants = reservation.maxParticipants;
     if (userCount >= maxParticipants) {
       userLogger.info(`[-] User tried to book but reservation is already full`, { 
         userId: userId,
@@ -234,7 +211,7 @@ class ReservationService {
       { transaction }
     );
 
-    userLogger.info(`[+] User been attached to the reservation ${reservation.date} ${reservation.start_time}`, { 
+    userLogger.info(`[+] User been attached to the reservation ${reservation.date} ${reservation.startTime}`, { 
       userId: userId,
       reservationId: reservation.id,
     });
@@ -317,8 +294,14 @@ class ReservationService {
       return { message: "Reservation cancelled successfully by admin" };
     } else {
       // Non-admin users use the regular cancellation method
-      await this.cancelReservation(id, userId, false, false);
-
+      const {reservationId, punished} = await this.cancelReservation(id, userId, false, false);
+      await ReservationsGhostsRepository.create({
+        reservationId: reservationId,
+        punished: !punished,
+        cancellationTime: getCurrentTime(),
+        userId: userId,
+        
+      })
       // Optionally, return a confirmation message
       return { message: "Reservation cancelled successfully" };
     }
@@ -357,10 +340,10 @@ class ReservationService {
       throw new Error("Reservation not found");
     }
 
-    const isPast = isDateTimePast(reservation.date, reservation.start_time);
+    const isPast = isDateTimePast(reservation.date, reservation.startTime);
 
     const user = await userRepository.findById(userId) 
-    console.log("found user is : ", user)
+    // console.log("found user is : ", user)
 
     if(isPast && !byPassPastCheck){
       userLogger.warn(`[-] User ${user.username} tried to cancel a reservaion that exists in the past`, { 
@@ -371,7 +354,7 @@ class ReservationService {
         reservation: {
           reservationId: reservation.id,
           reservationDate: reservation.date,
-          reservationStartTime: reservation.start_time
+          reservationStartTime: reservation.startTime
         }
       });
       throw new Error("Regular users are not allowed to cancel old reservations");
@@ -392,7 +375,7 @@ class ReservationService {
         reservation: {
           reservationId: reservation.id,
           reservationDate: reservation.date,
-          reservationStartTime: reservation.start_time
+          reservationStartTime: reservation.startTime
         }
       });
       throw new Error("User is not part of this reservation");
@@ -408,7 +391,7 @@ class ReservationService {
       reservation:{
         reservationId: reservation.id,
         reservationDate: reservation.date,
-        reservationStartTime: reservation.start_time
+        reservationStartTime: reservation.startTime
       }
       
     });
@@ -419,7 +402,7 @@ class ReservationService {
     );
 
 
-    const shouldIncreaseCredits = isWithinRefundThreshold( reservation.date, reservation.start_time)
+    const shouldIncreaseCredits = isWithinRefundThreshold( reservation.date, reservation.startTime)
 
     if (shouldIncreaseCredits){
       await userService.IncreaseUserCreditByOne(userId);
@@ -431,7 +414,7 @@ class ReservationService {
         reservation: {
           reservationId: reservation.id,
           reservationDate: reservation.date,
-          reservationStartTime: reservation.start_time,
+          reservationStartTime: reservation.startTime,
           shouldIncreaseCredits
         }
       });
@@ -447,12 +430,12 @@ class ReservationService {
       userLogger.info(`[+] reservation has been completly deleted`, { 
         reservation: {
           date: reservation.date,
-          time: reservation.start_time
+          time: reservation.startTime
         }
       })
     }
 
-    return reservation.id;
+    return {reservationId: reservation.id, punished: shouldIncreaseCredits};
   }
 }
 

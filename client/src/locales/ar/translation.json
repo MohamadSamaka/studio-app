@@ -36,18 +36,23 @@
     "title": "القسائم",
     "requestResponse": {
       "success": "تم طلب الاشتراك بنجاح!",
-      "failed": "فشل في طلب الاشتراك، حاول مرة أخرى لاحقًا!"
+      "fail": "فشل في طلب الاشتراك، حاول مرة أخرى لاحقًا!"
     },
     "noSubscriptionsAvailable": "لا توجد اشتراكات متاحة",
     "failedToLoadSubscriptions": "خطأ: فشل في تحميل الاشتراكات.",
     "requestingConfirmationTitle": "تأكيد الطلب",
     "meetings": "اجتماعات {{count}} ",
     "requestingSubscription": "طلب",
-    "requestingSubscriptionConfirmationMessage": "هل أنت متأكد أنك تريد طلب اشتراك \u200F{{subscriptionType}}\u200E؟"
+    "requestingSubscriptionConfirmationMessage": "هل أنت متأكد أنك تريد طلب اشتراك \u200F{{subscriptionTypeId}}\u200E؟"
   },
   "myReservationsScreen": {
     "title": "حجوزاتي",
     "trainer": "مدرب",
+    "noParticipantsYet": "لا يوجد مشاركين حتى الان",
+    "previousCancellations": "عمليات إلغاء الحجز السابقة",
+    "cancelTime": "وقت الإلغاء",
+    "punished": "معاقب",
+    "notPunished": "لم يُعاقب",
     "errorFetchingReservations": "خطأ في جلب الحجوزات:",
     "cancellationWarning": "تحذير إلغاء",
     "cancellationWarningMessage": "أنت على وشك إلغاء هذا الحجز خلال 6 ساعات من الوقت المحدد. لن تسترد رصيدك إذا تابعت. هل أنت متأكد أنك تريد المتابعة؟",
@@ -95,10 +100,10 @@
       "unknown": "غير معروف"
     },
     "requestNumber": "الطلب رقم \u200F{{id}}\u200E",
-    "subscriptionType": "نوع الاشتراك: \u200F{{type}}\u200E",
+    "subscriptionTypeId": "نوع الاشتراك: \u200F{{type}}\u200E",
     "dateAtTime": "التاريخ: \u200F{{date}}\u200E في الساعة \u200F{{time}}\u200E"
   },
-  "subscriptionTypes": {
+  "subscriptionTypeIds": {
       "daily": "يومي",
       "monthly": "شهري",
       "weekly": "أسبوعي",
@@ -183,6 +188,8 @@
     "title": "إدارة الحجوزات"
   },
 "cancellationWarningMessageSimple": "\u200E.\u200Eهل انت متأكد من أنك تريد الإلغاء؟ لن تسترد نقاطك اذا ألغيت",  "you": "انتَ/انتِ",
+  "prev": "السابق",
+  "next": "التالي",
   "logout": "تسجيل الخروج",
   "changeLanguage": "تغيير اللغة",
   "selectLanguage": "اختر اللغة",
@@ -191,6 +198,8 @@
   "delete": "حذف",
   "save": "حفظ",
   "yes": "نعم",
+  "active": "نشط",
+  "canceled": "ملغى",
   "confirm": "تأكيد",
   "nothingToSee": "لا يوجد شيء لعرضه هنا",
   "success": "نجاح",

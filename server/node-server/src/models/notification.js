@@ -9,13 +9,9 @@ Notification.init({
     autoIncrement: true,
     primaryKey: true,
   },
-  user_id: {
+  userId: {
     type: DataTypes.INTEGER,
     allowNull: false,
-    // references: {
-    //     model: 'Users',
-    //     key: 'id',
-    // },
   },
   title: {
     type: DataTypes.STRING,
@@ -39,9 +35,10 @@ Notification.init({
   },
 }, {
   sequelize,
+  tableName: "Notifications",
   modelName: 'Notification',
   timestamps: false,
-  indexes: [{ fields: ['user_id'] }],
+  indexes: [{ fields: ['userId'] }],
 });
 
 

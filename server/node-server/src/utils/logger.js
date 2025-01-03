@@ -5,7 +5,7 @@ const { combine, timestamp, printf } = format;
 const DailyRotateFile = require('winston-daily-rotate-file');
 
 // Ensure the logs directory exists
-const logDir = path.join(__dirname, '../../logs');
+const logDir = path.join(__dirname, '../logs');
 
 if (!fs.existsSync(logDir)) {
   fs.mkdirSync(logDir, { recursive: true });

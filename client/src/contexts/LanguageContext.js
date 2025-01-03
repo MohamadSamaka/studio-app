@@ -9,15 +9,15 @@ const LanguageContext = createContext();
 export const LanguageProvider = ({ children }) => {
   const { user } = useUserContext();
   const [language, setLanguage] = useState(
-    user ? user.default_lang : i18n.language
+    user ? user.defaultLang : i18n.language
   );
 
   useEffect(() => {
     const determineLanguage = () => {
       let targetLang = 'en'; // Default fallback
 
-      if (user && user.default_lang) {
-        targetLang = user.default_lang.toLowerCase();
+      if (user && user.defaultLang) {
+        targetLang = user.defaultLang.toLowerCase();
       } else {
         // const systemLang = Localization.locale.split('-')[0];
         // targetLang = SUPPORTED_LANGUAGES.includes(systemLang) ? systemLang : 'en';

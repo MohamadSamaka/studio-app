@@ -33,7 +33,7 @@ import useSnackbar from "../../hooks/useSnackbar";
 import { useConfigContext } from "../../contexts/ConfigContext";
 import {
   createReservationSlot,
-  updateReservation, // Import the updateReservation API call
+  updateReservation,
   deleteReservation,
   removeUserFromReservation,
 } from "../../utils/axios";

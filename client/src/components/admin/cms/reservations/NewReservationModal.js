@@ -94,10 +94,10 @@ const AvailableReservationsModal = ({
   const [formData, setFormData] = useState({
     title: "",
     date: null,
-    start_time: null,
+    startTime: null,
     duration: null,
-    max_participants: `${maxUsersPerSlot}`,
-    trainer_id: null,
+    maxParticipants: `${maxUsersPerSlot}`,
+    trainerId: null,
   });
 
   const [datePickerVisible, setDatePickerVisible] = useState(false);
@@ -142,13 +142,13 @@ const AvailableReservationsModal = ({
     const submissionData = {
       ...formData,
       date: formData.date ? moment(formData.date).format("YYYY-MM-DD") : null,
-      start_time: formData.start_time
-        ? moment(formData.start_time).format("HH:mm:ss").toString()
+      startTime: formData.startTime
+        ? moment(formData.startTime).format("HH:mm:ss").toString()
         : null,
       duration: formData.duration
         ? moment(formData.duration).format("HH:mm:ss").toString()
         : null,
-      max_participants: parseInt(formData.max_participants, 10),
+      maxParticipants: parseInt(formData.maxParticipants, 10),
     };
     onAddReservation(submissionData);
     onDismiss();
@@ -158,11 +158,11 @@ const AvailableReservationsModal = ({
     return (
       formData.title &&
       formData.date &&
-      formData.start_time &&
+      formData.startTime &&
       formData.duration &&
-      formData.max_participants &&
-      parseInt(formData.max_participants, 10) > 0 &&
-      formData.trainer_id
+      formData.maxParticipants &&
+      parseInt(formData.maxParticipants, 10) > 0 &&
+      formData.trainerId
     );
   };
 
@@ -179,7 +179,7 @@ const AvailableReservationsModal = ({
     const time = new Date();
     time.setHours(hours);
     time.setMinutes(minutes);
-    handleInputChange("start_time", time);
+    handleInputChange("startTime", time);
   };
 
   const onDurationConfirm = ({ hours, minutes }) => {
@@ -250,8 +250,8 @@ const AvailableReservationsModal = ({
             <TextInput
               label="Start Time"
               value={
-                formData.start_time
-                  ? moment(formData.start_time).format("HH:mm")
+                formData.startTime
+                  ? moment(formData.startTime).format("HH:mm")
                   : ""
               }
               editable={false}
@@ -277,9 +277,9 @@ const AvailableReservationsModal = ({
 
           <TextInput
             label="Max Participants"
-            value={formData.max_participants}
+            value={formData.maxParticipants}
             onChangeText={(value) =>
-              handleInputChange("max_participants", value)
+              handleInputChange("maxParticipants", value)
             }
             keyboardType="numeric"
             style={styles.input}
@@ -297,7 +297,7 @@ const AvailableReservationsModal = ({
             ) : (
               <DropDownPicker
                 open={openTrainer}
-                value={formData.trainer_id}
+                value={formData.trainerId}
                 items={trainers.map((trainer) => ({
                   label: trainer.username,
                   value: trainer.id,
@@ -305,8 +305,8 @@ const AvailableReservationsModal = ({
                 setOpen={setOpenTrainer}
                 setValue={(callback) =>
                   handleInputChange(
-                    "trainer_id",
-                    callback(formData.trainer_id)
+                    "trainerId",
+                    callback(formData.trainerId)
                   )
                 }
                 placeholder="Select Trainer"
@@ -319,7 +319,7 @@ const AvailableReservationsModal = ({
             )}
           </View>
 
-          {!trainerLoading && !trainerError && !formData.trainer_id && (
+          {!trainerLoading && !trainerError && !formData.trainerId && (
             <Text style={styles.errorText}>Please select a trainer.</Text>
           )}
 
@@ -354,13 +354,13 @@ const AvailableReservationsModal = ({
           onDismiss={() => setStartTimePickerVisible(false)}
           onConfirm={onStartTimeConfirm}
           hours={
-            formData.start_time
-              ? formData.start_time.getHours()
+            formData.startTime
+              ? formData.startTime.getHours()
               : new Date().getHours()
           }
           minutes={
-            formData.start_time
-              ? formData.start_time.getMinutes()
+            formData.startTime
+              ? formData.startTime.getMinutes()
               : new Date().getMinutes()
           }
           label="Select Start Time"

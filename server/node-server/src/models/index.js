@@ -1,67 +1,111 @@
-const sequelize = require('../config/database');
-const User = require('./user');
-const AvailableReservations = require('./availableReservations');
-const ReservationsHasUsers = require('./reservationsHasUsers');
-const Role = require('./role');
-const Subscription = require('./subscription');
-const RechargeCreditRequest = require('./rechargeCreditRequest');
-const Notification = require('./notification');
-const Device = require('./device');
+const sequelize = require("../config/database");
+const User = require("./user");
+const Role = require("./role");
+const AvailableReservations = require("./availableReservations");
+const ReservationsHasUsers = require("./reservationsHasUsers");
+const ReservationsGhosts = require("./reservationsGhosts");
+const Subscription = require("./subscription");
+const RechargeCreditRequest = require("./rechargeCreditRequest");
+const Notification = require("./notification");
+const Device = require("./device");
 
-// Many-to-Many relationship between Users and AvailableReservations through ReservationsHasUsers
-User.belongsToMany(AvailableReservations, { 
-  through: ReservationsHasUsers, 
-  foreignKey: 'users_id', 
-  as: 'Reservations' 
+// User-Role: One-to-Many relationship
+Role.hasMany(User, {
+  foreignKey: "roleId",
+  onDelete: "CASCADE",
+  onUpdate: "CASCADE",
 });
-AvailableReservations.belongsToMany(User, { 
-  through: ReservationsHasUsers, 
-  foreignKey: 'reservations_id', 
-  as: 'Participants' 
-});
+User.belongsTo(Role, { foreignKey: "roleId" });
 
-// One-to-Many relationship: User (Trainer) has many AvailableReservations
+// User-AvailableReservations: One-to-Many relationship (Trainer)
+User.hasMany(AvailableReservations, {
+  foreignKey: "trainerId",
+  as: "TrainedReservations",
+  onDelete: "CASCADE",
+  onUpdate: "CASCADE",
+});
 AvailableReservations.belongsTo(User, {
-  foreignKey: 'trainer_id',
-  as: 'Trainer',
-  onDelete: 'SET NULL', // Set to NULL if the trainer is deleted
-  onUpdate: 'CASCADE',
+  foreignKey: "trainerId",
+  as: "Trainer",
+  onDelete: "CASCADE",
+  onUpdate: "CASCADE",
 });
 
-User.hasMany(AvailableReservations, { 
-  foreignKey: 'trainer_id', 
-  as: 'TrainedReservations' 
+// User-ReservationsHasUsers: Many-to-Many relationship
+User.belongsToMany(AvailableReservations, {
+  through: ReservationsHasUsers,
+  foreignKey: "userId",
+  as: "Reservations",
+});
+AvailableReservations.belongsToMany(User, {
+  through: ReservationsHasUsers,
+  foreignKey: "reservationId",
+  as: "Participants",
 });
 
-// Role has many Users (One-to-Many)
-Role.hasMany(User, { foreignKey: 'role_id' });
-User.belongsTo(Role, { foreignKey: 'role_id' });
+// AvailableReservations-ReservationsGhosts: One-to-Many relationship
+AvailableReservations.hasMany(ReservationsGhosts, {
+  foreignKey: "reservationId",
+  as: "GhostLogs",
+  onDelete: "CASCADE",
+  onUpdate: "CASCADE",
+});
+ReservationsGhosts.belongsTo(AvailableReservations, {
+  foreignKey: "reservationId",
+  as: "Reservation",
+});
 
-// Subscription has many RechargeCreditRequest (One-to-Many)
-Subscription.hasMany(RechargeCreditRequest, { foreignKey: 'subscription_type' });
-RechargeCreditRequest.belongsTo(Subscription, { foreignKey: 'subscription_type', allowNull: false });
+// User-ReservationsGhosts: One-to-Many relationship
+User.hasMany(ReservationsGhosts, {
+  foreignKey: "userId",
+  as: "GhostEntries",
+  onDelete: "CASCADE",
+  onUpdate: "CASCADE",
+});
+ReservationsGhosts.belongsTo(User, { foreignKey: "userId", as: "User" });
 
-// User has many RechargeCreditRequest (One-to-Many)
-User.hasMany(RechargeCreditRequest, { foreignKey: 'users_id' });
-RechargeCreditRequest.belongsTo(User, { foreignKey: 'users_id' });
+// User-RechargeCreditRequest: One-to-Many relationship
+User.hasMany(RechargeCreditRequest, {
+  foreignKey: "userId",
+  onDelete: "CASCADE",
+  onUpdate: "CASCADE",
+});
+RechargeCreditRequest.belongsTo(User, { foreignKey: "userId" });
 
-// User has many Notifications (One-to-Many)
-User.hasMany(Notification, { foreignKey: 'user_id' });
-Notification.belongsTo(User, { foreignKey: 'user_id' });
+// Subscription-RechargeCreditRequest: One-to-Many relationship
+Subscription.hasMany(RechargeCreditRequest, {
+  foreignKey: "subscriptionTypeId",
+  onDelete: "CASCADE",
+  onUpdate: "CASCADE",
+});
+RechargeCreditRequest.belongsTo(Subscription, {
+  foreignKey: "subscriptionTypeId",
+});
 
-// Device belongs to User
-Device.belongsTo(User, { foreignKey: 'user_id' });
-User.hasMany(Device, { foreignKey: 'user_id' });
+// User-Notification: One-to-Many relationship
+User.hasMany(Notification, {
+  foreignKey: "userId",
+  onDelete: "CASCADE",
+  onUpdate: "CASCADE",
+});
+Notification.belongsTo(User, { foreignKey: "userId" });
 
-// Sync database (optional, ensure migrations are used instead in production)
-// sequelize.sync();
+// User-Device: One-to-Many relationship
+User.hasMany(Device, {
+  foreignKey: "userId",
+  onDelete: "CASCADE",
+  onUpdate: "CASCADE",
+});
+Device.belongsTo(User, { foreignKey: "userId" });
 
+// Export models and sequelize instance
 module.exports = {
   sequelize,
   User,
+  Role,
   AvailableReservations,
   ReservationsHasUsers,
-  Role,
+  ReservationsGhosts,
   Subscription,
   RechargeCreditRequest,
   Notification,

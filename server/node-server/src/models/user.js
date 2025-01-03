@@ -15,17 +15,23 @@ User.init(
       type: DataTypes.STRING,
       unique: true,
       allowNull: false,
+      validate: {
+        notEmpty: true,
+      },
     },
     password: {
       type: DataTypes.STRING,
       allowNull: false,
+      validate: {
+        notEmpty: true,
+      },
     },
-    role_id: { // Corrected reference
+    roleId: {
       type: DataTypes.INTEGER,
       allowNull: false,
       references: {
         model: Role,
-        key: 'role_id',
+        key: 'id',
       },
       onDelete: 'CASCADE',
       onUpdate: 'CASCADE',
@@ -41,33 +47,43 @@ User.init(
     active: {
       type: DataTypes.BOOLEAN,
       allowNull: false,
+      defaultValue: true,
     },
-    default_lang: {
+    defaultLang: {
       type: DataTypes.ENUM('AR', 'EN', 'HE'),
       defaultValue: 'EN',
     },
-    phone_num: {
+    phoneNum: {
       type: DataTypes.STRING,
       unique: true,
       allowNull: false,
+      validate: {
+        isNumeric: true,
+      },
     },
     credits: {
       type: DataTypes.INTEGER,
+      allowNull: false,
       defaultValue: 0,
+      validate: {
+        min: 0,
+      },
     },
   },
   {
     sequelize,
+    tableName:"Users",
     modelName: 'User',
     timestamps: false,
     defaultScope: {
       attributes: { exclude: ['token', 'refreshToken'] }, // Exclude sensitive fields by default
     },
+    scopes: {
+      withTokens: {
+        attributes: { include: ['token', 'refreshToken'] }, // Include sensitive fields if needed
+      },
+    },
   }
 );
-
-// Define associations
-User.belongsTo(Role, { foreignKey: 'role_id' });
-Role.hasMany(User, { foreignKey: 'role_id' });
 
 module.exports = User;

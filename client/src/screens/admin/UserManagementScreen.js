@@ -43,13 +43,13 @@ const UserManagementScreen = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [newUser, setNewUser] = useState({
     username: "",
-    phone_num: "",
+    phoneNum: "",
     password: "",
     credits: 0,
     active: true,
-    default_lang: "EN",
-    role_id: 1,
-    trainer_id: null, // Added
+    defaultLang: "EN",
+    roleId: 1,
+    trainerId: null, // Added
   });
   const [expandedUserId, setExpandedUserId] = useState(null);
   const [openLang, setOpenLang] = useState(false);
@@ -92,13 +92,13 @@ const UserManagementScreen = () => {
       setSelectedUser(null);
       setNewUser({
         username: "",
-        phone_num: "",
+        phoneNum: "",
         password: "",
         credits: 0,
         active: true,
-        default_lang: "EN",
-        role_id: 1,
-        trainer_id: null, // Reset trainer_id
+        defaultLang: "EN",
+        roleId: 1,
+        trainerId: null, // Reset trainerId
       });
     }
   };
@@ -158,8 +158,8 @@ const UserManagementScreen = () => {
       const response = await getRoles();
       const roleItems = response.data.map((role) => ({
         label: role.name,
-        value: role.role_id,
-        key: role.role_id.toString(), // Ensure each role has a unique key
+        value: role.id,
+        key: role.id,
       }));
       setRoles(roleItems);
     } catch (error) {
@@ -173,7 +173,7 @@ const UserManagementScreen = () => {
   const handleAddUser = async () => {
     const fields = {
       username: newUser.username,
-      phone_num: newUser.phone_num,
+      phoneNum: newUser.phoneNum,
       password: newUser.password,
       credits: newUser.credits.toString(),
       // Add other fields as needed
@@ -189,8 +189,8 @@ const UserManagementScreen = () => {
     try {
       await createUser({
         ...newUser,
-        phone_num: stripDashes(newUser.phone_num),
-        trainer_id: newUser.trainer_id, // Added
+        phoneNum: stripDashes(newUser.phoneNum),
+        trainerId: newUser.trainerId, // Added
       });
       fetchUsers();
       setErrors({}); // Clear errors on success
@@ -207,7 +207,7 @@ const UserManagementScreen = () => {
     // Prepare the fields to validate (exclude password if not changed)
     const fields = {
       username: selectedUser.username,
-      phone_num: selectedUser.phone_num,
+      phoneNum: selectedUser.phoneNum,
       credits: selectedUser.credits.toString(),
     };
 
@@ -227,12 +227,12 @@ const UserManagementScreen = () => {
       // Prepare the update payload
       const updateData = {
         username: selectedUser.username,
-        phone_num: stripDashes(selectedUser.phone_num), // Remove dashes before sending
+        phoneNum: stripDashes(selectedUser.phoneNum), // Remove dashes before sending
         credits: selectedUser.credits,
         active: selectedUser.active,
-        default_lang: selectedUser.default_lang,
-        role_id: selectedUser.role_id,
-        trainer_id: selectedUser.trainer_id, // Added
+        defaultLang: selectedUser.defaultLang,
+        roleId: selectedUser.roleId,
+        trainerId: selectedUser.trainerId, // Added
       };
 
       // Conditionally include password if it's been changed
@@ -316,9 +316,9 @@ const UserManagementScreen = () => {
     const formattedPhoneNumber = formatPhoneNumber(text);
 
     if (selectedUser) {
-      setSelectedUser({ ...selectedUser, phone_num: formattedPhoneNumber });
+      setSelectedUser({ ...selectedUser, phoneNum: formattedPhoneNumber });
     } else {
-      setNewUser({ ...newUser, phone_num: formattedPhoneNumber });
+      setNewUser({ ...newUser, phoneNum: formattedPhoneNumber });
     }
   };
 
@@ -336,9 +336,9 @@ const UserManagementScreen = () => {
   const handleEditPress = (item) => {
     setSelectedUser({
       ...item,
-      phone_num: formatPhoneNumber(item.phone_num),
+      phoneNum: formatPhoneNumber(item.phoneNum),
       password: "", // Clear password field when editing
-      trainer_id: item.trainer_id || null, // Added
+      trainerId: item.trainerId || null, // Added
     });
     setIsModalVisible(true);
   };
@@ -356,7 +356,7 @@ const UserManagementScreen = () => {
     <Card style={styles.userCard}>
       <TouchableOpacity onPress={() => toggleExpand(item)} style={styles.row}>
         <Text style={[styles.cell, styles.username]}>{item.username}</Text>
-        <Text style={[styles.cell, styles.phoneNumber]}>{item.phone_num}</Text>
+        <Text style={[styles.cell, styles.phoneNumber]}>{item.phoneNum}</Text>
         <View style={[styles.cell, styles.actions]}>
           <IconButton
             icon={({ color, size }) => (
@@ -383,10 +383,10 @@ const UserManagementScreen = () => {
             Active: {item.active ? "Yes" : "No"}
           </Text>
           <Text style={styles.infoText}>
-            Role: {roles.find((role) => role.value === item.role_id)?.label}
+            Role: {roles.find((role) => role.value === item.roleId)?.label}
           </Text>
           <Text style={styles.infoText}>
-            Default Language: {item.default_lang}
+            Default Language: {item.defaultLang}
           </Text>
           <Divider style={styles.divider} />
         </View>
@@ -418,16 +418,16 @@ const UserManagementScreen = () => {
 
       <TextInput
         label="Phone Number"
-        value={selectedUser ? selectedUser.phone_num : newUser.phone_num}
+        value={selectedUser ? selectedUser.phoneNum : newUser.phoneNum}
         onChangeText={handlePhoneNumberChange}
         style={styles.input}
         keyboardType="phone-pad"
         mode="outlined"
         maxLength={12}
-        error={!!errors.phone_num}
+        error={!!errors.phoneNum}
       />
-      {errors.phone_num && (
-        <Text style={styles.errorText}>{errors.phone_num}</Text>
+      {errors.phoneNum && (
+        <Text style={styles.errorText}>{errors.phoneNum}</Text>
       )}
 
       <View style={styles.passwordContainer}>
@@ -493,14 +493,14 @@ const UserManagementScreen = () => {
         <DropDownPicker
           open={openLang}
           value={
-            selectedUser ? selectedUser.default_lang : newUser.default_lang
+            selectedUser ? selectedUser.defaultLang : newUser.defaultLang
           }
           items={languages}
           setOpen={() => onDropdownOpen("lang")}
           setValue={(value) =>
             selectedUser
-              ? setSelectedUser({ ...selectedUser, default_lang: value() })
-              : setNewUser({ ...newUser, default_lang: value() })
+              ? setSelectedUser({ ...selectedUser, defaultLang: value() })
+              : setNewUser({ ...newUser, defaultLang: value() })
           }
           style={styles.dropdown}
           dropDownContainerStyle={styles.dropdownList}
@@ -510,8 +510,8 @@ const UserManagementScreen = () => {
             nestedScrollEnabled: true,
           }}
         />
-        {errors.default_lang && (
-          <Text style={styles.errorText}>{errors.default_lang}</Text>
+        {errors.defaultLang && (
+          <Text style={styles.errorText}>{errors.defaultLang}</Text>
         )}
       </View>
 
@@ -524,13 +524,13 @@ const UserManagementScreen = () => {
       >
         <DropDownPicker
           open={openRole}
-          value={selectedUser ? selectedUser.role_id : newUser.role_id}
+          value={selectedUser ? selectedUser.roleId : newUser.roleId}
           items={memoizedRoles}
           setOpen={() => onDropdownOpen("role")}
           setValue={(value) =>
             selectedUser
-              ? setSelectedUser({ ...selectedUser, role_id: value() })
-              : setNewUser({ ...newUser, role_id: value() })
+              ? setSelectedUser({ ...selectedUser, roleId: value() })
+              : setNewUser({ ...newUser, roleId: value() })
           }
           style={styles.dropdown}
           dropDownContainerStyle={styles.dropdownList}
@@ -540,8 +540,8 @@ const UserManagementScreen = () => {
             nestedScrollEnabled: true,
           }}
         />
-        {errors.role_id && (
-          <Text style={styles.errorText}>{errors.role_id}</Text>
+        {errors.roleId && (
+          <Text style={styles.errorText}>{errors.roleId}</Text>
         )}
       </View>
 
@@ -679,13 +679,13 @@ const UserManagementScreen = () => {
             onPress={() => {
               setNewUser({
                 username: "",
-                phone_num: "",
+                phoneNum: "",
                 password: "",
                 credits: 0,
                 active: true,
-                default_lang: "EN",
-                role_id: 1,
-                trainer_id: null, // Reset trainer_id
+                defaultLang: "EN",
+                roleId: 1,
+                trainerId: null, // Reset trainerId
               });
               setSelectedUser(null);
               setIsModalVisible(true);

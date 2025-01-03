@@ -80,14 +80,14 @@ const SubscriptionsScreen = () => {
   };
 
   // Perform the subscription request
-  const requestSubscription = async (subscriptionType, subscriptionName) => {
+  const requestSubscription = async (subscriptionTypeId, subscriptionName) => {
     const responseSkeleton = "subscriptionsScreen.requestResponse";
-    setRequestingId(subscriptionType);
+    setRequestingId(subscriptionTypeId);
     try {
       const userInfo = user;
 
       const payload = {
-        subscriptionType,
+        subscriptionTypeId,
         userId: userInfo.id,
       };
 
@@ -115,7 +115,7 @@ const SubscriptionsScreen = () => {
       <TouchableOpacity
         activeOpacity={0.9}
         onPress={() =>
-          handleRequestSubscription(item.id, item.subscription_name)
+          handleRequestSubscription(item.id, item.subscriptionName)
         }
       >
         <LinearGradient
@@ -128,7 +128,7 @@ const SubscriptionsScreen = () => {
             <Card.Content style={styles.cardContent}>
               {/* Subscription Icon */}
               <MaterialIcons
-                name={getIconName(item.subscription_name)}
+                name={getIconName(item.subscriptionName)}
                 size={40}
                 color={theme.colors.primary}
                 style={styles.icon}
@@ -136,7 +136,7 @@ const SubscriptionsScreen = () => {
               {/* Subscription Name */}
               <Text style={styles.featureText}>
                 {t("subscriptionsScreen.meetings", {
-                  count: item.meetings_num,
+                  count: item.meetingsNum,
                 })}
               </Text>
               {/* Subscription Features */}
@@ -148,7 +148,7 @@ const SubscriptionsScreen = () => {
                 />
                 <Text style={styles.featureText}>
                   {t("subscriptionsScreen.meetings", {
-                    count: item.meetings_num,
+                    count: item.meetingsNum,
                   })}
                 </Text>
               </View>
@@ -172,7 +172,7 @@ const SubscriptionsScreen = () => {
               <Button
                 mode="contained"
                 onPress={() =>
-                  handleRequestSubscription(item.id, item.subscription_name)
+                  handleRequestSubscription(item.id, item.subscriptionName)
                 }
                 style={styles.button}
                 disabled={requestingId === item.id}
@@ -262,14 +262,14 @@ const SubscriptionsScreen = () => {
               {t(
                 "subscriptionsScreen.requestingSubscriptionConfirmationMessage",
                 {
-                  subscriptionType:
+                  subscriptionTypeId:
                     selectedSubscription?.name?.toLowerCase() &&
                     t(
-                      `subscriptionTypes.${selectedSubscription?.name?.toLowerCase()}`
+                      `subscriptionTypeIds.${selectedSubscription?.name?.toLowerCase()}`
                     ) !==
-                      `subscriptionTypes.${selectedSubscription?.name?.toLowerCase()}`
+                      `subscriptionTypeIds.${selectedSubscription?.name?.toLowerCase()}`
                       ? t(
-                          `subscriptionTypes.${selectedSubscription?.name?.toLowerCase()}`
+                          `subscriptionTypeIds.${selectedSubscription?.name?.toLowerCase()}`
                         )
                       : "",
                 }

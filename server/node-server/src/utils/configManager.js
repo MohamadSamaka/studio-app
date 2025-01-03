@@ -12,7 +12,6 @@ const loadConfig = () => {
   try {
     const fileContent = fs.readFileSync(configPath, 'utf-8');
     configData = JSON.parse(fileContent);
-    console.log('Configuration loaded:', configData);
   } catch (err) {
     console.error('Failed to load configuration:', err.message);
   }

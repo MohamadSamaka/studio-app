@@ -36,18 +36,23 @@
     "title": "מנויים",
     "requestResponse": {
       "success": "הבקשה למנוי נשלחה בהצלחה!",
-      "failed": "הבקשה למנוי נכשלה, נסה שוב מאוחר יותר!"
+      "fail": "הבקשה למנוי נכשלה, נסה שוב מאוחר יותר!"
     },
     "noSubscriptionsAvailable": "אין מנויים זמינים",
     "failedToLoadSubscriptions": "שגיאה: כשל בטעינת המנויים.",
     "requestingConfirmationTitle": "אישור בקשה",
     "meetings": "{{count}} פגישות ",
     "requestingSubscription": "בקשה",
-    "requestingSubscriptionConfirmationMessage": "האם אתה בטוח שברצונך לבקש את המנוי \u200F{{subscriptionType}}\u200E?"
+    "requestingSubscriptionConfirmationMessage": "האם אתה בטוח שברצונך לבקש את המנוי \u200F{{subscriptionTypeId}}\u200E?"
   },
   "myReservationsScreen": {
-    "trainer": "מאמן",
     "title": "ההזמנות שלי",
+    "trainer": "מאמן",
+    "noParticipantsYet": "עדיין אין משתתפים",
+    "previousCancellations": "פעולות ביטול הזמנה קודמות",
+    "cancelTime": "זמן ביטול",
+    "punished": "עונש",
+    "notPunished": "לא הוענש",
     "errorFetchingReservations": "שגיאה בשליפת הזמנות:",
     "cancellationWarning": "אזהרת ביטול",
     "cancellationWarningMessage": "אתה עומד לבטל הזמנה זו בתוך 6 שעות מהזמן המתוכנן. לא תקבל החזר של הקרדיט שלך אם תמשיך. האם אתה בטוח שברצונך להמשיך?",
@@ -95,10 +100,10 @@
       "unknown": "לא ידוע"
     },
     "requestNumber": "בקשה מספר \u200F{{id}}\u200E",
-    "subscriptionType": "סוג מנוי: \u200F{{type}}\u200E",
+    "subscriptionTypeId": "סוג מנוי: \u200F{{type}}\u200E",
     "dateAtTime": "תאריך: \u200F{{date}}\u200E בשעה \u200F{{time}}\u200E"
   },
-  "subscriptionTypes": {
+  "subscriptionTypeIds": {
       "daily": "יומי",
       "monthly": "חודשי",
       "weekly": "שבועי",
@@ -184,6 +189,8 @@
     "title": "ניהול הזמנות"
   },
   "cancellationWarningMessageSimple": "האם אתה בטוח שברצונך לבטל? לא תקבל החזר.",
+  "prev": "הקודם",
+  "next": "הבא",
   "you": "אתה/את",
   "logout": "התנתק",
   "changeLanguage": "שנה שפה",
@@ -193,6 +200,8 @@
   "delete": "למחוק",
   "save": "שמור",
   "yes": "כן",
+  "active": "פעיל",
+  "canceled": "מבוטל",
   "confirm": "אישור",
   "nothingToSee": "אין מה לראות כאן",
   "success": "הצלחה",

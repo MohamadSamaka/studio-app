@@ -5,7 +5,7 @@ class NotificationRepository {
   async findAll(userId) {
     return await Notification.findAll({
       where: {
-        user_id: userId,
+        userId: userId,
         read: false,
       },
     });

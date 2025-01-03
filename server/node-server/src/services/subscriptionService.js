@@ -18,8 +18,7 @@ class SubscriptionService {
       // Validate unique constraints or other combinations here
       const existingSubscription = await subscriptionRepository.findOne({
         where: {
-          // Example condition: Assuming `meetings_num` and `price` combination must be unique
-          meetings_num: Math.floor(data.meetings_num),
+          meetingsNum: Math.floor(data.meetingsNum),
           price: data.price,
         },
       });

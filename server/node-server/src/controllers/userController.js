@@ -62,7 +62,7 @@ class UserController {
         message: 'Language updated successfully.',
         user: {
           id: updatedUser.id,
-          default_lang: updatedUser.default_lang,
+          defaultLang: updatedUser.defaultLang,
         },
       });
     } catch (error) {

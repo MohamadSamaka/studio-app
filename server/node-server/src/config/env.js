@@ -1,51 +1,61 @@
-if (process.env.NODE_ENV !== 'production') {
-    require('dotenv').config();
+const path = require("path");
+
+const envFilePath = path.join(__dirname, "..", "..", "..", ".env");
+
+if (process.env.NODE_ENV !== "production") {
+  require("dotenv").config({ path: envFilePath });
+}
+
+const configManager = require("../utils/configManager");
+
+// Load the configuration from the JSON file
+configManager.loadConfig();
+
+// Fetch the loaded configuration
+const CONFIG = configManager.getConfig();
+const RESERVATIONS_CONFIG = CONFIG.reservations;
+
+// Construct DATABASE_URL if not provided
+let DATABASE_URL = process.env.DATABASE_URL;
+if (!DATABASE_URL) {
+  const dbUser = process.env.DB_USER;
+  const dbPassword = process.env.DB_PASSWORD;
+  const dbHost = process.env.DB_HOST;
+  const dbName = process.env.DB_NAME;
+
+  if (dbUser && dbPassword && dbHost && dbName) {
+    DATABASE_URL = `mysql://${dbUser}:${dbPassword}@${dbHost}:3306/${dbName}`;
+  } else {
+    throw new Error(
+      "Database configuration is missing. Please provide DATABASE_URL or DB_USER, DB_PASSWORD, DB_HOST, and DB_NAME."
+    );
   }
-  
-  const configManager = require('../utils/configManager');
-  
-  // Load the configuration from the JSON file
-  configManager.loadConfig();
-  
-  // Fetch the loaded configuration
-  const CONFIG = configManager.getConfig();
-  const RESERVATIONS_CONFIG = CONFIG.reservations;
-  
-  // Construct DATABASE_URL if not provided
-  let DATABASE_URL = process.env.DATABASE_URL;
-  if (!DATABASE_URL) {
-    const dbUser = process.env.DB_USER;
-    const dbPassword = process.env.DB_PASSWORD;
-    const dbHost = process.env.DB_HOST;
-    const dbName = process.env.DB_NAME;
-    if (dbUser && dbPassword && dbHost && dbName) {
-      DATABASE_URL = `mysql://${dbUser}:${dbPassword}@${dbHost}:3306/${dbName}`;
-    } else {
-      throw new Error('Database configuration is missing. Please provide DATABASE_URL or DB_USER, DB_PASSWORD, DB_HOST, and DB_NAME.');
-    }
-  }
-  
-  module.exports = {
-    DATABASE_URL,
-    PORT: process.env.port || 3000,
-    ACCESS_TOKEN_SECRET: process.env.ACCESS_TOKEN_SECRET || "",
-    PASSWORD_HASHING_SEED: Number(process.env.PASSWORD_HASHING_SEED),
-    REFRESH_TOKEN_SECRET: process.env.REFRESH_TOKEN_SECRET || "",
-    TOKEN_EXPIRATION: process.env.TOKEN_EXPIRATION || "1h",
-    REFRESH_TOKEN_EXPIRATION: process.env.REFRESH_TOKEN_EXPIRATION || "7d",
-    ALLOWED_ORIGINS: process.env.ALLOWED_ORIGINS
-    ? process.env.ALLOWED_ORIGINS.split(',').map(origin => origin.trim())
+}
+
+module.exports = {
+  PORT: process.env.port || 3000,
+  DATABASE_URL,
+  DB_USER: process.env.DB_USER,
+  DB_PASSWORD: process.env.DB_PASSWORD,
+  DB_HOST: process.env.DB_HOST,
+  DB_NAME: process.env.DB_NAME,
+  ACCESS_TOKEN_SECRET: process.env.ACCESS_TOKEN_SECRET || "",
+  PASSWORD_HASHING_SEED: Number(process.env.PASSWORD_HASHING_SEED),
+  REFRESH_TOKEN_SECRET: process.env.REFRESH_TOKEN_SECRET || "",
+  TOKEN_EXPIRATION: process.env.TOKEN_EXPIRATION || "1h",
+  REFRESH_TOKEN_EXPIRATION: process.env.REFRESH_TOKEN_EXPIRATION || "7d",
+  ALLOWED_ORIGINS: process.env.ALLOWED_ORIGINS
+    ? process.env.ALLOWED_ORIGINS.split(",").map((origin) => origin.trim())
     : [],
-    
-    // Merge environment variables with JSON config values (give precedence to environment variables)
-    RESERVATIONS_CANCELLATION_REFUND_THRESHOLD_TIME:
-      process.env.RESERVATIONS_CANCELLATION_REFUND_THRESHOLD_TIME ||
-      RESERVATIONS_CONFIG['cancelation-refund-threshold-time'],
-    RESERVATIONS_MAX_USERS_PER_RESERVATION:
-      process.env.RESERVATIONS_MAX_USERS_PER_RESERVATION ||
-      RESERVATIONS_CONFIG['max-users-per-reservation'],
-    RESERVATIONS_TIMESLOTS_DURATION:
-      process.env.RESERVATIONS_TIMESLOTS_DURATION ||
-      RESERVATIONS_CONFIG['timeslots-duration'],
-  };
-  
+
+  // Merge environment variables with JSON config values (give precedence to environment variables)
+  RESERVATIONS_CANCELLATION_REFUND_THRESHOLD_TIME:
+    process.env.RESERVATIONS_CANCELLATION_REFUND_THRESHOLD_TIME ||
+    RESERVATIONS_CONFIG["cancelation-refund-threshold-time"],
+  RESERVATIONS_MAX_USERS_PER_RESERVATION:
+    process.env.RESERVATIONS_MAX_USERS_PER_RESERVATION ||
+    RESERVATIONS_CONFIG["max-users-per-reservation"],
+  RESERVATIONS_TIMESLOTS_DURATION:
+    process.env.RESERVATIONS_TIMESLOTS_DURATION ||
+    RESERVATIONS_CONFIG["timeslots-duration"],
+};

@@ -1,4 +1,3 @@
-// scripts/migrate.js
 const { sequelize } = require('../models/index'); // Adjust the path if necessary
 
 async function migrate() {

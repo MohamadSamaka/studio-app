@@ -70,8 +70,8 @@ export const fetchAvailabiltyExceptions = async () => {
     businessHours[item.date] = {
       id: item.id,
       closed: item.is_closed, // If is_closed is true, open should be false
-      // Only include start_time and end_time if they exist
-      ...(item.start_time && { start_time: item.start_time }),
+      // Only include startTime and end_time if they exist
+      ...(item.startTime && { startTime: item.startTime }),
       ...(item.end_time && { end_time: item.end_time }),
       AvailabilityExceptionBreaks: item.AvailabilityExceptionBreaks || [], // Default to an empty array if no breaks
     };

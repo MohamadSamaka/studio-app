@@ -37,8 +37,8 @@ const SubscriptionManagementScreen = () => {
   const [selectedSubscription, setSelectedSubscription] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [newSubscription, setNewSubscription] = useState({
-    subscription_name: "",
-    meetings_num: 0,
+    subscriptionName: "",
+    meetingsNum: 0,
     price: 1.0,
     active: true,
   });
@@ -162,8 +162,8 @@ const SubscriptionManagementScreen = () => {
         onPress={() => setSelectedSubscription(item)}
         style={styles.row}
       >
-        <Text style={styles.cell}>{item.subscription_name}</Text>
-        <Text style={styles.cell}>{item.meetings_num}</Text>
+        <Text style={styles.cell}>{item.subscriptionName}</Text>
+        <Text style={styles.cell}>{item.meetingsNum}</Text>
         <Text style={styles.cell}>₪ {item.price.toFixed(2)}</Text>
         <View style={styles.actions}>
           <IconButton
@@ -205,12 +205,12 @@ const SubscriptionManagementScreen = () => {
     if (selectedSubscription) {
       setSelectedSubscription({
         ...selectedSubscription,
-        meetings_num: parseInt(meetingNumb),
+        meetingsNum: parseInt(meetingNumb),
       });
     } else {
       setNewSubscription({
         ...newSubscription,
-        meetings_num: parseInt(meetingNumb),
+        meetingsNum: parseInt(meetingNumb),
       });
     }
   };
@@ -252,7 +252,7 @@ const SubscriptionManagementScreen = () => {
               <MaterialCommunityIcons name="plus" size={24} color="#fff" />
             )}
             onPress={() => {
-              setNewSubscription({ meetings_num: 0, price: 1.0, active: true });
+              setNewSubscription({ meetingsNum: 0, price: 1.0, active: true });
               setSelectedSubscription(null);
               setIsModalVisible(true);
             }}
@@ -281,18 +281,18 @@ const SubscriptionManagementScreen = () => {
                   label="Name"
                   value={
                     selectedSubscription
-                      ? selectedSubscription.subscription_name
-                      : newSubscription.subscription_name
+                      ? selectedSubscription.subscriptionName
+                      : newSubscription.subscriptionName
                   }
                   onChangeText={(value) =>
                     selectedSubscription
                       ? setSelectedSubscription({
                           ...selectedSubscription,
-                          subscription_name: value,
+                          subscriptionName: value,
                         })
                       : setNewSubscription({
                           ...newSubscription,
-                          subscription_name: value,
+                          subscriptionName: value,
                         })
                   }
                   style={styles.input}
@@ -301,8 +301,8 @@ const SubscriptionManagementScreen = () => {
                 <TextInput
                   label="Number of Meetings"
                   value={(selectedSubscription
-                    ? selectedSubscription.meetings_num
-                    : newSubscription.meetings_num
+                    ? selectedSubscription.meetingsNum
+                    : newSubscription.meetingsNum
                   ).toString()}
                   onChangeText={(text) => handleNumberOfMeetingsChange(text)}
                   keyboardType="numeric"

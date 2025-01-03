@@ -5,7 +5,7 @@ class DeviceRepository {
   async findAll(userId) {
     await Device.findAll({
       where: {
-        user_id: userId,
+        userId: userId,
       },
     });
   }

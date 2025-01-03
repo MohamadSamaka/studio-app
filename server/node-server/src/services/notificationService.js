@@ -48,7 +48,7 @@ class NotificationService {
           "YYYY-MM-DD"
         );
         const formattedTime = moment(
-          reservationDetails.start_time,
+          reservationDetails.startTime,
           "HH:mm:ss"
         ).format("hh:mm A");
 
@@ -58,7 +58,7 @@ class NotificationService {
         // Fetch Expo push tokens for the user
         const devices = await Device.findAll({
           where: {
-            user_id: userId,
+            userId: userId,
           },
         });
         devices.forEach((device) => {
@@ -85,7 +85,7 @@ class NotificationService {
         });
         // Create notification record in your database for each user
         this.createNotification({
-          user_id: userId,
+          userId: userId,
           title: notificationTitle,
           content: notificationContent,
           icon: "alert-circle-outline",

@@ -85,12 +85,12 @@ class RechargeCreditRequestService {
 
       // Fetch associated user and subscription
       const user = await rechargeCreditRequestRepository.findUserById(
-        rechargeRequest.users_id,
+        rechargeRequest.userId,
         transaction
       );
       const subscription =
         await rechargeCreditRequestRepository.findSubscriptionById(
-          rechargeRequest.subscription_type,
+          rechargeRequest.subscriptionTypeId,
           transaction
         );
 
@@ -98,7 +98,7 @@ class RechargeCreditRequestService {
         throw new Error("User or subscription not found");
       }
 
-      const subscriptionCredits = subscription.meetings_num; // Number of credits from subscription
+      const subscriptionCredits = subscription.meetingsNum; // Number of credits from subscription
 
       // Handle credits when transitioning states
       if (status === "awaiting_payment") {

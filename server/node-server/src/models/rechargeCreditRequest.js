@@ -1,52 +1,56 @@
-const { Model, DataTypes } = require('sequelize');
+const { Model, DataTypes } = require("sequelize");
+const sequelize = require("../config/database");
 
-const sequelize = require('../config/database');
+class RechargeCreditRequest extends Model {}
 
-class RechargeCreditRequest extends Model { }
-
-RechargeCreditRequest.init({
+RechargeCreditRequest.init(
+  {
     id: {
-        type: DataTypes.INTEGER,
-        autoIncrement: true,
-        primaryKey: true,
+      type: DataTypes.INTEGER,
+      autoIncrement: true,
+      primaryKey: true,
     },
-    users_id: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
+    userId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
     },
-    subscription_type: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
+    subscriptionTypeId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
     },
     date: {
-        type: DataTypes.DATEONLY,
-        allowNull: false,
-        defaultValue: DataTypes.NOW,
+      type: DataTypes.DATEONLY,
+      allowNull: false,
+      defaultValue: DataTypes.NOW,
     },
     time: {
-        type: DataTypes.TIME,
-        allowNull: false,
-        defaultValue: () => new Date().toLocaleTimeString('en-GB', { hour12: false }),
+      type: DataTypes.TIME,
+      allowNull: false,
+      defaultValue: () => {
+        const now = new Date();
+        return now.toTimeString().split(" ")[0]; // Format: "HH:mm:ss"
+      },
     },
     status: {
-        type: DataTypes.ENUM('pending', 'awaiting_payment', 'success', 'failed'),
-        allowNull: false,
-        defaultValue: 'pending', // Default to pending
+      type: DataTypes.ENUM("pending", "awaiting_payment", "success", "failed"),
+      allowNull: false,
+      defaultValue: "pending",
     },
-}, {
+  },
+  {
     sequelize,
-    modelName: 'RechargeCreditRequest',
+    tableName: "RechargeCreditRequests",
+    modelName: "RechargeCreditRequest",
     timestamps: false,
     indexes: [
-        {
-            fields: ['users_id'],
-            // name: "fk_recharge_credit_requests_users1_idx"
-        },
-        {
-            fields: ['subscription_type'],
-            // name: "fk_recharge_credit_requests_subscriptions1_idx"
-        },
+      {
+        fields: ["userId"],
+      },
+      {
+        fields: ["subscriptionTypeId"],
+      },
     ],
-});
+  }
+);
 
 module.exports = RechargeCreditRequest;

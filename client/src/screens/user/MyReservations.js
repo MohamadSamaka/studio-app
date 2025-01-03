@@ -1,18 +1,17 @@
-// ReservationsScreen.js
 import React, { useState, useEffect, useCallback } from "react";
 import {
   SafeAreaView,
-  FlatList,
-  StyleSheet,
-  Text,
   View,
-  TouchableOpacity,
-  Modal,
-  ScrollView,
-  Animated,
+  StyleSheet,
   Dimensions,
-  I18nManager,
+  FlatList,
+  TouchableOpacity,
+  ScrollView,
+  Modal,
+  Animated,
   ActivityIndicator,
+  I18nManager,
+  Text,
 } from "react-native";
 import {
   Searchbar,
@@ -20,73 +19,94 @@ import {
   Avatar,
   Button,
   Divider,
-  Snackbar, // Imported Snackbar
+  Snackbar,
 } from "react-native-paper";
+import { TabView, TabBar, SceneMap } from "react-native-tab-view";
+
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import AppBar from "../../components/common/AppBar";
-import {
-  getUserReservations,
-  cancelUserReservation,
-} from "../../utils/axios";
-import { useUserContext } from "../../contexts/UserContext";
-import { useTranslation } from "react-i18next";
-import { useConfigContext } from "../../contexts/ConfigContext";
-import { isWithinThreshold } from "../../utils/validationUtils";
 import moment from "moment";
-import { isDateTimePast } from "../../utils/timeUtils";
+
+// Import your context / hooks
+import { useUserContext } from "../../contexts/UserContext";
+import { useConfigContext } from "../../contexts/ConfigContext";
+import { useTranslation } from "react-i18next";
+import AppBar from "../../components/common/AppBar";
 import ConfirmationModal from "../../components/common/ConfirmationModal";
 
+// Import your API methods
+import {
+  getUserReservations, // Suppose this returns { activeReservations: [], canceledReservations: [] }
+  cancelUserReservation,
+} from "../../utils/axios";
 
+import { isWithinThreshold } from "../../utils/validationUtils";
+import { isDateTimePast } from "../../utils/timeUtils";
+
+const { height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 const MyReservationsScreen = () => {
   const { t } = useTranslation();
   const { user, updateCredits } = useUserContext();
   const { config, loading: configLoading } = useConfigContext();
+  const theme = useTheme();
+
+  // Cancel threshold from config
   const [cancelRefundThreshold, setCancelRefundThreshold] = useState(null);
-  const [reservations, setReservations] = useState([]);
+
+  // We store two arrays from backend
+  const [activeReservations, setActiveReservations] = useState([]);
+  const [canceledReservations, setCanceledReservations] = useState([]);
+
+  // Searching
   const [searchQuery, setSearchQuery] = useState("");
+
+  // Participants modal
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedParticipants, setSelectedParticipants] = useState([]);
   const [fadeAnim] = useState(new Animated.Value(0));
+
+  // Confirmation modal
   const [confirmationModalVisible, setConfirmationModalVisible] = useState(false);
   const [confirmationModalProps, setConfirmationModalProps] = useState({});
-  const theme = useTheme();
-  const { height } = Dimensions.get("window");
 
-  // **Snackbar State for Success Messages**
+  // Snackbar for success / error
   const [snackbarVisibleSuccess, setSnackbarVisibleSuccess] = useState(false);
   const [snackbarMessageSuccess, setSnackbarMessageSuccess] = useState("");
-
-  // **Snackbar State for Error Messages**
   const [snackbarVisibleError, setSnackbarVisibleError] = useState(false);
   const [snackbarMessageError, setSnackbarMessageError] = useState("");
 
-  // **Snackbar Helper Functions for Success Messages**
-  const showSuccessSnackbar = (message) => {
-    setSnackbarMessageSuccess(message);
+  // For the tab switching (active vs canceled)
+  const [tabIndex, setTabIndex] = useState(0);
+  const [routes] = useState([
+    { key: "active", title: t("active") },
+    { key: "canceled", title: t("canceled") },
+  ]);
+
+  // ================================
+  // SNACKBAR Helpers
+  // ================================
+  const showSuccessSnackbar = (msg) => {
+    setSnackbarMessageSuccess(msg);
     setSnackbarVisibleSuccess(true);
   };
+  const hideSuccessSnackbar = () => setSnackbarVisibleSuccess(false);
 
-  const hideSuccessSnackbar = () => {
-    setSnackbarVisibleSuccess(false);
-  };
-
-  // **Snackbar Helper Functions for Error Messages**
-  const showErrorSnackbar = (message) => {
-    setSnackbarMessageError(message);
+  const showErrorSnackbar = (msg) => {
+    setSnackbarMessageError(msg);
     setSnackbarVisibleError(true);
   };
+  const hideErrorSnackbar = () => setSnackbarVisibleError(false);
 
-  const hideErrorSnackbar = () => {
-    setSnackbarVisibleError(false);
-  };
-
+  // ================================
+  // FETCH & SETUP
+  // ================================
   useEffect(() => {
     if (config && config.reservations) {
-      const thresholdTime = config.reservations["cancelation-refund-threshold-time"];
-      if (thresholdTime) setCancelRefundThreshold(thresholdTime); // Setting threshold properly
+      const thresholdTime =
+        config.reservations["cancelation-refund-threshold-time"];
+      if (thresholdTime) setCancelRefundThreshold(thresholdTime);
     }
-  }, [config, configLoading]); // Make sure config and configLoading are dependencies
+  }, [config, configLoading]);
 
   useEffect(() => {
     if (user) fetchUserReservations();
@@ -94,25 +114,32 @@ const MyReservationsScreen = () => {
 
   const fetchUserReservations = async () => {
     try {
+      // Suppose this returns { activeReservations, canceledReservations }
       const response = await getUserReservations();
-      const userReservations = response.data;
-      setReservations(userReservations);
+      setActiveReservations(response.data.activeReservations);
+      setCanceledReservations(response.data.canceledReservations);
     } catch (error) {
       console.error("Error fetching reservations:", error);
       showErrorSnackbar(t("myReservationsScreen.errorFetchingReservations"));
     }
   };
 
+  // ================================
+  // CANCEL & CONFIRMATION
+  // ================================
   const handleReservationCancellation = useCallback(
     async (reservation, shouldUpdateCredits) => {
       try {
-        if (reservation) {
-          await cancelUserReservation(reservation.id);
-          setReservations((prev) => prev.filter((r) => r.id !== reservation.id));
+        // Actually call your cancel endpoint
+        await cancelUserReservation(reservation.id);
+        // Remove from activeReservations
+        setActiveReservations((prev) => prev.filter((r) => r.id !== reservation.id));
+        // Possibly add it to canceled reservations array
+        // or re-fetch from backend to keep data consistent
+        await fetchUserReservations();
 
-          if (shouldUpdateCredits) {
-            updateCredits(+1);
-          }
+        if (shouldUpdateCredits) {
+          updateCredits(+1);
         }
       } catch (error) {
         console.error("Error cancelling reservation:", error);
@@ -125,19 +152,16 @@ const MyReservationsScreen = () => {
   const handleCancelReservation = useCallback(
     (reservation) => {
       let modalTitle = t("myReservationsScreen.areYouSure");
-      let modalMessage = t(
-        "myReservationsScreen.deleteReservationConfirmation",
-        {
-          date: reservation.date,
-          time: reservation.start_time,
-        }
-      );
+      let modalMessage = t("myReservationsScreen.deleteReservationConfirmation", {
+        date: reservation.date,
+        time: reservation.startTime,
+      });
 
       let shouldUpdateCredits = true;
       if (
         !isWithinThreshold(
           reservation.date,
-          reservation.start_time,
+          reservation.startTime,
           cancelRefundThreshold
         )
       ) {
@@ -153,25 +177,18 @@ const MyReservationsScreen = () => {
         cancelText: t("myReservationsScreen.noKeepReservation"),
         onConfirm: async () => {
           try {
-            await handleReservationCancellation(
-              reservation,
-              shouldUpdateCredits
-            );
+            await handleReservationCancellation(reservation, shouldUpdateCredits);
             showSuccessSnackbar(
               t("myReservationsScreen.reservationCancelledSuccessfully")
             );
           } catch (error) {
             console.error("Error cancelling reservation:", error);
-            showErrorSnackbar(
-              t("myReservationsScreen.failedToCancelReservation")
-            );
+            showErrorSnackbar(t("myReservationsScreen.failedToCancelReservation"));
           } finally {
             setConfirmationModalVisible(false);
           }
         },
-        onCancel: () => {
-          setConfirmationModalVisible(false); // Only dismisses the modal
-        },
+        onCancel: () => setConfirmationModalVisible(false),
       });
 
       setConfirmationModalVisible(true);
@@ -179,14 +196,12 @@ const MyReservationsScreen = () => {
     [t, handleReservationCancellation, cancelRefundThreshold]
   );
 
+  // ================================
+  // PARTICIPANTS MODAL
+  // ================================
   const handleShowAllParticipants = useCallback(
     (participants) => {
-      const sortedParticipants = participants.slice().sort((a, b) => {
-        if (a === "admin") return -1;
-        if (b === "admin") return 1;
-        return a.localeCompare(b);
-      });
-      setSelectedParticipants(sortedParticipants);
+      setSelectedParticipants(participants);
       setModalVisible(true);
       Animated.timing(fadeAnim, {
         toValue: 1,
@@ -197,36 +212,37 @@ const MyReservationsScreen = () => {
     [fadeAnim]
   );
 
+  // ================================
+  // RENDERING
+  // ================================
   const renderParticipants = useCallback(
     (participants) => {
-      const you = t("you");
-      const updatedParticipants = [you, ...participants];
-      const displayedParticipants = updatedParticipants.slice(0, 3);
-      const remainingParticipants =
-        updatedParticipants.length - displayedParticipants.length;
-
+      // Just an example: show first 3, then "more"
+      const displayed = participants.slice(0, 3);
+      const remaining = participants.length - displayed.length;
       return (
         <View style={styles.participantsList}>
-          {displayedParticipants.map((user, index) => (
-            <Avatar.Text
-              key={`${user}-${index}`}
-              size={30}
-              label={user.charAt(0).toUpperCase()}
-              style={[
-                styles.participantAvatar,
-                { backgroundColor: theme.colors.accent },
-              ]}
-              labelStyle={styles.avatarText}
-            />
-          ))}
-          {remainingParticipants > 0 && (
-            <TouchableOpacity
-              onPress={() => handleShowAllParticipants(updatedParticipants)}
-            >
+          {displayed.length <= 0 ? (
+            <Text style={styles.emptyReservationText}>
+              {t("myReservationsScreen.noParticipantsYet")}
+            </Text>
+          ) : (
+            displayed.map((user, idx) => (
+              <Avatar.Text
+                key={`${user}-${idx}`}
+                size={30}
+                label={user.charAt(0).toUpperCase()}
+                style={[styles.participantAvatar, { backgroundColor: theme.colors.accent }]}
+                labelStyle={styles.avatarText}
+              />
+            ))
+          )}
+          {remaining > 0 && (
+            <TouchableOpacity onPress={() => handleShowAllParticipants(participants)}>
               <View style={styles.moreParticipantsChip}>
                 <Text style={styles.moreParticipantsText}>
                   {t("myReservationsScreen.moreParticipants", {
-                    count: remainingParticipants,
+                    count: remaining,
                   })}
                 </Text>
               </View>
@@ -239,29 +255,18 @@ const MyReservationsScreen = () => {
   );
 
   const renderReservation = useCallback(
-    ({ item }) => {
-      // Validate item properties to avoid undefined errors
-      if (!item) return null;
+    ({ item, fromActiveTab }) => {
+      const { date, startTime, duration, trainer, participants, ghostInfo } = item;
 
-      const { date, start_time, duration, trainer, participants } = item;
-
-      if (!date || !start_time || !duration) {
-        console.error("Missing required reservation details:", item);
-        return null; // If any essential detail is missing, skip rendering this item
-      }
-
-      const startTime = moment(start_time, "HH:mm:ss");
+      // Compute times
+      const startTimeMoment = moment(startTime, "HH:mm:ss");
       const durationMoment = moment.duration(duration);
-      const endTime = startTime.clone().add(durationMoment);
+      const endTime = startTimeMoment.clone().add(durationMoment);
 
       return (
         <View style={styles.card}>
           <View style={styles.cardHeader}>
-            <MaterialCommunityIcons
-              name="calendar"
-              size={24}
-              color={theme.colors.primary}
-            />
+            <MaterialCommunityIcons name="calendar" size={24} color={theme.colors.primary} />
             <View style={styles.dateTimeContainer}>
               <Text style={styles.dateText}>{date}</Text>
               <View style={styles.timeRow}>
@@ -272,8 +277,7 @@ const MyReservationsScreen = () => {
                   style={styles.timeIcon}
                 />
                 <Text style={styles.timeText}>
-                  {t("myReservationsScreen.startTime")}{" "}
-                  {startTime.format("HH:mm")}
+                  {t("myReservationsScreen.startTime")} {startTimeMoment.format("HH:mm")}
                 </Text>
               </View>
               <View style={styles.timeRow}>
@@ -288,56 +292,64 @@ const MyReservationsScreen = () => {
                 </Text>
               </View>
             </View>
-
-            {!isDateTimePast(date, start_time) && ( // if it's a past reservation, don't allow user to cancel it
+            {/* If fromActiveTab, show cancel button if it's future */}
+            {fromActiveTab && !isDateTimePast(date, startTime) && (
               <TouchableOpacity
-              onPress={() => handleCancelReservation(item)}
-              style={styles.cancelButton}
-              accessibilityLabel={`Cancel reservation on ${date} at ${start_time}`}
-            >
-              <MaterialCommunityIcons
-                name="trash-can-outline"
-                size={24}
-                color="#C70000"
-              />
-            </TouchableOpacity>
+                onPress={() => handleCancelReservation(item)}
+                style={styles.cancelButton}
+              >
+                <MaterialCommunityIcons name="trash-can-outline" size={24} color="#C70000" />
+              </TouchableOpacity>
             )}
-
           </View>
+          {/* Trainer row */}
           <View style={styles.trainerContainer}>
-            <MaterialCommunityIcons
-              name="account-tie"
-              size={24}
-              color={theme.colors.primary}
-            />
+            <MaterialCommunityIcons name="account-tie" size={24} color={theme.colors.primary} />
             <Text style={styles.trainerText}>
-              {t("myReservationsScreen.trainer")}: {trainer ? trainer : "N/A"}
+              {t("myReservationsScreen.trainer")}: {trainer || "N/A"}
             </Text>
           </View>
+          {/* Participants row */}
           <View style={styles.participantsContainer}>
-            <MaterialCommunityIcons
-              name="account-group"
-              size={24}
-              color={theme.colors.primary}
-            />
+            <MaterialCommunityIcons name="account-group" size={24} color={theme.colors.primary} />
             {renderParticipants(participants || [])}
           </View>
+
+          {/* If ghostInfo is present (the user canceled previously), show some info */}
+          {ghostInfo && ghostInfo.length > 0 && (
+            <View style={styles.ghostLogsContainer}>
+              <Text style={styles.ghostLogsTitle}>
+                {t("myReservationsScreen.previousCancellations")} ({ghostInfo.length})
+              </Text>
+              {ghostInfo.map((log, idx) => (
+                <View key={idx} style={styles.ghostLogItem}>
+                  <MaterialCommunityIcons
+                    name={log.punished ? "alert-circle" : "check-circle"}
+                    size={20}
+                    color={log.punished ? "#f44336" : "#4CAF50"}
+                  />
+                  <Text style={styles.ghostLogText}>
+                    {t("myReservationsScreen.cancelTime")} {log.cancellationTime} -{" "}
+                    {log.punished ? t("myReservationsScreen.punished") : t("myReservationsScreen.notPunished")}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          )}
         </View>
       );
     },
     [theme.colors.primary, handleCancelReservation, renderParticipants, t]
   );
 
+  // For the participants modal
   const renderParticipantListItem = useCallback(
     (user) => (
       <View key={user} style={styles.participantListItem}>
         <Avatar.Text
           size={40}
           label={user.charAt(0).toUpperCase()}
-          style={[
-            styles.participantAvatarLarge,
-            { backgroundColor: theme.colors.primary },
-          ]}
+          style={[styles.participantAvatarLarge, { backgroundColor: theme.colors.primary }]}
           labelStyle={styles.avatarTextLarge}
         />
         <Text style={styles.participantName}>{user}</Text>
@@ -346,17 +358,87 @@ const MyReservationsScreen = () => {
     [theme.colors.primary]
   );
 
-  const filteredReservations = reservations.filter(
-    (reservation) =>
-      reservation.date.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (reservation.trainer &&
-        reservation.trainer.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      (reservation.participants &&
-        reservation.participants.some((user) =>
-          user.toLowerCase().includes(searchQuery.toLowerCase())
-        ))
+  // ================================
+  // FILTERS & SEARCH
+  // ================================
+  // Filter for searching
+  const filterBySearch = (reservationsList) => {
+    if (!searchQuery) return reservationsList;
+
+    return reservationsList.filter((res) => {
+      const inDate = res.date.toLowerCase().includes(searchQuery.toLowerCase());
+      const inTrainer =
+        (res.trainer && res.trainer.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        false;
+      const inParticipants =
+        (res.participants &&
+          res.participants.some((p) =>
+            p.toLowerCase().includes(searchQuery.toLowerCase())
+          )) ||
+        false;
+      return inDate || inTrainer || inParticipants;
+    });
+  };
+
+  // Final lists to show:
+  const activeList = filterBySearch(activeReservations);
+  const canceledList = filterBySearch(canceledReservations);
+
+  // Tab Scenes
+  const renderActiveScene = () => (
+    <FlatList
+      data={activeList}
+      keyExtractor={(item) => item.id.toString()}
+      renderItem={(info) => renderReservation({ ...info, fromActiveTab: true })}
+      contentContainerStyle={styles.listContainer}
+      ListEmptyComponent={() => (
+        <Text style={styles.noReservationsText}>
+          {t("myReservationsScreen.noCurrentBooking")}
+        </Text>
+      )}
+    />
   );
 
+  const renderCanceledScene = () => (
+    <FlatList
+      data={canceledList}
+      keyExtractor={(item) => item.id.toString()}
+      renderItem={(info) => renderReservation({ ...info, fromActiveTab: false })}
+      contentContainerStyle={styles.listContainer}
+      ListEmptyComponent={() => (
+        <Text style={styles.noReservationsText}>
+          {t("myReservationsScreen.noCanceledBooking")}
+        </Text>
+      )}
+    />
+  );
+
+  // TabView's main renderScene
+  const renderScene = ({ route }) => {
+    switch (route.key) {
+      case "active":
+        return renderActiveScene();
+      case "canceled":
+        return renderCanceledScene();
+      default:
+        return null;
+    }
+  };
+
+  // Custom TabBar
+  const renderTabBar = (props) => (
+    <TabBar
+      {...props}
+      indicatorStyle={{ backgroundColor: theme.colors.primary }}
+      style={{ backgroundColor: "#fff" }}
+      activeColor={theme.colors.primary}
+      inactiveColor="#999"
+    />
+  );
+
+  // ================================
+  // MAIN COMPONENT RENDER
+  // ================================
   if (configLoading) {
     return (
       <View style={styles.loadingContainer}>
@@ -366,6 +448,7 @@ const MyReservationsScreen = () => {
   }
 
   if (!user) {
+    // If user not logged in, prompt
     return (
       <SafeAreaView style={styles.safeArea}>
         <AppBar />
@@ -375,8 +458,7 @@ const MyReservationsScreen = () => {
           </Text>
           <TouchableOpacity
             style={styles.loginButton}
-            onPress={() => navigation.navigate("Login")} // Ensure 'navigation' is defined or use useNavigation hook
-            accessibilityLabel="Navigate to Login Screen"
+            onPress={() => navigation.navigate("Login")} // or use useNavigation
           >
             <Text style={styles.loginButtonText}>
               {t("myReservationsScreen.login")}
@@ -390,6 +472,8 @@ const MyReservationsScreen = () => {
   return (
     <SafeAreaView style={styles.safeArea}>
       <AppBar />
+
+      {/* Searchbar */}
       <Searchbar
         placeholder={t("myReservationsScreen.searchReservations")}
         onChangeText={setSearchQuery}
@@ -402,21 +486,16 @@ const MyReservationsScreen = () => {
             color={theme.colors.placeholder}
           />
         )}
+        clearIcon="close"
       />
-      {filteredReservations.length === 0 ? (
-        <View style={styles.noReservationsContainer}>
-          <Text style={styles.noReservationsText}>
-            {t("myReservationsScreen.noCurrentBooking")}
-          </Text>
-        </View>
-      ) : (
-        <FlatList
-          data={filteredReservations}
-          keyExtractor={(item) => item.id.toString()}
-          renderItem={renderReservation}
-          contentContainerStyle={styles.listContainer}
-        />
-      )}
+
+      {/* TabView for Active vs Canceled reservations */}
+      <TabView
+        navigationState={{ index: tabIndex, routes }}
+        renderScene={renderScene}
+        onIndexChange={setTabIndex}
+        renderTabBar={renderTabBar}
+      />
 
       {/* Modal for Participants */}
       <Modal
@@ -429,7 +508,7 @@ const MyReservationsScreen = () => {
           <Animated.View
             style={[
               styles.modalContainer,
-              { opacity: fadeAnim, maxHeight: height * 0.8 },
+              { opacity: fadeAnim, maxHeight: SCREEN_HEIGHT * 0.8 },
             ]}
           >
             <Text style={styles.modalTitle}>
@@ -439,14 +518,26 @@ const MyReservationsScreen = () => {
               contentContainerStyle={styles.modalContent}
               showsVerticalScrollIndicator={false}
             >
-              {selectedParticipants.map(renderParticipantListItem)}
+              {selectedParticipants.map((user) => (
+                <View key={user} style={styles.participantListItem}>
+                  <Avatar.Text
+                    size={40}
+                    label={user.charAt(0).toUpperCase()}
+                    style={[
+                      styles.participantAvatarLarge,
+                      { backgroundColor: theme.colors.primary },
+                    ]}
+                    labelStyle={styles.avatarTextLarge}
+                  />
+                  <Text style={styles.participantName}>{user}</Text>
+                </View>
+              ))}
             </ScrollView>
             <Divider style={styles.divider} />
             <Button
               mode="contained"
               onPress={() => setModalVisible(false)}
               style={styles.closeButton}
-              accessibilityLabel="Close Participants Modal"
             >
               {t("close")}
             </Button>
@@ -454,7 +545,7 @@ const MyReservationsScreen = () => {
         </View>
       </Modal>
 
-      {/* **Success Snackbar** */}
+      {/* Success Snackbar */}
       <Snackbar
         visible={snackbarVisibleSuccess}
         onDismiss={hideSuccessSnackbar}
@@ -468,7 +559,7 @@ const MyReservationsScreen = () => {
         {snackbarMessageSuccess}
       </Snackbar>
 
-      {/* **Error Snackbar** */}
+      {/* Error Snackbar */}
       <Snackbar
         visible={snackbarVisibleError}
         onDismiss={hideErrorSnackbar}
@@ -486,7 +577,7 @@ const MyReservationsScreen = () => {
       <ConfirmationModal
         visible={confirmationModalVisible}
         onDismiss={() => setConfirmationModalVisible(false)}
-        {...confirmationModalProps} // This includes onConfirm and onCancel
+        {...confirmationModalProps}
       />
     </SafeAreaView>
   );
@@ -503,6 +594,33 @@ const styles = StyleSheet.create({
     backgroundColor: "#ffffff",
     elevation: 2,
   },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  noReservationsContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  noReservationsText: {
+    fontSize: 18,
+    color: "#7f8c8d",
+    textAlign: "center",
+  },
+  loginButton: {
+    backgroundColor: "#00adf5",
+    paddingVertical: 10,
+    paddingHorizontal: 30,
+    borderRadius: 25,
+    marginTop: 20,
+  },
+  loginButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
   listContainer: {
     padding: 16,
   },
@@ -511,10 +629,6 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     borderRadius: 12,
     backgroundColor: "#ffffff",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
     elevation: 3,
   },
   cardHeader: {
@@ -562,7 +676,7 @@ const styles = StyleSheet.create({
   participantsContainer: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 16,
+    marginBottom: 12,
   },
   participantsList: {
     flexDirection: "row",
@@ -589,19 +703,27 @@ const styles = StyleSheet.create({
     color: "#2c3e50",
     fontWeight: "600",
   },
-  noParticipantsText: {
-    marginLeft: 12,
+  ghostLogsContainer: {
+    marginTop: 8,
+    padding: 10,
+    backgroundColor: "#f0f0f0",
+    borderRadius: 8,
+  },
+  ghostLogsTitle: {
     fontSize: 14,
-    color: "#7f8c8d",
+    fontWeight: "600",
+    marginBottom: 4,
+    color: "#333",
   },
-  noReservationsContainer: {
-    flex: 1,
-    justifyContent: "center",
+  ghostLogItem: {
+    flexDirection: "row",
     alignItems: "center",
+    marginVertical: 2,
   },
-  noReservationsText: {
-    fontSize: 18,
-    color: "#7f8c8d",
+  ghostLogText: {
+    marginLeft: 6,
+    fontSize: 14,
+    color: "#555",
   },
   modalOverlay: {
     flex: 1,
@@ -615,14 +737,6 @@ const styles = StyleSheet.create({
     padding: 20,
     width: "90%",
     maxWidth: 400,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
   },
   modalTitle: {
     fontSize: 20,
@@ -649,40 +763,22 @@ const styles = StyleSheet.create({
     fontWeight: "500",
     color: "#2c3e50",
   },
+  avatarTextLarge: {
+    color: "#ffffff",
+    fontWeight: "600",
+  },
   divider: {
     marginVertical: 10,
   },
   closeButton: {
     marginTop: 16,
-  },
-  avatarTextLarge: {
-    color: "#ffffff",
-    fontWeight: "600",
-  },
-  snackbarSuccess: {
-    backgroundColor: "#4CAF50", // Green color for success
-  },
-  snackbarError: {
-    backgroundColor: "#F44336", // Red color for errors
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  listContainer: {
-    padding: 16,
-  },
-  loginButton: {
-    backgroundColor: "#00adf5",
-    paddingVertical: 10,
-    paddingHorizontal: 30,
     borderRadius: 25,
   },
-  loginButtonText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "bold",
+  snackbarSuccess: {
+    backgroundColor: "#4CAF50",
+  },
+  snackbarError: {
+    backgroundColor: "#F44336",
   },
 });
 

@@ -130,7 +130,7 @@ class BusinessHourService {
         open_time: this.formatTime(hour.open_time),
         close_time: this.formatTime(hour.close_time),
         breaks: (hour.breaks || []).map((b) => ({
-          start_time: this.formatTime(b.start_time),
+          startTime: this.formatTime(b.startTime),
           end_time: this.formatTime(b.end_time),
         })),
         exceptions: [],
@@ -143,7 +143,7 @@ class BusinessHourService {
           fully_closed: exceptionForThisDay.is_closed,
           ...(!exceptionForThisDay.is_closed && {
             open_time:
-              this.formatTime(exceptionForThisDay.start_time) ||
+              this.formatTime(exceptionForThisDay.startTime) ||
               dayAvailability.open_time,
             close_time:
               this.formatTime(exceptionForThisDay.end_time) ||
@@ -151,7 +151,7 @@ class BusinessHourService {
             "exceptions-breaks": (
               exceptionForThisDay.AvailabilityExceptionBreaks || []
             ).map((b) => ({
-              start_time: this.formatTime(b.start_time),
+              startTime: this.formatTime(b.startTime),
               end_time: this.formatTime(b.end_time),
             })),
           }),

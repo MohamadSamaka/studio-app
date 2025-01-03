@@ -190,7 +190,7 @@ const RechargeRequestsManagementScreen = () => {
                 <View style={styles.infoTextContainer}>
                   <Text style={styles.infoLabel}>Subscription</Text>
                   <Text style={styles.infoValue}>
-                    {selectedRequest.Subscription.subscription_name}
+                    {selectedRequest.Subscription.subscriptionName}
                   </Text>
                 </View>
               </View>
@@ -340,7 +340,7 @@ const RechargeRequestsManagementScreen = () => {
         <View style={styles.leftContent}>
           <Text style={styles.username}>{item.User.username}</Text>
           <Text style={styles.subscription}>
-            {item.Subscription.subscription_name}
+            {item.Subscription.subscriptionName}
           </Text>
           <Text style={styles.dateTime}>
             {new Date(item.date).toLocaleDateString()}
@@ -402,6 +402,7 @@ const RechargeRequestsManagementScreen = () => {
                 color={theme.colors.placeholder}
               />
             )}
+            clearIcon="close"
           />
           <View style={styles.filterContainer}>
             <Menu

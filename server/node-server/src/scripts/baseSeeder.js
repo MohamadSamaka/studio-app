@@ -22,20 +22,20 @@ async function seedDatabase() {
     predefinedUsers.push({
       username: "admin",
       password: await hashPassword("Admin"), // Use a secure password
-      role_id: adminRole.role_id,
-      phone_num: "1234567890",
+      roleId: adminRole.id,
+      phoneNum: "1234567890",
       active: true,
-      default_lang: "EN",
+      defaultLang: "EN",
       credits: 0,
     });
 
     predefinedUsers.push({
       username: "trainer",
       password: await hashPassword("Trainer"),
-      role_id: trainerRole.role_id,
-      phone_num: "1234562929",
+      roleId: trainerRole.id,
+      phoneNum: "1234562929",
       active: true,
-      default_lang: "EN",
+      defaultLang: "EN",
       credits: 0,
     });
 

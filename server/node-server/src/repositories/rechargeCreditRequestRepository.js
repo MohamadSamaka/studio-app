@@ -2,13 +2,14 @@ const RechargeCreditRequest = require("../models/rechargeCreditRequest");
 const User = require("../models/user");
 const Subscription = require("../models/subscription");
 const { Op } = require("sequelize");
+const { getCurrentTime, getCurrentDate} = require('../utils/timeUtils')
 
 class RechargeCreditRequestRepository {
   async findAll() {
     return await RechargeCreditRequest.findAll({
       include: [
         { model: User, attributes: ["username"] },
-        { model: Subscription, attributes: ["subscription_name"] },
+        { model: Subscription, attributes: ["subscriptionName"] },
       ],
       order: [
         ["date", "DESC"], // Orders by date descending (newest first)
@@ -21,7 +22,7 @@ class RechargeCreditRequestRepository {
     return await RechargeCreditRequest.findByPk(id, {
       include: [
         { model: User, attributes: ["username"] },
-        { model: Subscription, attributes: ["subscription_name"] },
+        { model: Subscription, attributes: ["subscriptionName"] },
       ],
     });
   }
@@ -33,10 +34,10 @@ class RechargeCreditRequestRepository {
   async findRequestsByUserId(userId) {
     return await RechargeCreditRequest.findAll({
       where: {
-        users_id: userId,
+        userId: userId,
         [Op.or]: [{ status: "pending" }, { status: "awaiting_payment" }],
       },
-      include: [{ model: Subscription, attributes: ["subscription_name"] }],
+      include: [{ model: Subscription, attributes: ["subscriptionName"] }],
     });
   }
 
@@ -46,10 +47,10 @@ class RechargeCreditRequestRepository {
 
   async create(data) {
     return await RechargeCreditRequest.create({
-      users_id: data.userId,
-      subscription_type: data.subscriptionType,
-      date: data.date,
-      time: data.time,
+      userId: data.userId,
+      subscriptionTypeId: data.subscriptionTypeId,
+      date: getCurrentDate(),
+      time: getCurrentTime(),
     });
   }
 

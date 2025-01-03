@@ -36,18 +36,23 @@
     "title": "Subscriptions",
     "requestResponse": {
       "success": "Subscription has been requested successfully!",
-      "failed": "Failed to request the subscription, try again later!"
+      "fail": "Failed to request the subscription, try again later!"
     },
     "noSubscriptionsAvailable": "No subscriptions available",
     "failedToLoadSubscriptions": "Error: Failed to load subscriptions.",
     "requestingConfirmationTitle": "Confirm Request",
     "meetings": "Meetings {{count}}",
     "requestingSubscription": "Request",
-    "requestingSubscriptionConfirmationMessage": "Are you sure you want to request the {{subscriptionType}} subscription?"
+    "requestingSubscriptionConfirmationMessage": "Are you sure you want to request the {{subscriptionTypeId}} subscription?"
   },
   "myReservationsScreen": {
-    "trainer": "Trainer",
     "title": "My Bookings",
+    "trainer": "Trainer",
+    "noParticipantsYet": "There is no participants yet",
+    "previousCancellations": "Previous reservation cancelation operations",
+    "cancelTime": "Cancellation Time",
+    "punished": "Punished",
+    "notPunished": "Not Punished",
     "errorFetchingReservations": "Error fetching reservations:",
     "cancellationWarning": "Cancellation Warning",
     "cancellationWarningMessage": "You are about to cancel this reservation within 6 hours of the scheduled time. You will not receive a refund of your credit if you proceed. Are you sure you want to continue?",
@@ -95,10 +100,10 @@
       "unknown": "Unknown"
     },
     "requestNumber": "Request #{{id}}",
-    "subscriptionType": "Subscription Type: {{type}}",
+    "subscriptionTypeId": "Subscription Type: {{type}}",
     "dateAtTime": "Date: {{date}} at {{time}}"
   },
-  "subscriptionTypes": {
+  "subscriptionTypeIds": {
     "daily": "Daily",
     "monthly": "Monthly",
     "weekly": "Weekly",
@@ -139,6 +144,8 @@
     "title": "Reservations Management"
   },
   "cancellationWarningMessageSimple": "Are you sure you want to cancel? You won't get a refund.",
+  "prev": "Prev",
+  "next": "Next",
   "you": "You",
   "logout": "Logout",
   "changeLanguage": "Change Language",
@@ -147,6 +154,8 @@
   "close": "Close",
   "save": "Save",
   "yes": "Yes",
+  "active": "Active",
+  "canceled": "Canceled",
   "confirm": "Confirm",
   "nothingToSee": "There is nothing to see here",
   "english": "English",

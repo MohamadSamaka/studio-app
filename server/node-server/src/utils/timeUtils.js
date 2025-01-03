@@ -1,6 +1,6 @@
 const moment = require("moment"); // Assuming you are using moment.js for date-time handling
 const { getConfig } = require("../utils/configManager");
-// Function to check if start_time is smaller than end_time
+// Function to check if startTime is smaller than end_time
 function isStartTimeBeforeEndTime(startTimeStr, endTimeStr) {
   const startTime = moment(startTimeStr, "HH:mm:ss");
   const endTime = moment(endTimeStr, "HH:mm:ss");
@@ -59,6 +59,14 @@ function isDateTimePast(date, time) {
   return inputDateTime < currentDateTime; // Returns true if the date-time is in the past
 }
 
+function getCurrentTime(){
+  return moment().format("HH:mm:ss")
+}
+
+function getCurrentDate(){
+  return moment().format("YYYY-MM-DD")
+}
+
 // Exporting the functions to use them in other files
 module.exports = {
   isTimeInRange,
@@ -66,5 +74,7 @@ module.exports = {
   isValidTimeSlot,
   isFutureDateTime,
   isStartTimeBeforeEndTime,
-  isDateTimePast
+  isDateTimePast,
+  getCurrentTime,
+  getCurrentDate
 };

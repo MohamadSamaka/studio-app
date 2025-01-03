@@ -73,8 +73,8 @@ const EditReservationModal = ({
       setDuration(durationWithSeconds);
 
       setMaxParticipants(
-        reservation.max_participants
-          ? reservation.max_participants.toString()
+        reservation.maxParticipants
+          ? reservation.maxParticipants.toString()
           : "6"
       );
 
@@ -138,10 +138,10 @@ const EditReservationModal = ({
       const updatedReservationData = {
         title,
         date,
-        start_time: time,
+        startTime: time,
         duration,
-        max_participants: parseInt(maxParticipants, 10),
-        trainer_id: trainerId,
+        maxParticipants: parseInt(maxParticipants, 10),
+        trainerId: trainerId,
       };
       console.log("Sent data: ", updatedReservationData);
       await onUpdateReservation(updatedReservationData);

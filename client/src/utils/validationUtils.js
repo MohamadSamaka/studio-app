@@ -12,8 +12,8 @@ export const validateForm = (fields) => {
       errors[field] = `${field} is required.`;
     }
 
-    // Check for phone number length (assuming the field is named 'phone_num')
-    if (field === 'phone_num') {
+    // Check for phone number length (assuming the field is named 'phoneNum')
+    if (field === 'phoneNum') {
       const strippedPhoneNumber = value.replace(/\D/g, ''); // Remove non-digit characters
 
       if (strippedPhoneNumber.length !== 10) {
@@ -33,7 +33,7 @@ export const isFormValid = (errors) => {
 export const validateBreakWithinBusinessHours = (open_time, close_time, breakTime, day, index) => {
   const openTime = new Date(`1970-01-01T${open_time}`);
   const closeTime = new Date(`1970-01-01T${close_time}`);
-  const breakStartTime = new Date(`1970-01-01T${breakTime.start_time}`);
+  const breakStartTime = new Date(`1970-01-01T${breakTime.startTime}`);
   const breakEndTime = new Date(`1970-01-01T${breakTime.end_time}`);
 
   // Convert times to local time zone
@@ -87,7 +87,7 @@ const validateDayData = (day, dayData) => {
     const breakTime = dayData.breaks[i];
 
     const breakValid = validateTimeRange(
-      breakTime.start_time,
+      breakTime.startTime,
       breakTime.end_time,
       `Please provide both start and end times for break ${i + 1} on ${day}`,
       `Break start time must be earlier than end time for ${day} - Break ${i + 1}`

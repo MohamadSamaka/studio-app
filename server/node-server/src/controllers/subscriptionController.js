@@ -6,6 +6,7 @@ class SubscriptionController {
       const subscriptions = await subscriptionService.getAllSubscriptions();
       res.json(subscriptions);
     } catch (error) {
+      console.log("error fetching subscriptions for admin: ", error)
       res.status(500).json({ message: error.message });
     }
   }
@@ -15,6 +16,7 @@ class SubscriptionController {
       const activeSubscriptions = await subscriptionService.getAllActiveSubscriptions();
       res.json(activeSubscriptions);
     } catch (error) {
+      console.log("error fetching subscriptions for user: ", error)
       res.status(500).json({ message: error.message });
     }
   }

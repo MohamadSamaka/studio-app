@@ -74,17 +74,7 @@ class ReservationController {
         timeStart,
         timeEnd,
       } = req.query;
-      console.log({
-        page,
-        limit,
-        search,
-        dateSingle,
-        dateStart,
-        dateEnd,
-        timeSingle,
-        timeStart,
-        timeEnd,
-      });
+      
       // Construct filter objects
       const dateFilter = {};
       if (dateSingle) {
@@ -178,7 +168,7 @@ class ReservationController {
       
       return res
         .status(200)
-        .json({ message: "Reservation updated successfully" });
+        .json({ message: "Reservation canceled successfully" });
     } catch (error) {
       console.error("Error in deleteReservation:", error);
       return res.status(500).json({ error: error.message });

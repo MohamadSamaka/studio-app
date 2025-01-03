@@ -60,50 +60,50 @@ async function seedDatabase() {
     predefinedUsers.push({
       username: 'admin',
       password: await hashPassword('Admin'), // Use a secure password
-      role_id: adminRole.role_id,
-      phone_num: '1234567890',
+      roleId: adminRole.id,
+      phoneNum: '1234567890',
       active: true,
-      default_lang: 'EN',
+      defaultLang: 'EN',
       credits: 100,
     });
 
     predefinedUsers.push({
       username: 'trainer',
       password: await hashPassword('Trainer'),
-      role_id: trainerRole.role_id,
-      phone_num: '1234562929',
+      roleId: trainerRole.id,
+      phoneNum: '1234562929',
       active: true,
-      default_lang: 'EN',
+      defaultLang: 'EN',
       credits: 100,
     });
 
     predefinedUsers.push({
       username: 'user',
       password: await hashPassword('User'),
-      role_id: userRole.role_id,
-      phone_num: '0987654321',
+      roleId: userRole.id,
+      phoneNum: '0987654321',
       active: true,
-      default_lang: 'AR',
+      defaultLang: 'AR',
       credits: 50,
     });
 
     predefinedUsers.push({
       username: 'user1',
       password: await hashPassword('User1Pass'),
-      role_id: userRole.role_id,
-      phone_num: '1122334455',
+      roleId: userRole.id,
+      phoneNum: '1122334455',
       active: true,
-      default_lang: 'HE',
+      defaultLang: 'HE',
       credits: 30,
     });
 
     predefinedUsers.push({
       username: 'user2',
       password: await hashPassword('User2Pass'),
-      role_id: userRole.role_id,
-      phone_num: '5566778899',
+      roleId: userRole.id,
+      phoneNum: '5566778899',
       active: true,
-      default_lang: 'EN',
+      defaultLang: 'EN',
       credits: 20,
     });
 
@@ -112,33 +112,32 @@ async function seedDatabase() {
       predefinedUsers.push({
         username: `user${i}`,
         password: await hashPassword(`password${i}`),
-        role_id: userRole.role_id,
-        phone_num: `555000${i.toString().padStart(4, '0')}`,
+        roleId: userRole.id,
+        phoneNum: `555000${i.toString().padStart(4, '0')}`,
         active: true,
-        default_lang: 'EN',
+        defaultLang: 'EN',
         credits: getRandomInt(10, 100),
       });
     }
 
     const users = await User.bulkCreate(predefinedUsers, { transaction, returning: true });
-
     // 3. Create Subscriptions
     const subscriptions = [
       {
-        subscription_name: 'Monthly',
-        meetings_num: 10,
+        subscriptionName: 'Monthly',
+        meetingsNum: 10,
         price: 100.0,
         active: true,
       },
       {
-        subscription_name: 'Daily',
-        meetings_num: 20,
+        subscriptionName: 'Daily',
+        meetingsNum: 20,
         price: 180.0,
         active: true,
       },
       {
-        subscription_name: 'Weekly',
-        meetings_num: 5,
+        subscriptionName: 'Weekly',
+        meetingsNum: 5,
         price: 50.0,
         active: true,
       },
@@ -147,53 +146,53 @@ async function seedDatabase() {
 
     // 4. Create RechargeCreditRequests
     const rechargeCreditRequests = users.map((user, index) => ({
-      users_id: user.id,
-      subscription_type: createdSubscriptions[index % createdSubscriptions.length].id, // Round-robin
+      userId: user.id,
+      subscriptionTypeId: createdSubscriptions[index % createdSubscriptions.length].id, // Round-robin
       date: generateRandomDate(getRandomInt(0, 10)), // Within next 10 days
       time: "00:00:00", // Placeholder, adjust as needed or remove if not used
       status: 'pending',
     }));
     await RechargeCreditRequest.bulkCreate(rechargeCreditRequests, { transaction });
 
-    // 5. Create AvailableReservations with trainer_id
+    // 5. Create AvailableReservations with trainerId
     const levels = ["Beginner", "Advanced"];
     const reservationsToCreate = [
       {
         date: "2024-10-10",
         title: trimString(levels[getRandomInt(0, levels.length - 1)]), // Ensure title is trimmed
-        start_time: "09:00:00",
+        startTime: "09:00:00",
         duration: "01:30:00",
-        trainer_id: users.find(u => u.role_id === trainerRole.role_id).id, // Assign first trainer
-        max_participants: 6,
+        trainerId: users.find(u => u.roleId === trainerRole.id).id, // Assign first trainer
+        maxParticipants: 6,
       },
       {
-        date: "2024-10-10",
+        date: moment().add(1, 'days').format('YYYY-MM-DD'),
         title: trimString(levels[getRandomInt(0, levels.length - 1)]),
-        start_time: "10:20:00",
+        startTime: "10:20:00",
         duration: "01:30:00",
-        trainer_id: users.find(u => u.role_id === trainerRole.role_id).id, // Assign first trainer
-        max_participants: 6,
+        trainerId: users.find(u => u.roleId === trainerRole.id).id, // Assign first trainer
+        maxParticipants: 6,
       },
       {
-        date: "2024-10-11",
+        date: moment().add(2, 'days').format('YYYY-MM-DD'),
         title: trimString(levels[getRandomInt(0, levels.length - 1)]),
-        start_time: "09:00:00",
+        startTime: "09:00:00",
         duration: "01:30:00",
-        trainer_id: users.find(u => u.role_id === trainerRole.role_id).id, // Assign first trainer
-        max_participants: 6,
+        trainerId: users.find(u => u.roleId === trainerRole.id).id, // Assign first trainer
+        maxParticipants: 6,
       },
       {
-        date: "2024-10-11",
+        date: moment().add(3, 'days').format('YYYY-MM-DD'),
         title: trimString(levels[getRandomInt(0, levels.length - 1)]),
-        start_time: "10:20:00",
+        startTime: "10:20:00",
         duration: "01:30:00",
-        trainer_id: users.find(u => u.role_id === trainerRole.role_id).id, // Assign first trainer
-        max_participants: 6,
+        trainerId: users.find(u => u.roleId === trainerRole.id).id, // Assign first trainer
+        maxParticipants: 6,
       },
     ];
 
     // Alternatively, if you have multiple trainers, assign randomly
-    const trainerUsers = users.filter(u => u.role_id === trainerRole.role_id);
+    const trainerUsers = users.filter(u => u.roleId === trainerRole.id);
     function getRandomTrainer() {
       return trainerUsers[getRandomInt(0, trainerUsers.length - 1)];
     }
@@ -201,7 +200,7 @@ async function seedDatabase() {
     // Update reservationsToCreate to assign random trainers
     const reservationsToCreateWithTrainers = reservationsToCreate.map(reservation => ({
       ...reservation,
-      trainer_id: getRandomTrainer().id,
+      trainerId: getRandomTrainer().id,
     }));
 
     // Bulk create Reservations
@@ -217,8 +216,8 @@ async function seedDatabase() {
 
       selectedUsers.forEach((user) => {
         reservationsHasUsersToCreate.push({
-          reservations_id: reservation.id,
-          users_id: user.id,
+          reservationId: reservation.id,
+          userId: user.id,
         });
       });
     });
@@ -227,7 +226,7 @@ async function seedDatabase() {
 
     // 7. Create Notifications
     const notifications = users.map((user) => ({
-      user_id: user.id,
+      userId: user.id,
       title: 'Welcome!',
       content: `Welcome ${user.username}! Thank you for joining us.`,
       icon: 'welcome.png',

@@ -14,14 +14,14 @@ class PushTokenController {
       let device = await Device.findOne({ where: { expoPushToken: token } });
 
       if (device) {
-        // Update the user_id if necessary
-        if (device.user_id !== userId) {
-          device.user_id = userId;
+        // Update the userId if necessary
+        if (device.userId !== userId) {
+          device.userId = userId;
           await device.save();
         }
       } else {
         // Create a new device entry
-        device = await Device.create({ user_id: userId, expoPushToken: token });
+        device = await Device.create({ userId: userId, expoPushToken: token });
       }
 
       return res.status(200).json({ message: 'Push token registered successfully.' });

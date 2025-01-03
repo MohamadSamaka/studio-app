@@ -51,30 +51,26 @@ const ReservationItem = ({
     time,
     isReserved = false,
     location = t("BookingScreen.location"),
-    trainer = null, // Initialize as null
+    trainer = null,
     attendees = [],
-    max_participants = 0,
+    maxParticipants = 0,
   } = item;
 
   let title = item.title || "Untitled";
 
   // Normalize the title to lowercase
   const normalizedTitle = title.toLowerCase();
-
   if (i18n.exists(`BookingScreen.BookingTitles.${normalizedTitle}`)) {
     title = t(`BookingScreen.BookingTitles.${normalizedTitle}`);
   } else {
+    // If no translation is found, fallback
     title = "";
   }
 
-  console.log("title: ", title);
+  const userIsReserved = attendees.some((attendee) => attendee.id === userId);
+  const isFullyBooked = attendees.length >= maxParticipants;
 
-  const userIsReserved = attendees.some(
-    (attendee) => attendee.id === userId
-  );
-  const isFullyBooked = attendees.length >= max_participants;
-
-  // Start fade-in animation for Fully Booked Overlay
+  // Fade-in for "Fully Booked" overlay
   useEffect(() => {
     if (isFullyBooked && !userIsReserved) {
       Animated.timing(fadeAnim, {
@@ -87,13 +83,12 @@ const ReservationItem = ({
     }
   }, [isFullyBooked, userIsReserved, fadeAnim]);
 
-  // Helper function to get the first letter of the day based on locale
+  // Helper to get first letter of the day
   const getDayInitial = (date) => {
     const day = moment(date)
       .locale(I18nManager.isRTL ? "ar" : "en")
       .format("dddd");
-    const initial = day.charAt(0);
-    return initial.toUpperCase();
+    return day.charAt(0).toUpperCase();
   };
 
   return (
@@ -104,18 +99,18 @@ const ReservationItem = ({
           <Text style={styles.dateDay}>{getDayInitial(date)}</Text>
         </View>
       </View>
+
       <Card style={styles.cardContainer}>
         <TouchableOpacity
           onPress={() => handleToggleReservation(date, time)}
-          accessibilityLabel={`Toggle reservation for ${title} on ${date} at ${time}`}
           disabled={isFullyBooked && !userIsReserved}
+          accessibilityLabel={`Toggle reservation for ${title} on ${date} at ${time}`}
         >
           <ImageBackground
             source={require("../../../assets/images/studio.jpg")} // Ensure the image exists
             style={styles.cardBackground}
             imageStyle={styles.cardBackgroundImage}
           >
-            {/* Apply gradient overlay */}
             <LinearGradient
               colors={
                 isReserved
@@ -126,6 +121,7 @@ const ReservationItem = ({
             />
             <Card.Content style={styles.cardContent}>
               <Title style={styles.title}>{title}</Title>
+
               <View style={styles.detailsContainer}>
                 <View style={styles.iconTextContainer}>
                   <MaterialCommunityIcons
@@ -144,7 +140,7 @@ const ReservationItem = ({
                   <Paragraph style={styles.details}>{location}</Paragraph>
                 </View>
               </View>
-              {/* Render Trainer Icon Safely */}
+
               <View style={styles.iconTextContainer}>
                 <MaterialCommunityIcons
                   name="account-outline"
@@ -155,11 +151,13 @@ const ReservationItem = ({
                   {trainer && trainer.name ? trainer.name : "N/A"}
                 </Paragraph>
               </View>
+
               <AvatarStack
                 participants={attendees}
                 onPress={() => handleShowAttendees(attendees)}
               />
             </Card.Content>
+
             {/* Animated Overlay for Fully Booked */}
             {isFullyBooked && !userIsReserved && (
               <Animated.View
@@ -183,15 +181,21 @@ const ReservationItem = ({
 };
 
 const ReservationSystem = () => {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const { config } = useConfigContext();
   const { user, credits, updateCredits } = useUserContext();
 
   const [reservations, setReservations] = useState({});
   const [loadingReservations, setLoadingReservations] = useState(true);
+
+  // 
+  // 1) We'll track the current "focus date" for the WeekCalendar.
+  //    This also ensures we can shift weeks with custom arrows.
+  //
   const [selectedDate, setSelectedDate] = useState(
     moment().format("YYYY-MM-DD")
   );
+
   const [markedDates, setMarkedDates] = useState({});
   const [isModalVisible, setModalVisible] = useState(false);
   const [modalAttendees, setModalAttendees] = useState([]);
@@ -199,45 +203,52 @@ const ReservationSystem = () => {
   const [confirmationModalVisible, setConfirmationModalVisible] = useState(false);
   const [confirmationModalProps, setConfirmationModalProps] = useState({});
   const [cancelRefundThreshold, setCancelRefundThreshold] = useState(null);
-  const [loading, setLoading] = useState(true); // Loading state to manage data fetching
+  const [loading, setLoading] = useState(true); // Additional loading state
 
-  // **Snackbar State for Inside Modal (Add & Update)**
+  // **Snackbar states** (inside & outside)
   const [snackbarVisibleInside, setSnackbarVisibleInside] = useState(false);
   const [snackbarMessageInside, setSnackbarMessageInside] = useState("");
-  const [snackbarTypeInside, setSnackbarTypeInside] = useState("success"); // 'success' or 'error'
+  const [snackbarTypeInside, setSnackbarTypeInside] = useState("success");
 
-  // **Snackbar State for Outside Modal (Delete Actions)**
   const [snackbarVisibleOutside, setSnackbarVisibleOutside] = useState(false);
   const [snackbarMessageOutside, setSnackbarMessageOutside] = useState("");
-  const [snackbarTypeOutside, setSnackbarTypeOutside] = useState("success"); // 'success' or 'error'
+  const [snackbarTypeOutside, setSnackbarTypeOutside] = useState("success");
 
-  // **Error State**
   const [errors, setErrors] = useState({});
 
-  // **Snackbar Helper Functions for Inside Modal (Add & Update)**
+  // 
+  // 2) Custom arrow handlers for moving weeks
+  //
+  const goToPrevWeek = () => {
+    const newDate = moment(selectedDate).subtract(7, "days");
+    setSelectedDate(newDate.format("YYYY-MM-DD"));
+  };
+
+  const goToNextWeek = () => {
+    const newDate = moment(selectedDate).add(7, "days");
+    setSelectedDate(newDate.format("YYYY-MM-DD"));
+  };
+
+  // **Snackbar Helpers (Inside Modal)**
   const showSnackbarInside = (message, type = "success") => {
     setSnackbarMessageInside(message);
     setSnackbarTypeInside(type);
     setSnackbarVisibleInside(true);
   };
-
   const hideSnackbarInside = () => {
     setSnackbarVisibleInside(false);
-    // Close the Modal after Snackbar is dismissed if it's a success message
     if (snackbarTypeInside === "success") {
       setModalVisible(false);
       setModalAttendees([]);
-      // Reset any other necessary state here
     }
   };
 
-  // **Snackbar Helper Functions for Outside Modal (Delete Actions)**
+  // **Snackbar Helpers (Outside Modal)**
   const showSnackbarOutside = (message, type = "success") => {
     setSnackbarMessageOutside(message);
     setSnackbarTypeOutside(type);
     setSnackbarVisibleOutside(true);
   };
-
   const hideSnackbarOutside = () => {
     setSnackbarVisibleOutside(false);
   };
@@ -245,32 +256,26 @@ const ReservationSystem = () => {
   // **Fetch Reservations from API**
   const fetchUserReservations = async () => {
     try {
-      const response = await getOrganizedReservationsByDateAndTime(); // Ensure this function is correctly imported
+      const response = await getOrganizedReservationsByDateAndTime();
       const fetchedReservations = response.data;
       setLoadingReservations(false);
-      // Validate fetchedReservations
+
       if (!fetchedReservations || typeof fetchedReservations !== "object") {
-        console.warn(
-          "Fetched reservations data is invalid:",
-          fetchedReservations
-        );
+        console.warn("Fetched reservations data is invalid:", fetchedReservations);
         setReservations({});
         setMarkedDates({});
         return;
       }
 
-      // Sanitize attendees to include only id and name
       const sanitizedReservations = Object.keys(fetchedReservations).reduce(
         (acc, date) => {
           acc[date] = Object.keys(fetchedReservations[date]).reduce(
             (timeAcc, time) => {
               const reservation = fetchedReservations[date][time];
-              const sanitizedAttendees = reservation.attendees.map(
-                (attendee) => ({
-                  id: attendee.id,
-                  name: attendee.name,
-                })
-              );
+              const sanitizedAttendees = reservation.attendees.map((a) => ({
+                id: a.id,
+                name: a.name,
+              }));
               timeAcc[time] = {
                 ...reservation,
                 attendees: sanitizedAttendees,
@@ -286,24 +291,18 @@ const ReservationSystem = () => {
 
       setReservations(sanitizedReservations);
 
-      const marked = Object.keys(sanitizedReservations).reduce(
-        (acc, date) => {
-          acc[date] = { marked: true, dots: [{ color: "#00adf5" }] };
-          return acc;
-        },
-        {}
-      );
+      const marked = Object.keys(sanitizedReservations).reduce((acc, date) => {
+        acc[date] = { marked: true, dots: [{ color: "#00adf5" }] };
+        return acc;
+      }, {});
       setMarkedDates(marked);
     } catch (error) {
       console.error("Error fetching reservations:", error);
-      showSnackbarOutside(
-        t("myReservationsScreen.errorFetchingReservations"),
-        "error"
-      );
+      showSnackbarOutside(t("myReservationsScreen.errorFetchingReservations"), "error");
     }
   };
 
-  // **Load cancelRefundThreshold from config**
+  // **Load threshold from config**
   useEffect(() => {
     if (config && config.reservations) {
       setCancelRefundThreshold(
@@ -312,44 +311,42 @@ const ReservationSystem = () => {
     }
   }, [config]);
 
-  // **Fetch reservations when component mounts**
+  // **Fetch reservations on mount (if user)**
   useEffect(() => {
-    if (!user) return; // Prevent fetching if user is null
+    if (!user) return;
     fetchUserReservations();
   }, [user]);
 
-  // **Set loading to false once cancelRefundThreshold and reservations are loaded**
+  // **Set loading to false once threshold & reservations are loaded**
   useEffect(() => {
     if (cancelRefundThreshold !== null && !loadingReservations) {
       setLoading(false);
     }
   }, [cancelRefundThreshold, reservations, loadingReservations]);
 
-  // **Helper function to check if the user is already booked in the reservation**
+  // **Helper: Check if user is in the attendees**
   const isUserReserved = (attendees) => {
-    return attendees.some((attendee) => attendee.id === user.id);
+    return attendees.some((a) => a.id === user.id);
   };
 
-  // **Function to handle booking a reservation**
+  // **Book a reservation**
   const bookReservation = async (date, time, reservation) => {
     try {
       await bookTimeSlot(reservation.id);
 
-      setReservations((prevReservations) => {
-        const currentAttendees = prevReservations[date][time].attendees;
+      setReservations((prev) => {
+        const currentAttendees = prev[date][time].attendees;
         const userAlreadyAttending = currentAttendees.some(
           (attendee) => attendee.id === user.id
         );
 
-        // Define a sanitized user object with only id and name
         const sanitizedUser = { id: user.id, name: user.username };
-
         return {
-          ...prevReservations,
+          ...prev,
           [date]: {
-            ...prevReservations[date],
+            ...prev[date],
             [time]: {
-              ...prevReservations[date][time],
+              ...prev[date][time],
               isReserved: true,
               attendees: userAlreadyAttending
                 ? currentAttendees
@@ -359,7 +356,7 @@ const ReservationSystem = () => {
         };
       });
 
-      updateCredits(-1); // Deduct one credit
+      updateCredits(-1);
       showSnackbarInside(t("BookingScreen.confirmBookingSuccess"), "success");
     } catch (error) {
       console.error("Failed to book reservation:", error);
@@ -367,32 +364,29 @@ const ReservationSystem = () => {
     }
   };
 
-  // **Function to handle canceling a reservation**
+  // **Cancel a reservation**
   const cancelReservation = async (date, time, reservation) => {
     try {
       await cancelUserReservation(reservation.id);
 
-      // Update the reservation's isReserved status and remove the user from attendees
-      setReservations((prevReservations) => ({
-        ...prevReservations,
+      setReservations((prev) => ({
+        ...prev,
         [date]: {
-          ...prevReservations[date],
+          ...prev[date],
           [time]: {
-            ...prevReservations[date][time],
+            ...prev[date][time],
             isReserved: false,
-            attendees: prevReservations[date][time].attendees.filter(
-              (attendee) => attendee.id !== user.id
+            attendees: prev[date][time].attendees.filter(
+              (a) => a.id !== user.id
             ),
           },
         },
       }));
 
       if (isWithinThreshold(date, time, cancelRefundThreshold)) {
-        // Eligible for credit refund
-        updateCredits(1); // Add one credit
+        updateCredits(1);
         showSnackbarOutside(t("BookingScreen.cancelSuccessWithRefund"), "success");
       } else {
-        // Not eligible for credit refund
         showSnackbarOutside(t("BookingScreen.cancelSuccessNoRefund"), "success");
       }
     } catch (error) {
@@ -401,39 +395,29 @@ const ReservationSystem = () => {
     }
   };
 
-  // **Function to handle toggling a reservation with confirmation and pre-checks**
+  // **Toggle reservation (book/cancel) with checks**
   const handleToggleReservation = useCallback(
     (date, time) => {
       const reservation = reservations[date]?.[time];
       if (!reservation) {
-        console.error(`Reservation not found for date: ${date}, time: ${time}`);
+        console.error(`Reservation not found for ${date} ${time}`);
         showSnackbarOutside(t("myReservationsScreen.reservationNotFound"), "error");
         return;
       }
-
-      if(isDateTimePast(date, time)){
-        console.error(`You can't perform any action on past reservations...`);
+      if (isDateTimePast(date, time)) {
+        console.error("Cannot act on past reservations...");
         showSnackbarOutside(t("BookingScreen.pastDateTimeActionForbidden"), "error");
         return;
       }
 
       const userIsReserved = isUserReserved(reservation.attendees);
-      // If user is already reserved, handle cancellation
       if (userIsReserved) {
-        // Ensure cancelRefundThreshold is valid
-        if (
-          !cancelRefundThreshold ||
-          typeof cancelRefundThreshold !== "string"
-        ) {
-          console.error(
-            "Invalid cancelRefundThreshold:",
-            cancelRefundThreshold
-          );
+        if (!cancelRefundThreshold || typeof cancelRefundThreshold !== "string") {
+          console.error("Invalid cancelRefundThreshold:", cancelRefundThreshold);
           showSnackbarOutside(t("myReservationsScreen.invalidRefundThreshold"), "error");
           return;
         }
 
-        // Parse cancelRefundThreshold as a duration in HH:mm format
         const [hours, minutes] = cancelRefundThreshold.split(":").map(Number);
         if (
           isNaN(hours) ||
@@ -442,13 +426,12 @@ const ReservationSystem = () => {
           minutes < 0 ||
           minutes >= 60
         ) {
-          console.error("Parsed durationMinutes is invalid:", cancelRefundThreshold);
+          console.error("Parsed threshold is invalid:", cancelRefundThreshold);
           showSnackbarOutside(t("myReservationsScreen.invalidRefundThresholdFormat"), "error");
           return;
         }
 
         let warningMessage = null;
-
         if (!isWithinThreshold(date, time, cancelRefundThreshold))
           warningMessage = t("BookingScreen.cancellationWarningNoRefund");
 
@@ -458,53 +441,44 @@ const ReservationSystem = () => {
             warningMessage ||
             t("BookingScreen.confirmCancelBooking", {
               title: reservation.title,
-              date: date,
-              time: time,
+              date,
+              time,
             }),
           confirmText: t("BookingScreen.yesCancel"),
           cancelText: t("BookingScreen.cancel"),
-          confirmColor: "#F44336", // Red color for cancel
+          confirmColor: "#F44336",
           onConfirm: () => {
             cancelReservation(date, time, reservation);
             setConfirmationModalVisible(false);
           },
-          onCancel: () => {
-            setConfirmationModalVisible(false);
-          },
+          onCancel: () => setConfirmationModalVisible(false),
         });
         setConfirmationModalVisible(true);
       } else {
-        // User is not reserved, handle booking
-        // Check if user has enough credits
         if (credits <= 0) {
           showSnackbarOutside(t("BookingScreen.insufficientCredits"), "error");
           return;
         }
-
-        // Check if reservation is fully booked
-        if (reservation.attendees.length >= reservation.max_participants) {
+        if (reservation.attendees.length >= reservation.maxParticipants) {
           showSnackbarOutside(t("BookingScreen.fullyBooked"), "error");
           return;
         }
 
-        // All checks passed, proceed to booking confirmation
         setConfirmationModalProps({
           title: t("BookingScreen.areYouSure"),
           message: t("BookingScreen.confirmBooking", {
             title: reservation.title,
-            date: date,
-            time: time,
+            date,
+            time,
           }),
           confirmText: t("BookingScreen.yesBook"),
           cancelText: t("BookingScreen.cancel"),
-          confirmColor: "#4CAF50", // Green color for booking
+          confirmColor: "#4CAF50",
           onConfirm: () => {
             bookReservation(date, time, reservation);
             setConfirmationModalVisible(false);
           },
-          onCancel: () => {
-            setConfirmationModalVisible(false);
-          },
+          onCancel: () => setConfirmationModalVisible(false),
         });
         setConfirmationModalVisible(true);
       }
@@ -512,13 +486,13 @@ const ReservationSystem = () => {
     [reservations, t, cancelRefundThreshold, credits]
   );
 
-  // **Function to handle showing attendees modal**
+  // **Show attendees modal**
   const handleShowAttendees = (attendees) => {
     setModalAttendees(attendees);
     setModalVisible(true);
   };
 
-  // **Transform the reservations[selectedDate] object into an array for FlatList**
+  // Build list for selected date
   const reservationsForSelectedDate = selectedDate
     ? Object.entries(reservations[selectedDate] || {}).map(
         ([time, reservation]) => ({
@@ -529,7 +503,7 @@ const ReservationSystem = () => {
       )
     : [];
 
-  // **Render item for FlatList using ReservationItem component**
+  // Render item for FlatList
   const renderItem = ({ item }) => (
     <ReservationItem
       item={item}
@@ -540,7 +514,7 @@ const ReservationSystem = () => {
     />
   );
 
-  // **If loading, show ActivityIndicator**
+  // If loading, show spinner
   if (loading) {
     return (
       <View style={styles.container}>
@@ -552,7 +526,7 @@ const ReservationSystem = () => {
     );
   }
 
-  // **If user is not logged in, prompt to log in**
+  // If user not logged in
   if (!user) {
     return (
       <View style={styles.container}>
@@ -563,7 +537,7 @@ const ReservationSystem = () => {
           </Text>
           <TouchableOpacity
             style={styles.loginButton}
-            onPress={() => navigation.navigate("Login")} // Replace 'Login' with your actual login route name
+            onPress={() => navigation.navigate("Login")} 
             accessibilityLabel="Navigate to Login Screen"
           >
             <Text style={styles.loginButtonText}>
@@ -578,21 +552,44 @@ const ReservationSystem = () => {
   return (
     <View style={styles.container}>
       <AppBar />
+
+      {/* 3) Our custom arrow container */}
+      <View style={styles.weekArrowsContainer}>
+  <TouchableOpacity onPress={goToPrevWeek} style={styles.arrowButton}>
+    <MaterialCommunityIcons
+      name="chevron-left"
+      size={24}
+      color="#000" // Replace with your desired color
+    />
+  </TouchableOpacity>
+
+  <Text style={styles.arrowTitle}>
+    {moment(selectedDate).format("MMMM YYYY")}
+  </Text>
+
+  <TouchableOpacity onPress={goToNextWeek} style={styles.arrowButton}>
+    <MaterialCommunityIcons
+      name="chevron-right"
+      size={24}
+      color="#000" // Replace with your desired color
+    />
+  </TouchableOpacity>
+</View>
+
+      {/* 4) The WeekCalendar, referencing `selectedDate` */}
       <View style={styles.calendarContainer}>
         <CalendarProvider
           date={selectedDate}
-          onDateChanged={(date) => {
-            setSelectedDate(date);
-          }}
+          onDateChanged={(date) => setSelectedDate(date)}
           showTodayButton={false}
-          minDate={moment().format("YYYY-MM-DD")} // Added minDate
+          minDate={moment().format("YYYY-MM-DD")}
           disabledDates={(date) =>
             moment(date).isBefore(moment().format("YYYY-MM-DD"))
           }
         >
           <WeekCalendar
             firstDay={1}
-            minDate={moment().format("YYYY-MM-DD")} // Added minDate
+            minDate={moment().format("YYYY-MM-DD")}
             maxDate={moment().add(2, "month").format("YYYY-MM-DD")}
             markedDates={{
               ...markedDates,
@@ -602,30 +599,22 @@ const ReservationSystem = () => {
                 selectedColor: "#00adf5",
               },
             }}
-            renderArrow={(direction) => (
-              <MaterialCommunityIcons
-                name={direction === "left" ? "chevron-left" : "chevron-right"}
-                size={24}
-                color="#00adf5"
-              />
-            )}
+            onDayPress={(day) => setSelectedDate(day.dateString)}
+            style={styles.calendar}
             theme={{
               selectedDayBackgroundColor: "#00adf5",
               selectedDayTextColor: "#ffffff",
               todayTextColor: "#00adf5",
-              arrowColor: "#00adf5",
               monthTextColor: "#00adf5",
               textMonthFontWeight: "bold",
               textDayFontFamily: "System",
               textMonthFontFamily: "System",
             }}
-            onDayPress={(day) => {
-              setSelectedDate(day.dateString);
-            }}
-            style={styles.calendar}
           />
         </CalendarProvider>
       </View>
+
+      {/* List of reservations for the selected date */}
       <View style={styles.reservationsContainer}>
         {reservationsForSelectedDate.length > 0 ? (
           <FlatList
@@ -657,7 +646,6 @@ const ReservationSystem = () => {
             data={modalAttendees}
             keyExtractor={(item, index) => index.toString()}
             renderItem={({ item }) => {
-              // Ensure attendee properties are defined
               const { name = "Unnamed", avatarUrl } = item;
               return (
                 <View style={styles.modalAttendeeContainer}>
@@ -684,7 +672,7 @@ const ReservationSystem = () => {
         </View>
       </Modal>
 
-      {/* **Snackbar Inside Modal (Add & Update)** */}
+      {/* Snackbar Inside Modal */}
       <Snackbar
         visible={snackbarVisibleInside}
         onDismiss={hideSnackbarInside}
@@ -702,7 +690,7 @@ const ReservationSystem = () => {
         {snackbarMessageInside}
       </Snackbar>
 
-      {/* **Snackbar Outside Modal (Delete Actions)** */}
+      {/* Snackbar Outside Modal */}
       <Snackbar
         visible={snackbarVisibleOutside}
         onDismiss={hideSnackbarOutside}
@@ -740,6 +728,28 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  weekArrowsContainer: {
+    // Custom arrows container (for web or mobile)
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginHorizontal: 16,
+    marginTop: 8,
+  },
+  arrowButton: {
+    padding: 8,
+  },
+  arrowText: {
+    color: "#00adf5",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  arrowTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#333",
+  },
+
   calendarContainer: {
     height: 80,
     overflow: "hidden",
@@ -958,10 +968,10 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   snackbarSuccess: {
-    backgroundColor: "#4CAF50", // Green color for success
+    backgroundColor: "#4CAF50",
   },
   snackbarError: {
-    backgroundColor: "#F44336", // Red color for errors
+    backgroundColor: "#F44336",
   },
   notLoggedInContainer: {
     flex: 1,
