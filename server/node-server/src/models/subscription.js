@@ -39,7 +39,7 @@ Subscription.init(
   },
   {
     sequelize,
-    tableName: "Subscriptions",
+    tableName: "subscriptions",
     modelName: "Subscription",
     timestamps: false, // No timestamps needed for static subscription data
   }

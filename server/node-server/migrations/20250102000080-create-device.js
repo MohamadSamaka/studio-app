@@ -2,7 +2,7 @@
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    await queryInterface.createTable("Devices", {
+    await queryInterface.createTable("devices", {
       id: {
         type: Sequelize.INTEGER,
         autoIncrement: true,
@@ -20,7 +20,7 @@ module.exports = {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
-          model: "Users", // Matches the table name for Users
+          model: "users", // Matches the table name for Users
           key: "id",
         },
         onDelete: "CASCADE", // Ensures devices are removed when a user is deleted
@@ -40,14 +40,14 @@ module.exports = {
     });
 
     // Add an index on userId for efficient lookups
-    await queryInterface.addIndex("Devices", ["userId"]);
+    await queryInterface.addIndex("devices", ["userId"]);
   },
 
   down: async (queryInterface, Sequelize) => {
     // Remove the index
-    await queryInterface.removeIndex("Devices", ["userId"]);
+    await queryInterface.removeIndex("devices", ["userId"]);
 
     // Drop the table
-    await queryInterface.dropTable("Devices");
+    await queryInterface.dropTable("devices");
   },
 };

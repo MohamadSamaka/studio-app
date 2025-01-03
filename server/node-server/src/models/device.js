@@ -32,7 +32,7 @@ Device.init(
   },
   {
     sequelize,
-    tableName: "Devices",
+    tableName: "devices",
     modelName: "Device",
     timestamps: true,
   }

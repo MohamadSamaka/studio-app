@@ -50,7 +50,7 @@ AvailableReservations.init(
   },
   {
     sequelize,
-    tableName: "AvailableReservations",
+    tableName: "availablereservations",
     modelName: "AvailableReservations",
     timestamps: false,
     indexes: [

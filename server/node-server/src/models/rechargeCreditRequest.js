@@ -39,7 +39,7 @@ RechargeCreditRequest.init(
   },
   {
     sequelize,
-    tableName: "RechargeCreditRequests",
+    tableName: "rechargecreditrequests",
     modelName: "RechargeCreditRequest",
     timestamps: false,
     indexes: [

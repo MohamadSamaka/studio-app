@@ -72,7 +72,7 @@ User.init(
   },
   {
     sequelize,
-    tableName:"Users",
+    tableName:"users",
     modelName: 'User',
     timestamps: false,
     defaultScope: {

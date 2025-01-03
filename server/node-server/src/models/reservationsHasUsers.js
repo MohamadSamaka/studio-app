@@ -26,7 +26,7 @@ ReservationsHasUsers.init(
   },
   {
     sequelize,
-    modelName: "ReservationsHasUsers",
+    tableName: "reservationshasusers",
     modelName: "ReservationsHasUsers",
     timestamps: false,
     indexes: [

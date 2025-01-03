@@ -2,7 +2,7 @@
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    await queryInterface.createTable("AvailableReservations", {
+    await queryInterface.createTable("availablereservations", {
       id: {
         type: Sequelize.INTEGER,
         autoIncrement: true,
@@ -16,7 +16,7 @@ module.exports = {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
-          model: "Users", // Matches the table name for Users
+          model: "users", // Matches the table name for Users
           key: "id",
         },
         onDelete: "CASCADE", // Ensures reservations are removed if the trainer is deleted
@@ -42,7 +42,7 @@ module.exports = {
     });
 
     // Add a unique index for date, startTime, and trainerId
-    await queryInterface.addIndex("AvailableReservations", {
+    await queryInterface.addIndex("availablereservations", {
       fields: ["date", "startTime", "trainerId"],
       unique: true,
       name: "unique_date_startTime_trainerId",
@@ -52,11 +52,11 @@ module.exports = {
   down: async (queryInterface, Sequelize) => {
     // Remove the unique index
     await queryInterface.removeIndex(
-      "AvailableReservations",
+      "availablereservations",
       "unique_date_startTime_trainerId"
     );
 
     // Drop the table
-    await queryInterface.dropTable("AvailableReservations");
+    await queryInterface.dropTable("availablereservations");
   },
 };

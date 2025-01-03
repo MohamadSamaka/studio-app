@@ -2,12 +2,12 @@
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    await queryInterface.createTable("ReservationsHasUsers", {
+    await queryInterface.createTable("reservationshasusers", {
       reservationId: {
         type: Sequelize.INTEGER,
         primaryKey: true,
         references: {
-          model: "AvailableReservations", // Matches the table name for AvailableReservations
+          model: "availablereservations", // Matches the table name for availablereservations
           key: "id",
         },
         onDelete: "CASCADE", // Ensures entries are removed when a reservation is deleted
@@ -17,7 +17,7 @@ module.exports = {
         type: Sequelize.INTEGER,
         primaryKey: true,
         references: {
-          model: "Users", // Matches the table name for Users
+          model: "users", // Matches the table name for Users
           key: "id",
         },
         onDelete: "CASCADE", // Ensures entries are removed when a user is deleted
@@ -26,7 +26,7 @@ module.exports = {
     });
 
     // Add a unique constraint for the combination of reservationId and userId
-    await queryInterface.addConstraint("ReservationsHasUsers", {
+    await queryInterface.addConstraint("reservationshasusers", {
       fields: ["reservationId", "userId"],
       type: "unique",
       name: "unique_reservation_user",
@@ -34,6 +34,6 @@ module.exports = {
   },
 
   down: async (queryInterface, Sequelize) => {
-    await queryInterface.dropTable("ReservationsHasUsers");
+    await queryInterface.dropTable("reservationshasusers");
   },
 };

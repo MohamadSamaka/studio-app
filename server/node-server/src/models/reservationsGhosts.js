@@ -39,7 +39,7 @@ ReservationsGhosts.init(
   },
   {
     sequelize,
-    tableName: "ReservationsGhosts",
+    tableName: "reservationsghosts",
     modelName: "ReservationsGhosts",
     timestamps: false,
   }

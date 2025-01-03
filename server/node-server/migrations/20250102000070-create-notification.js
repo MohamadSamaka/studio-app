@@ -2,7 +2,7 @@
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    await queryInterface.createTable("Notifications", {
+    await queryInterface.createTable("notifications", {
       id: {
         type: Sequelize.INTEGER,
         autoIncrement: true,
@@ -12,7 +12,7 @@ module.exports = {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
-          model: "Users", // Matches the table name for Users
+          model: "users", // Matches the table name for Users
           key: "id",
         },
         onDelete: "CASCADE", // Ensures notifications are removed when a user is deleted
@@ -41,14 +41,14 @@ module.exports = {
     });
 
     // Add an index on userId for efficient lookups
-    await queryInterface.addIndex("Notifications", ["userId"]);
+    await queryInterface.addIndex("notifications", ["userId"]);
   },
 
   down: async (queryInterface, Sequelize) => {
     // Remove the index
-    await queryInterface.removeIndex("Notifications", ["userId"]);
+    await queryInterface.removeIndex("notifications", ["userId"]);
 
     // Drop the table
-    await queryInterface.dropTable("Notifications");
+    await queryInterface.dropTable("notifications");
   },
 };

@@ -2,7 +2,7 @@
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    await queryInterface.createTable("RechargeCreditRequests", {
+    await queryInterface.createTable("rechargecreditrequests", {
       id: {
         type: Sequelize.INTEGER,
         autoIncrement: true,
@@ -12,7 +12,7 @@ module.exports = {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
-          model: "Users",
+          model: "users",
           key: "id",
         },
         onDelete: "CASCADE",
@@ -22,7 +22,7 @@ module.exports = {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
-          model: "Subscriptions",
+          model: "subscriptions",
           key: "id",
         },
         onDelete: "CASCADE",
@@ -45,20 +45,20 @@ module.exports = {
     });
 
     // Add indexes for optimization
-    await queryInterface.addIndex("RechargeCreditRequests", ["userId"]);
-    await queryInterface.addIndex("RechargeCreditRequests", [
+    await queryInterface.addIndex("rechargecreditrequests", ["userId"]);
+    await queryInterface.addIndex("rechargecreditrequests", [
       "subscriptionTypeId",
     ]);
   },
 
   down: async (queryInterface, Sequelize) => {
     // Remove indexes
-    await queryInterface.removeIndex("RechargeCreditRequests", ["userId"]);
-    await queryInterface.removeIndex("RechargeCreditRequests", [
+    await queryInterface.removeIndex("rechargecreditrequests", ["userId"]);
+    await queryInterface.removeIndex("rechargecreditrequests", [
       "subscriptionTypeId",
     ]);
 
     // Drop table
-    await queryInterface.dropTable("RechargeCreditRequests");
+    await queryInterface.dropTable("rechargecreditrequests");
   },
 };

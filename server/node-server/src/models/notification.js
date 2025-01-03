@@ -35,7 +35,7 @@ Notification.init({
   },
 }, {
   sequelize,
-  tableName: "Notifications",
+  tableName: "notifications",
   modelName: 'Notification',
   timestamps: false,
   indexes: [{ fields: ['userId'] }],

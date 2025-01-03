@@ -2,7 +2,7 @@
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    await queryInterface.createTable("ReservationsGhosts", {
+    await queryInterface.createTable("reservationsghosts", {
       id: {
         type: Sequelize.INTEGER,
         autoIncrement: true,
@@ -12,7 +12,7 @@ module.exports = {
         type: Sequelize.INTEGER,
         allowNull: true,
         references: {
-          model: "AvailableReservations", // Matches the table name for AvailableReservations
+          model: "availablereservations", // Matches the table name for AvailableReservations
           key: "id",
         },
         onDelete: "SET NULL", // Allows the reservation to be removed while retaining the ghost log
@@ -22,7 +22,7 @@ module.exports = {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
-          model: "Users", // Matches the table name for Users
+          model: "users", // Matches the table name for Users
           key: "id",
         },
         onDelete: "CASCADE", // Ensures ghost logs are removed when a user is deleted
@@ -40,6 +40,6 @@ module.exports = {
   },
 
   down: async (queryInterface, Sequelize) => {
-    await queryInterface.dropTable("ReservationsGhosts");
+    await queryInterface.dropTable("reservationsghosts");
   },
 };
